@@ -190,7 +190,13 @@ You can copy and paste this code directly into a single HTML file.
 <div id="start-screen" class="screen">
 <h1>¡Rápido! 🇪🇸</h1>
 <p>Test your Spanish vocabulary against the clock! How high can you score before you run out of lives? The game gets harder as you go!</p>
-<button id="start-button" class="btn">Start Game 🔥</button>
+<div id="level-selector" style="margin-bottom: 1rem;">
+  <label style="font-weight:700;">Choose your level:</label><br>
+  <button class="btn btn-secondary level-btn" data-level="beginner">Beginner</button>
+  <button class="btn btn-secondary level-btn" data-level="normal">Normal</button>
+  <button class="btn btn-secondary level-btn" data-level="hard">Hard</button>
+</div>
+<button id="start-button" class="btn" disabled>Start Game 🔥</button>
 </div>
 
 <!-- Game Screen (unified) -->
@@ -200,6 +206,7 @@ You can copy and paste this code directly into a single HTML file.
             <div id="score-display">Puntos: <span id="score-value">0</span></div>
             <div id="streak-container"></div>
         </div>
+        <div id="learning-stage-banner" class="hidden" style="font-size:1.2rem;font-weight:700;color:var(--secondary);margin-bottom:1rem;">Learning Stage</div>
         <div id="timer-bar-container"><div id="timer-bar"></div></div>
         <div id="prompt-area">
             <!-- Prompts will be dynamically inserted here -->
@@ -210,6 +217,7 @@ You can copy and paste this code directly into a single HTML file.
             <!-- Options (buttons or input) will be dynamically inserted here -->
         </div>
         <div id="feedback-area"></div>
+        <div id="learning-progress" class="hidden" style="margin-top:1rem;font-size:1.1rem;"></div>
     </div>
 
     <!-- End Screen -->
@@ -258,7 +266,13 @@ document.addEventListener('DOMContentLoaded', () => {
         questionPool: [],
         currentQuestion: null,
         timer: null,
-        timerInterval: null
+        timerInterval: null,
+        level: null,
+        learningStage: false,
+        learningProgress: 0,
+        learningTotal: 0,
+        learningQuestions: [],
+        learningMode: null,
     };
 
     const MAX_LIVES = 3;
@@ -267,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
         SENTENCE_MATCH: 5,
         FILL_IN_BLANK: 12
     };
-
+    const LEARNING_STAGE_QUESTIONS = 8;
     // --- DOM ELEMENTS ---
     const gameContainer = document.getElementById('game-container');
     const startScreen = document.getElementById('start-screen');
@@ -290,6 +304,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const finalScoreDisplay = document.getElementById('final-score');
     const highScoreDisplay = document.getElementById('high-score-display');
+    
+    const learningStageBanner = document.getElementById('learning-stage-banner');
+    const learningProgress = document.getElementById('learning-progress');
     
     // --- WEB AUDIO API FOR SOUNDS ---
     let audioCtx;
@@ -350,15 +367,149 @@ document.addEventListener('DOMContentLoaded', () => {
         window.speechSynthesis.speak(utter);
     }
 
+    // --- LEVEL SELECTOR LOGIC ---
+    let selectedLevel = null;
+    const levelBtns = document.querySelectorAll('.level-btn');
+    levelBtns.forEach(btn => {
+        btn.onclick = () => {
+            selectedLevel = btn.dataset.level;
+            levelBtns.forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            startButton.disabled = false;
+        };
+    });
+
+    startButton.addEventListener('click', () => {
+        gameState.level = selectedLevel;
+        if (selectedLevel === 'beginner') {
+            startLearningStage();
+        } else {
+            initGame(selectedLevel);
+        }
+    });
+
+    // --- LEARNING STAGE ---
+    function startLearningStage() {
+        initAudio();
+        gameState.score = 0;
+        gameState.lives = MAX_LIVES;
+        gameState.streak = 0;
+        gameState.learningStage = true;
+        gameState.learningProgress = 0;
+        gameState.learningTotal = LEARNING_STAGE_QUESTIONS;
+        gameState.learningQuestions = shuffleArray([...EMOJI_DATA]).slice(0, LEARNING_STAGE_QUESTIONS);
+        showScreen(gameScreen);
+        learningStageBanner.classList.remove('hidden');
+        learningProgress.classList.remove('hidden');
+        nextLearningQuestion();
+    }
+
+    function nextLearningQuestion() {
+        clearFeedback();
+        updateLearningProgress();
+        if (gameState.learningProgress >= gameState.learningTotal) {
+            // End of learning stage
+            setTimeout(() => {
+                learningStageBanner.classList.add('hidden');
+                learningProgress.classList.add('hidden');
+                gameState.learningStage = false;
+                initGame('normal');
+            }, 1200);
+            feedbackArea.innerHTML = '¡Listo! Now the real game begins!';
+            feedbackArea.className = 'feedback-correct';
+            playSound('streak');
+            return;
+        }
+        // Alternate between word-to-emoji and emoji-to-word
+        gameState.learningMode = gameState.learningProgress % 2 === 0 ? 'word-to-emoji' : 'emoji-to-word';
+        const item = gameState.learningQuestions[gameState.learningProgress];
+        mainEmojiPrompt.classList.add('hidden');
+        textPrompt.classList.add('hidden');
+        optionsContainer.innerHTML = '';
+        let distractors = shuffleArray(EMOJI_DATA.filter(d => d.emoji !== item.emoji)).slice(0, 3);
+        if (gameState.learningMode === 'word-to-emoji') {
+            // Show word, pick emoji
+            textPrompt.textContent = item.spanish;
+            textPrompt.classList.remove('hidden');
+            speakWord(item.spanish);
+            let emojiOptions = shuffleArray([item, ...distractors]);
+            emojiOptions.forEach(opt => createLearningButton(opt.emoji, opt.emoji, item.emoji));
+        } else {
+            // Show emoji, pick word
+            mainEmojiPrompt.textContent = item.emoji;
+            mainEmojiPrompt.classList.remove('hidden');
+            let textOptions = shuffleArray([item, ...distractors]);
+            textOptions.forEach(opt => createLearningButton(opt.spanish, opt.spanish, item.spanish));
+        }
+    }
+
+    function createLearningButton(text, value, correctValue) {
+        const button = document.createElement('button');
+        button.innerHTML = text;
+        button.dataset.value = value;
+        button.className = 'option-btn' + (text.length <= 2 ? ' emoji-option' : '');
+        button.onclick = () => handleLearningAnswer(button.dataset.value, correctValue, button);
+        optionsContainer.appendChild(button);
+    }
+
+    function handleLearningAnswer(selected, correct, btn) {
+        disableOptions();
+        const isCorrect = selected === correct;
+        if (isCorrect) {
+            showLearningFeedback(true, btn);
+            playSound('correct');
+            setTimeout(() => {
+                gameState.learningProgress++;
+                nextLearningQuestion();
+            }, 900);
+        } else {
+            showLearningFeedback(false, btn, correct);
+            playSound('incorrect');
+            setTimeout(() => {
+                enableOptions();
+            }, 900);
+        }
+    }
+
+    function showLearningFeedback(correct, btn, correctValue) {
+        if (correct) {
+            feedbackArea.innerHTML = `¡Correcto! <span style="font-size: 2rem; margin-left: 10px;">⭐</span>`;
+            feedbackArea.className = 'feedback-correct';
+            btn.classList.add('correct-flash');
+        } else {
+            feedbackArea.innerHTML = `Inténtalo de nuevo.<br><span style="font-size:1.1rem;">Pista: ${correctValue}</span>`;
+            feedbackArea.className = 'feedback-incorrect';
+            btn.classList.add('incorrect-flash');
+        }
+    }
+
+    function updateLearningProgress() {
+        learningProgress.textContent = `Learning Progress: ${gameState.learningProgress} / ${gameState.learningTotal}`;
+    }
+
+    function disableOptions() {
+        optionsContainer.querySelectorAll('button, input').forEach(el => el.disabled = true);
+    }
+    function enableOptions() {
+        optionsContainer.querySelectorAll('button, input').forEach(el => el.disabled = false);
+    }
+
     // --- GAME LOGIC ---
-    function initGame() {
+    function initGame(level) {
         initAudio(); // Initialize audio context on first user interaction
         gameState.score = 0;
         gameState.lives = MAX_LIVES;
         gameState.streak = 0;
         gameState.questionPool = shuffleArray([...EMOJI_DATA]);
+        if (level === 'hard') {
+            // Start at higher difficulty
+            gameState.questionPool = shuffleArray([...EMOJI_DATA]);
+            gameState.questionPool = gameState.questionPool.concat(shuffleArray([...EMOJI_DATA])); // double pool for longer game
+        }
         updateUI();
         showScreen(gameScreen);
+        learningStageBanner.classList.add('hidden');
+        learningProgress.classList.add('hidden');
         nextQuestion();
     }
 
@@ -538,8 +689,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- EVENT LISTENERS ---
-    startButton.addEventListener('click', initGame);
-    playAgainButton.addEventListener('click', initGame);
+    playAgainButton.addEventListener('click', () => {
+        if (selectedLevel === 'beginner') {
+            startLearningStage();
+        } else {
+            initGame(selectedLevel);
+        }
+    });
     mainMenuButton.addEventListener('click', () => showScreen(startScreen));
 });
 </script>
