@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Games Portfolio</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(120deg, #f0f7f2 0%, #e0e7ff 100%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .portfolio-container {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 6px 32px rgba(0,0,0,0.12);
+            padding: 2.5rem 2rem 2rem 2rem;
+            max-width: 420px;
+            text-align: center;
+        }
+        h1 {
+            color: #2a7f40;
+            margin-bottom: 0.5rem;
+        }
+        .intro {
+            color: #444;
+            font-size: 1.15rem;
+            margin-bottom: 2rem;
+        }
+        .games-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+        .game-link {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            background: #f0f7f2;
+            border-radius: 10px;
+            padding: 1rem 1.2rem;
+            text-decoration: none;
+            color: #2a7f40;
+            font-size: 1.15rem;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        .game-link:hover {
+            background: #e0e7ff;
+            box-shadow: 0 4px 16px rgba(42,127,64,0.08);
+        }
+        .game-emoji {
+            font-size: 2rem;
+        }
+        .footer {
+            color: #888;
+            font-size: 0.95rem;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="portfolio-container">
+        <h1>¡Bienvenido!</h1>
+        <div class="intro">
+            <p>Hola, soy [Tu Nombre], un apasionado de la enseñanza y el aprendizaje de idiomas. Aquí encontrarás una colección de juegos interactivos que he creado para practicar español de manera divertida y efectiva. ¡Explora y juega!</p>
+        </div>
+        <div class="games-list">
+            <a class="game-link" href="fruits.html">
+                <span class="game-emoji">🍓🥕</span>
+                Juego de Frutas y Verduras
+            </a>
+            <a class="game-link" href="pronouns/index.html">
+                <span class="game-emoji">🗣️</span>
+                Juego de Pronombres
+            </a>
+            <a class="game-link" href="test.html">
+                <span class="game-emoji">🗺️</span>
+                Sigue las Direcciones
+            </a>
+        </div>
+        <div class="footer">
+            © 2024 [Tu Nombre] | Hecho con ❤️ y JavaScript
+        </div>
+    </div>
+</body>
+</html> 

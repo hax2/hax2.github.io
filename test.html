@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sigue las Direcciones</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #333;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #game-wrapper {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        #game-container {
+            background-color: #444;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            border: 2px solid #555;
+        }
+        
+        #message-box {
+            background-color: #222;
+            border: 1px solid #666;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            min-height: 70px;
+            font-size: 1.2em;
+            line-height: 1.4;
+            color: #e0e0e0;
+            transition: background-color 0.3s;
+        }
+        #message-box strong { color: #4a90e2; }
+        .success { color: #7ed321; }
+        .error { color: #d0021b; }
+        .info { color: #f5a623; }
+
+        #map-container { position: relative; background-color: #6b8e23; }
+        #map-grid { display: grid; border: 1px solid #555; }
+
+        .grid-cell {
+            width: 40px;
+            height: 40px;
+            box-sizing: border-box;
+            font-size: 1.8em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+        }
+
+        .path { background-color: #a9a9a9; }
+        
+        #player {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            font-size: 1.8em;
+            line-height: 40px;
+            text-align: center;
+            transition: all 0.1s linear;
+            z-index: 10;
+        }
+        
+        #vocab-container { background-color: #444; padding: 20px; border-radius: 10px; width: 250px; }
+        #vocab-container h2 { margin-top: 0; color: #4a90e2; }
+        #vocab-container ul { list-style-type: none; padding: 0; }
+        #vocab-container li { margin-bottom: 10px; font-size: 1.1em; }
+
+    </style>
+</head>
+<body>
+    <h1>Sigue las Direcciones</h1>
+    <p>Usa las <strong>teclas de flecha</strong> (Arrow Keys) para seguir las instrucciones.</p>
+
+    <div id="game-wrapper">
+        <div id="game-container">
+            <div id="message-box"></div>
+            <div id="map-container">
+                <div id="map-grid"></div>
+                <div id="player">🚶</div>
+            </div>
+        </div>
+        <div id="vocab-container">
+            <h2>Vocabulario de Dirección</h2>
+            <ul>
+                <li><strong>Sigue/Avanza/Ve:</strong> Go/Advance</li>
+                <li><strong>Gira a la derecha/izquierda:</strong> Turn right/left</li>
+                <li><strong>Hacia arriba/abajo:</strong> Upward/Downward</li>
+                <li><strong>Cuadro(s):</strong> Block(s)</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+    // --- DOM Elements ---
+    const mapGrid = document.getElementById('map-grid');
+    const playerElement = document.getElementById('player');
+    const messageBox = document.getElementById('message-box');
+
+    // --- Game Configuration ---
+    const CELL_SIZE = 40;
+    const mapLayout = [
+        ['🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳'],
+        ['🌳',' ',' ',' ','🌳','🏫','🌳',' ',' ',' ',' ',' ','🌳'],
+        ['🌳',' ','🌳',' ','🌳',' ','🌳',' ','🌳','🌳','🌳',' ','🌳'],
+        ['🌳',' ','🌳',' ',' ',' ',' ',' ',' ',' ',' ',' ','🌳'],
+        ['🌳',' ','🌳',' ','🌳','🌳','🌳',' ','🌳',' ','🌳',' ','🌳'],
+        ['🌳','🏦','🌳',' ',' ','💁',' ',' ','🏥',' ','🌳','🏠','🌳'],
+        ['🌳',' ','🌳',' ','🌳','🌳','🌳',' ','🌳',' ','🌳',' ','🌳'],
+        ['🌳',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','🌳'],
+        ['🌳',' ','🌳','🌳','🌳',' ','🌳','🌳','🌳','🌳','💊',' ','🌳'],
+        ['🌳',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','🌳'],
+        ['🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳'],
+    ];
+    // NOTE: The handwritten 'steps' are now gone! They will be auto-generated.
+    const quests = [
+        { destination: '🏦', prompt: "¡Hola! Para llegar al <strong>banco</strong>, sigue mis instrucciones." },
+        { destination: '🏥', prompt: "¡Gracias! Ahora, vamos al <strong>hospital</strong>." },
+        { destination: '🏫', prompt: "¡Perfecto! El siguiente destino es <strong>la escuela</strong>." },
+        { destination: '🏠', prompt: "¡Última misión! Vamos a <strong>casa</strong>." }
+    ];
+
+    // --- Game State ---
+    let playerState = { x: 5, y: 5 }; // Player always starts at the Quest Giver '💁'
+    let activeQuest = null;
+    let currentStepIndex = 0;
+    let progressInStep = 0;
+    let questsCompleted = 0;
+
+    // --- Pathfinding and Instruction Generation (The New "Smart" Part) ---
+
+    // Finds the shortest path using Breadth-First Search (BFS)
+    function findPath(start, end) {
+        const queue = [[start]];
+        const visited = new Set([`${start.y},${start.x}`]);
+
+        while (queue.length > 0) {
+            const path = queue.shift();
+            const pos = path[path.length - 1];
+
+            if (pos.y === end.y && pos.x === end.x) {
+                return path; // Found the path!
+            }
+
+            const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]]; // R, L, D, U
+            for (const [dy, dx] of directions) {
+                const newY = pos.y + dy;
+                const newX = pos.x + dx;
+                
+                if (newY >= 0 && newY < mapLayout.length && newX >= 0 && newX < mapLayout[0].length &&
+                    mapLayout[newY][newX] !== '🌳' && !visited.has(`${newY},${newX}`)) {
+                    
+                    visited.add(`${newY},${newX}`);
+                    const newPath = [...path, { y: newY, x: newX }];
+                    queue.push(newPath);
+                }
+            }
+        }
+        return null; // No path found
+    }
+
+    // Converts a coordinate path into step-by-step game instructions
+    function pathToInstructions(path) {
+        if (!path || path.length < 2) return [];
+        const instructions = [];
+        let currentDirection = '';
+        let distance = 0;
+
+        for (let i = 1; i < path.length; i++) {
+            const prev = path[i - 1];
+            const curr = path[i];
+            let direction = '';
+
+            if (curr.x > prev.x) direction = 'right';
+            else if (curr.x < prev.x) direction = 'left';
+            else if (curr.y > prev.y) direction = 'down';
+            else if (curr.y < prev.y) direction = 'up';
+
+            if (direction === currentDirection) {
+                distance++;
+            } else {
+                if (currentDirection) {
+                    instructions.push(createInstruction(currentDirection, distance));
+                }
+                currentDirection = direction;
+                distance = 1;
+            }
+        }
+        instructions.push(createInstruction(currentDirection, distance)); // Add the last instruction
+        return instructions;
+    }
+
+    // Creates the text for a single instruction
+    function createInstruction(direction, distance) {
+        const distText = distance > 1 ? `${distance} cuadros` : `1 cuadro`;
+        let text = '';
+        switch(direction) {
+            case 'right': text = `Ve <strong>${distText} a la derecha.</strong>`; break;
+            case 'left':  text = `Avanza <strong>${distText} a la izquierda.</strong>`; break;
+            case 'down':  text = `Sigue <strong>${distText} hacia abajo.</strong>`; break;
+            case 'up':    text = `Sube <strong>${distText} hacia arriba.</strong>`; break;
+        }
+        return { direction, distance, text };
+    }
+
+    // Finds the coordinates of a specific character on the map
+    function findCoordsOf(char) {
+        for (let y = 0; y < mapLayout.length; y++) {
+            for (let x = 0; x < mapLayout[y].length; x++) {
+                if (mapLayout[y][x] === char) {
+                    return { y, x };
+                }
+            }
+        }
+        return null; // Character not found
+    }
+
+    // --- Core Game Loop ---
+    function setupGame() {
+        mapGrid.style.gridTemplateColumns = `repeat(${mapLayout[0].length}, ${CELL_SIZE}px)`;
+        mapLayout.forEach(row => {
+            row.forEach(cell => {
+                const cellDiv = document.createElement('div');
+                cellDiv.classList.add('grid-cell');
+                if (cell === ' ') cellDiv.classList.add('path');
+                else cellDiv.textContent = cell;
+                mapGrid.appendChild(cellDiv);
+            });
+        });
+        updatePlayerPosition();
+        displayMessage("Camina hacia la persona (💁) para recibir instrucciones.");
+        document.addEventListener('keydown', handleKeyPress);
+    }
+    
+    function startQuest(quest) {
+        const destinationCoords = findCoordsOf(quest.destination);
+        if (!destinationCoords) {
+            console.error("Destination not found on map:", quest.destination);
+            return;
+        }
+        
+        const path = findPath(playerState, destinationCoords);
+        if (!path) {
+            displayMessage("<span class='error'>¡Oh no! No puedo encontrar un camino hasta allí.</span>");
+            return;
+        }
+
+        const instructions = pathToInstructions(path);
+        
+        activeQuest = { ...quest, steps: instructions };
+        currentStepIndex = 0;
+        progressInStep = 0;
+        displayMessage(`<span class="info">${quest.prompt}</span><br><br>${activeQuest.steps[0].text}`);
+    }
+
+    function updatePlayerPosition() {
+        playerElement.style.left = `${playerState.x * CELL_SIZE}px`;
+        playerElement.style.top = `${playerState.y * CELL_SIZE}px`;
+    }
+    
+    function displayMessage(htmlContent) {
+        messageBox.innerHTML = htmlContent;
+    }
+
+    function handleKeyPress(event) {
+        let { x, y } = playerState;
+        let intendedDirection = null;
+        
+        switch (event.key) {
+            case 'ArrowUp': y--; intendedDirection = 'up'; break;
+            case 'ArrowDown': y++; intendedDirection = 'down'; break;
+            case 'ArrowLeft': x--; intendedDirection = 'left'; break;
+            case 'ArrowRight': x++; intendedDirection = 'right'; break;
+            default: return;
+        }
+        event.preventDefault();
+
+        // Check for interaction with quest giver
+        const targetCell = mapLayout[y]?.[x];
+        if (targetCell === '💁' && (!activeQuest || questsCompleted > 0)) {
+            const nextQuest = quests[questsCompleted];
+            if (nextQuest) {
+                // To start a quest, the player must be at the quest giver's location
+                playerState = findCoordsOf('💁');
+                updatePlayerPosition();
+                startQuest(nextQuest);
+            } else {
+                displayMessage("<span class='success'>¡Has completado todas las misiones! ¡Felicidades!</span>");
+            }
+            return;
+        }
+
+        if (!activeQuest) { // Free movement if no active quest
+            if (targetCell && targetCell !== '🌳') {
+                playerState = { x, y };
+                updatePlayerPosition();
+            }
+            return;
+        }
+        
+        // Logic for following quest directions
+        const currentStep = activeQuest.steps[currentStepIndex];
+        
+        if (intendedDirection === currentStep.direction) {
+            if (targetCell && targetCell !== '🌳') {
+                playerState = { x, y };
+                updatePlayerPosition();
+                progressInStep++;
+                if (progressInStep >= currentStep.distance) {
+                    currentStepIndex++;
+                    progressInStep = 0;
+                    if (currentStepIndex < activeQuest.steps.length) {
+                        displayMessage(`<span class="success">¡Muy bien!</span><br><br>${activeQuest.steps[currentStepIndex].text}`);
+                    } else {
+                        displayMessage(`<span class="success">¡Lo lograste! Llegaste a ${activeQuest.destination}.</span><br><br>Vuelve con la persona (💁) para tu siguiente tarea.`);
+                        activeQuest = null;
+                        questsCompleted++;
+                    }
+                }
+            }
+        } else {
+            displayMessage(`<span class="error">¡Dirección equivocada!</span><br><br>${currentStep.text}`);
+        }
+    }
+
+    setupGame();
+    </script>
+</body>
+</html>

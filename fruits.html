@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Emoji Game 🇪🇸</title>
+
+    <style>
+        /* --- General Styling --- */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f7f2;
+            color: #333;
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        #game-container {
+            width: 90%;
+            max-width: 600px;
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #2a7f40;
+        }
+
+        .screen {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+
+        /* --- Game Area Specifics --- */
+        #status-bar {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #555;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        #prompt-area {
+            min-height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* --- EMOJI Styling (replacing images) --- */
+        #emoji-prompt {
+            font-size: 6rem; /* Large emoji for Levels 2 & 3 */
+            line-height: 1;
+        }
+
+        #emoji-prompt-3 {
+            font-size: 10rem;
+            line-height: 1;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .emoji-option {
+            font-size: 4rem; /* Big emojis for clicking in Level 1 */
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .emoji-option:hover {
+            transform: scale(1.1);
+            border-color: #4CAF50;
+        }
+        
+        /* --- Prompts & Options by Level --- */
+        #level-1-prompt {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #word-prompt {
+            font-size: 3rem;
+            margin: 0;
+            color: #d9534f;
+            text-transform: capitalize;
+        }
+
+        #speak-button {
+            font-size: 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        .name-option-btn {
+            padding: 12px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            transition: background-color 0.3s, border-color 0.3s;
+            text-transform: capitalize;
+        }
+
+        .name-option-btn:hover {
+            background-color: #e9e9e9;
+            border-color: #ccc;
+        }
+
+        #text-input-area {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        #text-answer {
+            padding: 10px;
+            font-size: 1.2rem;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            width: 250px;
+        }
+
+        #feedback {
+            min-height: 30px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+
+        .correct {
+            color: #5cb85c;
+        }
+
+        .incorrect {
+            color: #d9534f;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen">
+            <h1>Juego de Frutas y Verduras 🍓🥕</h1>
+            <p>Learn Spanish names for fruits and vegetables!</p>
+            <button id="start-button" class="btn">Start Game 🚀</button>
+        </div>
+
+        <!-- Level Select Screen -->
+        <div id="level-select-screen" class="screen hidden">
+            <h2>Selecciona el nivel</h2>
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button class="btn" id="level-1-select">Nivel 1</button>
+                <button class="btn" id="level-2-select">Nivel 2</button>
+                <button class="btn" id="level-3-select">Nivel 3</button>
+            </div>
+            <button class="btn" id="back-to-start">Volver al inicio</button>
+        </div>
+
+        <!-- Level 1 Screen -->
+        <div id="level-1-screen" class="screen hidden">
+            <div id="status-bar-1" class="status-bar"></div>
+            <div id="level-1-prompt" class="prompt-content">
+                <h2 id="word-prompt"></h2>
+                <button id="speak-button" title="Hear the word">🔊</button>
+            </div>
+            <div id="emoji-options" class="options-grid"></div>
+            <div id="feedback-1"></div>
+            <button class="btn" id="change-level-1">Cambiar nivel</button>
+        </div>
+
+        <!-- Level 2 Screen -->
+        <div id="level-2-screen" class="screen hidden">
+            <div id="status-bar-2" class="status-bar"></div>
+            <div id="level-2-prompt" class="prompt-content">
+                <div id="emoji-prompt-2"></div>
+            </div>
+            <div id="name-options" class="options-list"></div>
+            <div id="feedback-2"></div>
+            <button class="btn" id="change-level-2">Cambiar nivel</button>
+        </div>
+
+        <!-- Level 3 Screen -->
+        <div id="level-3-screen" class="screen hidden">
+            <div id="status-bar-3" class="status-bar"></div>
+            <div id="level-3-prompt" class="prompt-content">
+                <div id="emoji-prompt-3"></div>
+            </div>
+            <div id="text-input-area">
+                <input type="text" id="text-answer" placeholder="Escribe el nombre aquí..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <button id="submit-answer" class="btn">Check</button>
+            </div>
+            <div id="feedback-3"></div>
+            <button class="btn" id="change-level-3">Cambiar nivel</button>
+        </div>
+
+        <!-- End Screen -->
+        <div id="end-screen" class="screen hidden">
+            <h1>¡Juego Terminado! 🎉</h1>
+            <p id="final-score"></p>
+            <button id="play-again-button" class="btn">Play Again</button>
+            <button class="btn" id="end-change-level">Cambiar nivel</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- DATA: Using emojis instead of image files ---
+            const ITEM_DATA = [
+                { spanish: 'la manzana', english: 'apple', emoji: '🍏' }, // green apple
+                { spanish: 'el plátano', english: 'banana', emoji: '🍌' },
+                { spanish: 'las uvas', english: 'grapes', emoji: '🍇' },
+                { spanish: 'la fresa', english: 'strawberry', emoji: '🍓' },
+                { spanish: 'la naranja', english: 'orange', emoji: '🍊' },
+                { spanish: 'el limón', english: 'lemon', emoji: '🍋' },
+                { spanish: 'la zanahoria', english: 'carrot', emoji: '🥕' },
+                { spanish: 'el tomate', english: 'tomato', emoji: '🍅' },
+                { spanish: 'la patata', english: 'potato', emoji: '🥔' },
+                { spanish: 'la cebolla', english: 'onion', emoji: '🧅' },
+                { spanish: 'la sandía', english: 'watermelon', emoji: '🍉' },
+                { spanish: 'la pera', english: 'pear', emoji: '🍐' },
+                { spanish: 'el melón', english: 'melon', emoji: '🍈' },
+                { spanish: 'el aguacate', english: 'avocado', emoji: '🥑' },
+                { spanish: 'la piña', english: 'pineapple', emoji: '🍍' },
+                { spanish: 'la cereza', english: 'cherry', emoji: '🍒' },
+                { spanish: 'el pepino', english: 'cucumber', emoji: '🥒' },
+                { spanish: 'el pimiento', english: 'pepper', emoji: '🫑' },
+                { spanish: 'el maíz', english: 'corn', emoji: '🌽' },
+                { spanish: 'el brócoli', english: 'broccoli', emoji: '🥦' }
+            ];
+
+            // --- GAME STATE ---
+            let currentLevel = 1;
+            let score = 0;
+            let currentQuestionIndex = 0;
+            let gameData = [];
+
+            // --- DOM ELEMENTS ---
+            const startScreen = document.getElementById('start-screen');
+            const levelSelectScreen = document.getElementById('level-select-screen');
+            const level1Screen = document.getElementById('level-1-screen');
+            const level2Screen = document.getElementById('level-2-screen');
+            const level3Screen = document.getElementById('level-3-screen');
+            const endScreen = document.getElementById('end-screen');
+            const startButton = document.getElementById('start-button');
+            const playAgainButton = document.getElementById('play-again-button');
+            const level1Select = document.getElementById('level-1-select');
+            const level2Select = document.getElementById('level-2-select');
+            const level3Select = document.getElementById('level-3-select');
+            const backToStart = document.getElementById('back-to-start');
+            const changeLevel1 = document.getElementById('change-level-1');
+            const changeLevel2 = document.getElementById('change-level-2');
+            const changeLevel3 = document.getElementById('change-level-3');
+            const endChangeLevel = document.getElementById('end-change-level');
+
+            const statusBar1 = document.getElementById('status-bar-1');
+            const statusBar2 = document.getElementById('status-bar-2');
+            const statusBar3 = document.getElementById('status-bar-3');
+
+            const wordPrompt = document.getElementById('word-prompt');
+            const speakButton = document.getElementById('speak-button');
+            const emojiPrompt2 = document.getElementById('emoji-prompt-2');
+            const emojiPrompt3 = document.getElementById('emoji-prompt-3');
+
+            const emojiOptions = document.getElementById('emoji-options');
+            const nameOptions = document.getElementById('name-options');
+            const textInputArea = document.getElementById('text-input-area');
+            const textAnswerInput = document.getElementById('text-answer');
+            const submitAnswerButton = document.getElementById('submit-answer');
+
+            const feedback1 = document.getElementById('feedback-1');
+            const feedback2 = document.getElementById('feedback-2');
+            const feedback3 = document.getElementById('feedback-3');
+            const finalScoreDisplay = document.getElementById('final-score');
+            
+            // --- HELPER FUNCTIONS ---
+            
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            function speak(text) {
+                // Always speak the full Spanish phrase, with article, in Spanish
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES';
+                utterance.rate = 0.9;
+                // Try to force a Spanish voice
+                const voices = window.speechSynthesis.getVoices();
+                const esVoices = voices.filter(v => v.lang && v.lang.startsWith('es'));
+                if (esVoices.length > 0) utterance.voice = esVoices[0];
+                window.speechSynthesis.speak(utterance);
+            }
+            
+            function levenshteinDistance(a, b) {
+                if (a.length === 0) return b.length;
+                if (b.length === 0) return a.length;
+                const matrix = [];
+                for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+                for (let j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+                for (let i = 1; i <= b.length; i++) {
+                    for (let j = 1; j <= a.length; j++) {
+                        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                            matrix[i][j] = matrix[i - 1][j - 1];
+                        } else {
+                            matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
+                        }
+                    }
+                }
+                return matrix[b.length][a.length];
+            }
+
+            // --- GAME LOGIC ---
+
+            function startGame(selectedLevel) {
+                score = 0;
+                currentLevel = selectedLevel || 1;
+                currentQuestionIndex = 0;
+                gameData = shuffleArray([...ITEM_DATA]);
+                showScreen(currentLevel);
+                loadLevel();
+            }
+
+            function loadLevel() {
+                currentQuestionIndex = 0;
+                gameData = shuffleArray([...ITEM_DATA]);
+                loadQuestion();
+            }
+
+            function showScreen(level) {
+                startScreen.classList.add('hidden');
+                levelSelectScreen.classList.add('hidden');
+                level1Screen.classList.add('hidden');
+                level2Screen.classList.add('hidden');
+                level3Screen.classList.add('hidden');
+                endScreen.classList.add('hidden');
+                if (level === 'start') startScreen.classList.remove('hidden');
+                if (level === 'select') levelSelectScreen.classList.remove('hidden');
+                if (level === 1) level1Screen.classList.remove('hidden');
+                if (level === 2) level2Screen.classList.remove('hidden');
+                if (level === 3) level3Screen.classList.remove('hidden');
+                if (level === 'end') endScreen.classList.remove('hidden');
+            }
+
+            function updateStatus(level) {
+                const statusBar = level === 1 ? statusBar1 : level === 2 ? statusBar2 : statusBar3;
+                statusBar.textContent = `Level: ${currentLevel} | Score: ${score} | Question: ${currentQuestionIndex + 1} / ${gameData.length}`;
+            }
+
+            function loadQuestion() {
+                if (currentQuestionIndex >= gameData.length) {
+                    showScreen('end');
+                    const totalQuestions = gameData.length;
+                    finalScoreDisplay.textContent = `Your final score is ${score} out of ${totalQuestions}.`;
+                    return;
+                }
+                feedback1.textContent = '';
+                feedback2.textContent = '';
+                feedback3.textContent = '';
+                const currentItem = gameData[currentQuestionIndex];
+                showScreen(currentLevel);
+                updateStatus(currentLevel);
+                switch (currentLevel) {
+                    case 1: setupLevel1(currentItem); break;
+                    case 2: setupLevel2(currentItem); break;
+                    case 3: setupLevel3(currentItem); break;
+                }
+            }
+
+            // --- LEVEL SETUPS ---
+
+            function setupLevel1(item) {
+                // Use a variety of simple Spanish sentences
+                const templates = [
+                    `Yo tengo {x}.`,
+                    `Me gusta {x}.`,
+                    `¿Dónde está {x}?`,
+                    `Veo {x}.`,
+                    `Quiero {x}.`,
+                    `Aquí está {x}.`,
+                    `¿Puedes ver {x}?`,
+                    `¡Mira! Es {x}.`,
+                    `Hoy comí {x}.`,
+                    `Prefiero {x}.`,
+                    `¿Te gusta {x}?`,
+                    `Vamos a buscar {x}.`,
+                    `Necesito {x}.`,
+                    `Encuentro {x}.`,
+                    `¿Tienes {x}?`
+                ];
+                const template = templates[Math.floor(Math.random() * templates.length)];
+                const sentence = template.replace('{x}', item.spanish);
+                wordPrompt.textContent = sentence;
+                speak(sentence);
+                speakButton.onclick = () => speak(sentence);
+                emojiOptions.innerHTML = '';
+                const options = shuffleArray([...ITEM_DATA]).slice(0, 6);
+                options.push(item);
+                shuffleArray(options);
+                options.forEach(opt => {
+                    const emojiDiv = document.createElement('div');
+                    emojiDiv.textContent = opt.emoji;
+                    emojiDiv.className = 'emoji-option';
+                    emojiDiv.dataset.spanish = opt.spanish;
+                    emojiDiv.onclick = (e) => checkAnswer(e.target.dataset.spanish === item.spanish, 1);
+                    emojiOptions.appendChild(emojiDiv);
+                });
+            }
+
+            function setupLevel2(item) {
+                emojiPrompt2.textContent = item.emoji;
+                nameOptions.innerHTML = '';
+                const distractors = ITEM_DATA.filter(d => d.spanish !== item.spanish).sort(() => 0.5 - Math.random()).slice(0, 3);
+                const options = shuffleArray([item, ...distractors]);
+                options.forEach(opt => {
+                    const button = document.createElement('button');
+                    button.textContent = opt.spanish;
+                    button.classList.add('name-option-btn');
+                    button.onclick = () => checkAnswer(opt.spanish === item.spanish, 2);
+                    nameOptions.appendChild(button);
+                });
+            }
+
+            function setupLevel3(item) {
+                emojiPrompt3.textContent = item.emoji;
+                textAnswerInput.value = '';
+                textAnswerInput.disabled = false;
+                submitAnswerButton.disabled = false;
+                textAnswerInput.focus();
+                const checkSpelling = () => {
+                    const userAnswer = textAnswerInput.value.trim().toLowerCase();
+                    if (!userAnswer) return;
+                    const correctAnswerSimple = item.spanish.replace(/^(el|la|los|las)\s/i, '').toLowerCase();
+                    const userAnswerSimple = userAnswer.replace(/^(el|la|los|las)\s/i, '');
+                    const distance = levenshteinDistance(userAnswerSimple, correctAnswerSimple);
+                    const isCorrect = distance <= 1 || userAnswerSimple === correctAnswerSimple;
+                    checkAnswer(isCorrect, 3, correctAnswerSimple);
+                };
+                submitAnswerButton.onclick = checkSpelling;
+                textAnswerInput.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        checkSpelling();
+                    }
+                };
+            }
+
+            // --- ANSWER CHECKING & PROGRESSION ---
+
+            function checkAnswer(isCorrect, level, correctAnswer) {
+                const answer = correctAnswer || gameData[currentQuestionIndex].spanish;
+                if (isCorrect) {
+                    score++;
+                    if (level === 1) { feedback1.textContent = `¡Correcto! 👍 (${answer})`; feedback1.className = 'correct'; }
+                    if (level === 2) { feedback2.textContent = `¡Correcto! 👍 (${answer})`; feedback2.className = 'correct'; }
+                    if (level === 3) { feedback3.textContent = `¡Correcto! 👍 (${answer})`; feedback3.className = 'correct'; }
+                } else {
+                    if (level === 1) { feedback1.textContent = `Incorrecto. Es: ${answer}`; feedback1.className = 'incorrect'; }
+                    if (level === 2) { feedback2.textContent = `Incorrecto. Es: ${answer}`; feedback2.className = 'incorrect'; }
+                    if (level === 3) { feedback3.textContent = `Incorrecto. Es: ${answer}`; feedback3.className = 'incorrect'; }
+                }
+                updateStatus(level);
+                // Disable options to prevent multiple submissions (except for change-level buttons)
+                if (level === 1) document.querySelectorAll('#emoji-options .emoji-option').forEach(el => el.style.pointerEvents = 'none');
+                if (level === 2) document.querySelectorAll('#name-options button').forEach(el => el.style.pointerEvents = 'none');
+                if (level === 3) { submitAnswerButton.disabled = true; textAnswerInput.disabled = true; }
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    loadQuestion();
+                    // Re-enable options for the new question
+                    if (level === 1) document.querySelectorAll('#emoji-options .emoji-option').forEach(el => el.style.pointerEvents = 'auto');
+                    if (level === 2) document.querySelectorAll('#name-options button').forEach(el => el.style.pointerEvents = 'auto');
+                    if (level === 3) { submitAnswerButton.disabled = false; textAnswerInput.disabled = false; }
+                }, 2000);
+            }
+
+            function endGame() {
+                gameArea.classList.add('hidden');
+                endScreen.classList.remove('hidden');
+                const totalQuestions = ITEM_DATA.length * 3;
+                finalScoreDisplay.textContent = `Your final score is ${score} out of ${totalQuestions}.`;
+            }
+
+            // --- EVENT LISTENERS ---
+            startButton.addEventListener('click', () => showScreen('select'));
+            backToStart.addEventListener('click', () => showScreen('start'));
+            level1Select.addEventListener('click', () => startGame(1));
+            level2Select.addEventListener('click', () => startGame(2));
+            level3Select.addEventListener('click', () => startGame(3));
+            playAgainButton.addEventListener('click', () => startGame(currentLevel));
+            changeLevel1.addEventListener('click', () => showScreen('select'));
+            changeLevel2.addEventListener('click', () => showScreen('select'));
+            changeLevel3.addEventListener('click', () => showScreen('select'));
+            endChangeLevel.addEventListener('click', () => showScreen('select'));
+        });
+    </script>
+</body>
+</html>
