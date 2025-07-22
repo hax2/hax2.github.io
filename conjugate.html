@@ -287,13 +287,17 @@
                 answerInput.focus();
             }
 
+            function removeAccents(str) {
+                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            }
+
             function checkAnswer() {
                 const userAnswer = answerInput.value.trim().toLowerCase();
                 if (!userAnswer) return;
 
                 const correctAnswer = currentVerb[currentPronoun];
-
-                if (userAnswer === correctAnswer) {
+                // Compare without accents
+                if (removeAccents(userAnswer) === removeAccents(correctAnswer)) {
                     score++;
                     streak++;
                     if (streak > maxStreak) maxStreak = streak;
