@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<!--
+Let's transform your educational quiz into a fast-paced, engaging, and genuinely fun game.
+
+I've redesigned it from the ground up, focusing on core "game feel" principles:
+
+Dynamic Progression: Instead of choosing a level, the game gets harder as you succeed. You start with simple emoji matching and graduate to fill-in-the-blanks.
+
+High-Stakes Gameplay: You have a limited number of lives and a timer for each question, creating urgency and challenge.
+
+Rewarding Feedback: Correct answers give you a score bonus, increase your "Racha!" (streak), and are met with satisfying sounds and animations.
+
+"Juice": The game uses subtle screen shakes, animations, sound effects, and a persistent high score to make every interaction feel responsive and meaningful.
+
+Polished UI: A cleaner, more modern interface with a fun font and vibrant colors.
+
+You can copy and paste this code directly into a single HTML file.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¡Rápido! Spanish Emoji Game 🇪🇸</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+--primary: #ff5a5f; /* A vibrant red-pink */
+--secondary: #00a699; /* A cool teal */
+--correct: #28a745;
+--incorrect: #dc3545;
+--background: #f7f7f7;
+--text-dark: #484848;
+--text-light: #ffffff;
+--border-light: #e0e0e0;
+}
+
+Generated code
+/* --- General Styling & Animations --- */
+    body {
+        font-family: 'Nunito', sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: var(--background);
+        color: var(--text-dark);
+        margin: 0;
+        -webkit-font-smoothing: antialiased;
+        box-sizing: border-box;
+    }
+
+    #game-container {
+        width: 95%;
+        max-width: 500px;
+        background: var(--text-light);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        text-align: center;
+        transition: transform 0.3s ease-in-out;
+        box-sizing: border-box;
+    }
+
+    .screen { display: flex; flex-direction: column; gap: 1.5rem; }
+    .hidden { display: none !important; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+    .correct-flash { animation: pulse 0.4s ease-in-out; background-color: #eaf6ec; }
+    .incorrect-flash { animation: shake 0.4s ease-in-out; background-color: #fbebee; }
+
+    /* --- Components --- */
+    h1 {
+        color: var(--primary);
+        font-weight: 900;
+        font-size: 2.2rem;
+        margin-bottom: 0;
+    }
+    h2 { font-size: 1.8rem; }
+    p { font-size: 1.1rem; line-height: 1.5; }
+
+    .btn {
+        padding: 14px 28px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        border-radius: 50px;
+        background-color: var(--primary);
+        color: white;
+        transition: background-color 0.3s, transform 0.2s;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .btn:hover { background-color: #e0484d; transform: translateY(-3px); }
+    .btn-secondary { background-color: var(--secondary); }
+    .btn-secondary:hover { background-color: #008a7e; }
+
+    /* --- Game Screen Specifics --- */
+    #game-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+    #lives-container { color: var(--primary); }
+    #streak-container { color: var(--secondary); }
+
+    #timer-bar-container {
+        width: 100%;
+        height: 12px;
+        background-color: var(--border-light);
+        border-radius: 6px;
+        overflow: hidden;
+    }
+    #timer-bar {
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(90deg, var(--secondary) 0%, var(--primary) 100%);
+        border-radius: 6px;
+        transition: width 0.1s linear;
+    }
+
+    #prompt-area {
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+    }
+    #main-emoji-prompt { font-size: 8rem; line-height: 1; }
+    #text-prompt { font-size: 2.5rem; font-weight: 700; color: var(--text-dark); }
+    
+    #options-container { display: flex; flex-direction: column; gap: 0.8rem; width: 100%; }
+
+    .option-btn {
+        padding: 15px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        border: 2px solid var(--border-light);
+        border-radius: 12px;
+        background-color: var(--text-light);
+        transition: all 0.2s;
+        font-weight: 700;
+    }
+    .option-btn:not(:disabled):hover { border-color: var(--primary); transform: scale(1.03); }
+    .option-btn.emoji-option {
+        font-size: 3rem;
+        padding: 10px 0;
+    }
+
+    #fill-in-blank-container { display: flex; width: 100%; gap: 10px; }
+    #text-answer {
+        flex-grow: 1;
+        padding: 15px;
+        font-size: 1.2rem;
+        border: 2px solid var(--border-light);
+        border-radius: 12px;
+        font-family: 'Nunito', sans-serif;
+        font-weight: 700;
+    }
+    #text-answer:focus { border-color: var(--secondary); outline: none; }
+    #submit-answer { flex-shrink: 0; }
+
+    #feedback-area {
+        min-height: 50px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .feedback-correct { color: var(--correct); }
+    .feedback-incorrect { color: var(--incorrect); }
+
+    /* --- End Screen --- */
+    #final-score { font-size: 3rem; font-weight: 900; color: var(--primary); margin: 0; }
+    #high-score-display { font-size: 1.2rem; color: var(--secondary); font-weight: 700; }
+</style>
+
+</head>
+<body>
+<div id="game-container">
+<!-- Start Screen -->
+<div id="start-screen" class="screen">
+<h1>¡Rápido! 🇪🇸</h1>
+<p>Test your Spanish vocabulary against the clock! How high can you score before you run out of lives? The game gets harder as you go!</p>
+<button id="start-button" class="btn">Start Game 🔥</button>
+</div>
+
+Generated code
+<!-- Game Screen (unified) -->
+    <div id="game-screen" class="screen hidden">
+        <div id="game-header">
+            <div id="lives-container"></div>
+            <div id="score-display">Puntos: <span id="score-value">0</span></div>
+            <div id="streak-container"></div>
+        </div>
+        <div id="timer-bar-container"><div id="timer-bar"></div></div>
+        <div id="prompt-area">
+            <!-- Prompts will be dynamically inserted here -->
+            <div id="main-emoji-prompt"></div>
+            <h2 id="text-prompt"></h2>
+        </div>
+        <div id="options-container">
+            <!-- Options (buttons or input) will be dynamically inserted here -->
+        </div>
+        <div id="feedback-area"></div>
+    </div>
+
+    <!-- End Screen -->
+    <div id="end-screen" class="screen hidden">
+        <h2>¡Juego Terminado! 🎉</h2>
+        <p>Tu puntuación final:</p>
+        <p id="final-score">0</p>
+        <p id="high-score-display">Mejor puntuación: 0</p>
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <button id="play-again-button" class="btn">Play Again</button>
+            <button id="main-menu-button" class="btn btn-secondary">Main Menu</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const EMOJI_DATA = [
+        { spanish: 'la manzana', emoji: '🍏' }, { spanish: 'el plátano', emoji: '🍌' }, { spanish: 'las uvas', emoji: '🍇' },
+        { spanish: 'la fresa', emoji: '🍓' }, { spanish: 'la naranja', emoji: '🍊' }, { spanish: 'el limón', emoji: '🍋' },
+        { spanish: 'la zanahoria', emoji: '🥕' }, { spanish: 'el tomate', emoji: '🍅' }, { spanish: 'la patata', emoji: '🥔' },
+        { spanish: 'la cebolla', emoji: '🧅' }, { spanish: 'la sandía', emoji: '🍉' }, { spanish: 'el aguacate', emoji: '🥑' },
+        { spanish: 'el perro', emoji: '🐶' }, { spanish: 'el gato', emoji: '🐱' }, { spanish: 'el ratón', emoji: '🐭' },
+        { spanish: 'el león', emoji: '🦁' }, { spanish: 'el tigre', emoji: '🐯' }, { spanish: 'la vaca', emoji: '🐮' },
+        { spanish: 'el cerdo', emoji: '🐷' }, { spanish: 'el mono', emoji: '🐵' }, { spanish: 'el pollo', emoji: '🐔' },
+        { spanish: 'la rana', emoji: '🐸' }, { spanish: 'el pulpo', emoji: '🐙' }, { spanish: 'el pez', emoji: '🐠' },
+        { spanish: 'el caballo', emoji: '🐴' }, { spanish: 'la pizza', emoji: '🍕' }, { spanish: 'la hamburguesa', emoji: '🍔' },
+        { spanish: 'las papas fritas', emoji: '🍟' }, { spanish: 'el pan', emoji: '🍞' }, { spanish: 'el queso', emoji: '🧀' },
+        { spanish: 'el huevo', emoji: '🥚' }, { spanish: 'el helado', emoji: '🍦' }, { spanish: 'el pastel', emoji: '🍰' },
+        { spanish: 'el chocolate', emoji: '🍫' }, { spanish: 'el café', emoji: '☕' }, { spanish: 'el coche', emoji: '🚗' },
+        { spanish: 'la bicicleta', emoji: '🚲' }, { spanish: 'el cohete', emoji: '🚀' }, { spanish: 'el teléfono', emoji: '📱' },
+        { spanish: 'el ordenador', emoji: '💻' }, { spanish: 'la televisión', emoji: '📺' }, { spanish: 'el libro', emoji: '📖' },
+        { spanish: 'el dinero', emoji: '💰' }, { spanish: 'la llave', emoji: '🔑' }, { spanish: 'la pelota', emoji: '⚽' },
+        { spanish: 'el sol', emoji: '☀️' }, { spanish: 'la luna', emoji: '🌙' }, { spanish: 'la estrella', emoji: '⭐' },
+        { spanish: 'la casa', emoji: '🏠' }, { spanish: 'el árbol', emoji: '🌳' }, { spanish: 'la flor', emoji: '🌸' },
+        { spanish: 'el fuego', emoji: '🔥' }, { spanish: 'el corazón', emoji: '❤️' }, { spanish: 'el cerebro', emoji: '🧠' },
+        { spanish: 'el fantasma', emoji: '👻' }, { spanish: 'el robot', emoji: '🤖' }, { spanish: 'la corona', emoji: '👑' }
+    ];
+
+    // --- GAME STATE & CONSTANTS ---
+    const gameState = {
+        score: 0,
+        lives: 3,
+        streak: 0,
+        questionPool: [],
+        currentQuestion: null,
+        timer: null,
+        timerInterval: null
+    };
+
+    const MAX_LIVES = 3;
+    const QUESTION_TIME = 10000; // 10 seconds
+    const DIFFICULTY_THRESHOLDS = {
+        SENTENCE_MATCH: 5,
+        FILL_IN_BLANK: 12
+    };
+
+    // --- DOM ELEMENTS ---
+    const gameContainer = document.getElementById('game-container');
+    const startScreen = document.getElementById('start-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const endScreen = document.getElementById('end-screen');
+
+    const startButton = document.getElementById('start-button');
+    const playAgainButton = document.getElementById('play-again-button');
+    const mainMenuButton = document.getElementById('main-menu-button');
+
+    const livesContainer = document.getElementById('lives-container');
+    const scoreValue = document.getElementById('score-value');
+    const streakContainer = document.getElementById('streak-container');
+    const timerBar = document.getElementById('timer-bar');
+    const promptArea = document.getElementById('prompt-area');
+    const mainEmojiPrompt = document.getElementById('main-emoji-prompt');
+    const textPrompt = document.getElementById('text-prompt');
+    const optionsContainer = document.getElementById('options-container');
+    const feedbackArea = document.getElementById('feedback-area');
+    
+    const finalScoreDisplay = document.getElementById('final-score');
+    const highScoreDisplay = document.getElementById('high-score-display');
+    
+    // --- WEB AUDIO API FOR SOUNDS ---
+    let audioCtx;
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+    
+    function playSound(type) {
+        if (!audioCtx) return;
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.01);
+        
+        if (type === 'correct') {
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+        } else if (type === 'incorrect') {
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.4);
+        } else if (type === 'streak') {
+             oscillator.type = 'triangle';
+             oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+             gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
+        }
+
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 0.5);
+    }
+
+    // --- HELPER FUNCTIONS ---
+    const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
+    const showScreen = (screen) => {
+        [startScreen, gameScreen, endScreen].forEach(s => s.classList.add('hidden'));
+        screen.classList.remove('hidden');
+    };
+
+    function getNounParts(fullPhrase) {
+        const parts = fullPhrase.split(' ');
+        return { noun: parts.slice(1).join(' '), article: parts[0] };
+    }
+
+    // --- TTS FUNCTION ---
+    function speakWord(text) {
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel(); // Stop any previous speech
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'es-ES';
+        utter.rate = 0.9;
+        utter.pitch = 1.1;
+        window.speechSynthesis.speak(utter);
+    }
+
+    // --- GAME LOGIC ---
+    function initGame() {
+        initAudio(); // Initialize audio context on first user interaction
+        gameState.score = 0;
+        gameState.lives = MAX_LIVES;
+        gameState.streak = 0;
+        gameState.questionPool = shuffleArray([...EMOJI_DATA]);
+        updateUI();
+        showScreen(gameScreen);
+        nextQuestion();
+    }
+
+    function nextQuestion() {
+        if (gameState.lives <= 0 || gameState.questionPool.length === 0) {
+            endGame();
+            return;
+        }
+
+        clearFeedback();
+        gameState.currentQuestion = gameState.questionPool.pop();
+        const questionsAnswered = EMOJI_DATA.length - gameState.questionPool.length - 1;
+        
+        let mode;
+        if (questionsAnswered < DIFFICULTY_THRESHOLDS.SENTENCE_MATCH) {
+            mode = 'emoji-match';
+        } else if (questionsAnswered < DIFFICULTY_THRESHOLDS.FILL_IN_BLANK) {
+            mode = 'sentence-match';
+        } else {
+            mode = 'fill-in-blank';
+        }
+        
+        setupQuestion(mode);
+        startTimer();
+    }
+
+    function setupQuestion(mode) {
+        const item = gameState.currentQuestion;
+        mainEmojiPrompt.classList.add('hidden');
+        textPrompt.classList.add('hidden');
+        optionsContainer.innerHTML = '';
+        
+        let distractors = shuffleArray(EMOJI_DATA.filter(d => d.emoji !== item.emoji)).slice(0, 3);
+        
+        // TTS: Speak the Spanish word
+        speakWord(item.spanish);
+        
+        switch(mode) {
+            case 'emoji-match':
+                textPrompt.textContent = item.spanish;
+                textPrompt.classList.remove('hidden');
+                let emojiOptions = shuffleArray([item, ...distractors]);
+                emojiOptions.forEach(opt => createButton(opt.emoji, opt.spanish, true));
+                break;
+            
+            case 'sentence-match':
+                mainEmojiPrompt.textContent = item.emoji;
+                mainEmojiPrompt.classList.remove('hidden');
+                let textOptions = shuffleArray([item, ...distractors]);
+                textOptions.forEach(opt => createButton(opt.spanish, opt.spanish));
+                break;
+
+            case 'fill-in-blank':
+                const parts = getNounParts(item.spanish);
+                mainEmojiPrompt.textContent = item.emoji;
+                mainEmojiPrompt.classList.remove('hidden');
+                textPrompt.textContent = `${parts.article} ______`;
+                textPrompt.classList.remove('hidden');
+                createFillInBlankInput(parts.noun);
+                break;
+        }
+    }
+    
+    function createButton(text, value, isEmoji = false) {
+        const button = document.createElement('button');
+        button.innerHTML = text;
+        button.dataset.value = value;
+        button.className = 'option-btn' + (isEmoji ? ' emoji-option' : '');
+        button.onclick = () => handleAnswer(button.dataset.value);
+        optionsContainer.appendChild(button);
+    }
+
+    function createFillInBlankInput(correctAnswer) {
+         optionsContainer.innerHTML = `
+            <div id="fill-in-blank-container">
+                <input type="text" id="text-answer" placeholder="Escribe la palabra..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <button id="submit-answer" class="btn btn-secondary">OK</button>
+            </div>
+        `;
+        const input = document.getElementById('text-answer');
+        const submitBtn = document.getElementById('submit-answer');
+        input.focus();
+        
+        const check = () => {
+            const answer = input.value.trim().toLowerCase();
+            if (answer) {
+                handleAnswer(answer, correctAnswer);
+            }
+        };
+
+        submitBtn.onclick = check;
+        input.onkeydown = (e) => { if (e.key === 'Enter') check(); };
+    }
+
+    function startTimer() {
+        clearInterval(gameState.timerInterval);
+        gameState.timer = QUESTION_TIME;
+        timerBar.style.transition = 'none'; // Reset transition for instant update
+        timerBar.style.width = '100%';
+        
+        // Force reflow to apply the reset instantly
+        void timerBar.offsetWidth; 
+        
+        timerBar.style.transition = `width ${QUESTION_TIME / 1000}s linear`;
+        timerBar.style.width = '0%';
+
+        gameState.timerInterval = setTimeout(() => {
+            handleAnswer(null); // Time's up
+        }, QUESTION_TIME);
+    }
+    
+    function handleAnswer(selectedValue, correctAnswer = null) {
+        clearInterval(gameState.timerInterval);
+        disableOptions();
+        
+        const isFillInBlank = correctAnswer !== null;
+        const correctValue = isFillInBlank ? correctAnswer : gameState.currentQuestion.spanish;
+        const isCorrect = selectedValue === correctValue;
+
+        if (isCorrect) {
+            const timeBonus = Math.ceil((gameState.timer / QUESTION_TIME) * 10);
+            gameState.score += (10 + timeBonus);
+            gameState.streak++;
+            showFeedback(true);
+            playSound('correct');
+            if (gameState.streak > 2 && gameState.streak % 3 === 0) {
+                playSound('streak');
+            }
+        } else {
+            gameState.lives--;
+            gameState.streak = 0;
+            showFeedback(false, correctValue);
+            playSound('incorrect');
+        }
+        updateUI();
+        setTimeout(nextQuestion, isCorrect ? 1200 : 2500);
+    }
+
+    function disableOptions() {
+        optionsContainer.querySelectorAll('button, input').forEach(el => el.disabled = true);
+    }
+
+    function showFeedback(correct, answer) {
+        if (correct) {
+            feedbackArea.innerHTML = `¡Correcto! <span style="font-size: 2rem; margin-left: 10px;">👍</span>`;
+            feedbackArea.className = 'feedback-correct';
+            gameContainer.classList.add('correct-flash');
+        } else {
+            feedbackArea.innerHTML = `La respuesta era: <br><strong>${answer || gameState.currentQuestion.spanish}</strong>`;
+            feedbackArea.className = 'feedback-incorrect';
+            gameContainer.classList.add('incorrect-flash');
+        }
+    }
+    
+    function clearFeedback() {
+        feedbackArea.innerHTML = '';
+        gameContainer.className = ''; // Removes flash classes
+    }
+
+    function updateUI() {
+        scoreValue.textContent = gameState.score;
+        livesContainer.innerHTML = '❤️ '.repeat(gameState.lives);
+        streakContainer.textContent = gameState.streak > 1 ? `🔥 ${gameState.streak}` : '';
+        streakContainer.style.animation = gameState.streak > 1 ? 'pulse 1s infinite' : 'none';
+    }
+
+    function endGame() {
+        showScreen(endScreen);
+        finalScoreDisplay.textContent = gameState.score;
+        
+        const highScore = localStorage.getItem('rapidoHighScore') || 0;
+        if (gameState.score > highScore) {
+            localStorage.setItem('rapidoHighScore', gameState.score);
+            highScoreDisplay.textContent = `¡Nuevo récord! (Anterior: ${highScore})`;
+        } else {
+            highScoreDisplay.textContent = `Mejor puntuación: ${highScore}`;
+        }
+    }
+
+    // --- EVENT LISTENERS ---
+    startButton.addEventListener('click', initGame);
+    playAgainButton.addEventListener('click', initGame);
+    mainMenuButton.addEventListener('click', () => showScreen(startScreen));
+});
+</script>
+</body>
+</html>
