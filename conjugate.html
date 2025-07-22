@@ -12,7 +12,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: #eef2f3; /* Light, clean background */
+            background-color: #f0f4f8; /* Softer blue-gray background */
             color: #333;
             margin: 0;
             -webkit-font-smoothing: antialiased;
@@ -20,7 +20,7 @@
 
         #game-container {
             width: 90%;
-            max-width: 550px;
+            max-width: 600px;
             background: white;
             border-radius: 15px;
             padding: 2.5rem;
@@ -79,19 +79,31 @@
             border-radius: 10px;
             border: 1px solid #e2e8f0;
         }
-
-        #prompt-area {
-            font-size: 3.5rem;
-            font-weight: bold;
+        
+        /* NEW PROMPT STYLE */
+        #prompt-sentence-container {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 0.5em;
+            font-size: 2.2rem;
+            font-weight: 500;
             padding: 2rem 0;
+            color: #1e3a8a;
         }
-
-        #prompt-pronoun {
-            color: #dc2626; /* Red */
+        
+        .blank-space {
+            font-weight: bold;
+            color: #dc2626;
+            padding: 0 0.5em;
+            border-bottom: 3px solid #ccc;
         }
-
-        #prompt-verb {
-            color: #1e3a8a; /* Blue */
+        
+        .context-phrase {
+            font-size: 1.8rem;
+            font-weight: 400;
+            color: #64748b; /* A muted gray */
         }
         
         #answer-input {
@@ -129,7 +141,6 @@
             font-size: 1.5rem;
             font-weight: 500;
         }
-
     </style>
 </head>
 <body>
@@ -138,7 +149,7 @@
         <!-- Start Screen -->
         <div id="start-screen" class="screen">
             <h1>El Conjugador ⚡</h1>
-            <p>Master your Spanish verbs! You will be given a pronoun and a verb. Type the correct present tense conjugation as fast as you can. Press <strong>Enter</strong> to check your answer.</p>
+            <p>Master Spanish verbs in context! Fill in the blank with the correct conjugation. Press <strong>Enter</strong> to check your answer.</p>
             <button id="start-button" class="btn">¡Vamos!</button>
         </div>
 
@@ -148,8 +159,14 @@
                 <span id="score">Puntos: 0</span>
                 <span id="streak">Racha: 0</span>
             </div>
-            <div id="prompt-area">
-                (<span id="prompt-pronoun"></span>) + <span id="prompt-verb"></span>
+            <!-- NEW Prompt Area HTML -->
+            <div id="prompt-sentence-container">
+                <span id="prompt-subject"></span>
+                <span class="blank-space">______</span>
+                <span class="context-phrase">
+                    (<span id="prompt-verb-infinitive"></span>) 
+                    <span id="prompt-context"></span>
+                </span>
             </div>
             <input type="text" id="answer-input" placeholder="Escribe aquí..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             <div id="feedback"></div>
@@ -166,43 +183,40 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
-            // --- DATA: A mix of regular and irregular verbs ---
+            // --- DATA: Verbs now include a 'context' for sentence building ---
             const VERB_DATA = [
                 // Regular -ar
-                { infinitive: 'hablar', yo: 'hablo', tu: 'hablas', el: 'habla', nosotros: 'hablamos', vosotros: 'habláis', ellos: 'hablan' },
-                { infinitive: 'trabajar', yo: 'trabajo', tu: 'trabajas', el: 'trabaja', nosotros: 'trabajamos', vosotros: 'trabajáis', ellos: 'trabajan' },
-                { infinitive: 'comprar', yo: 'compro', tu: 'compras', el: 'compra', nosotros: 'compramos', vosotros: 'compráis', ellos: 'compran' },
+                { infinitive: 'hablar', context: 'español.', yo: 'hablo', tu: 'hablas', el: 'habla', nosotros: 'hablamos', vosotros: 'habláis', ellos: 'hablan' },
+                { infinitive: 'trabajar', context: 'mucho.', yo: 'trabajo', tu: 'trabajas', el: 'trabaja', nosotros: 'trabajamos', vosotros: 'trabajáis', ellos: 'trabajan' },
+                { infinitive: 'comprar', context: 'pan.', yo: 'compro', tu: 'compras', el: 'compra', nosotros: 'compramos', vosotros: 'compráis', ellos: 'compran' },
                 // Regular -er
-                { infinitive: 'comer', yo: 'como', tu: 'comes', el: 'come', nosotros: 'comemos', vosotros: 'coméis', ellos: 'comen' },
-                { infinitive: 'aprender', yo: 'aprendo', tu: 'aprendes', el: 'aprende', nosotros: 'aprendemos', vosotros: 'aprendéis', ellos: 'aprenden' },
-                { infinitive: 'beber', yo: 'bebo', tu: 'bebes', el: 'bebe', nosotros: 'bebemos', vosotros: 'bebéis', ellos: 'beben' },
+                { infinitive: 'comer', context: 'tacos.', yo: 'como', tu: 'comes', el: 'come', nosotros: 'comemos', vosotros: 'coméis', ellos: 'comen' },
+                { infinitive: 'aprender', context: 'rápido.', yo: 'aprendo', tu: 'aprendes', el: 'aprende', nosotros: 'aprendemos', vosotros: 'aprendéis', ellos: 'aprenden' },
+                { infinitive: 'beber', context: 'agua.', yo: 'bebo', tu: 'bebes', el: 'bebe', nosotros: 'bebemos', vosotros: 'bebéis', ellos: 'beben' },
                 // Regular -ir
-                { infinitive: 'vivir', yo: 'vivo', tu: 'vives', el: 'vive', nosotros: 'vivimos', vosotros: 'vivís', ellos: 'viven' },
-                { infinitive: 'escribir', yo: 'escribo', tu: 'escribes', el: 'escribe', nosotros: 'escribimos', vosotros: 'escribís', ellos: 'escriben' },
-                { infinitive: 'abrir', yo: 'abro', tu: 'abres', el: 'abre', nosotros: 'abrimos', vosotros: 'abrís', ellos: 'abren' },
+                { infinitive: 'vivir', context: 'en la ciudad.', yo: 'vivo', tu: 'vives', el: 'vive', nosotros: 'vivimos', vosotros: 'vivís', ellos: 'viven' },
+                { infinitive: 'escribir', context: 'un libro.', yo: 'escribo', tu: 'escribes', el: 'escribe', nosotros: 'escribimos', vosotros: 'escribís', ellos: 'escriben' },
+                { infinitive: 'abrir', context: 'la puerta.', yo: 'abro', tu: 'abres', el: 'abre', nosotros: 'abrimos', vosotros: 'abrís', ellos: 'abren' },
                 // Common Irregular Verbs
-                { infinitive: 'ser', yo: 'soy', tu: 'eres', el: 'es', nosotros: 'somos', vosotros: 'sois', ellos: 'son' },
-                { infinitive: 'estar', yo: 'estoy', tu: 'estás', el: 'está', nosotros: 'estamos', vosotros: 'estáis', ellos: 'están' },
-                { infinitive: 'tener', yo: 'tengo', tu: 'tienes', el: 'tiene', nosotros: 'tenemos', vosotros: 'tenéis', ellos: 'tienen' },
-                { infinitive: 'ir', yo: 'voy', tu: 'vas', el: 'va', nosotros: 'vamos', vosotros: 'vais', ellos: 'van' },
-                { infinitive: 'querer', yo: 'quiero', tu: 'quieres', el: 'quiere', nosotros: 'queremos', vosotros: 'queréis', ellos: 'quieren' },
-                { infinitive: 'poder', yo: 'puedo', tu: 'puedes', el: 'puede', nosotros: 'podemos', vosotros: 'podéis', ellos: 'pueden' },
-                { infinitive: 'hacer', yo: 'hago', tu: 'haces', el: 'hace', nosotros: 'hacemos', vosotros: 'hacéis', ellos: 'hacen' },
-                { infinitive: 'decir', yo: 'digo', tu: 'dices', el: 'dice', nosotros: 'decimos', vosotros: 'decís', ellos: 'dicen' },
-                { infinitive: 'venir', yo: 'vengo', tu: 'vienes', el: 'viene', nosotros: 'venimos', vosotros: 'venís', ellos: 'vienen' },
+                { infinitive: 'ser', context: 'de México.', yo: 'soy', tu: 'eres', el: 'es', nosotros: 'somos', vosotros: 'sois', ellos: 'son' },
+                { infinitive: 'estar', context: 'en casa.', yo: 'estoy', tu: 'estás', el: 'está', nosotros: 'estamos', vosotros: 'estáis', ellos: 'están' },
+                { infinitive: 'tener', context: 'un perro.', yo: 'tengo', tu: 'tienes', el: 'tiene', nosotros: 'tenemos', vosotros: 'tenéis', ellos: 'tienen' },
+                { infinitive: 'ir', context: 'al mercado.', yo: 'voy', tu: 'vas', el: 'va', nosotros: 'vamos', vosotros: 'vais', ellos: 'van' },
+                { infinitive: 'querer', context: 'dormir.', yo: 'quiero', tu: 'quieres', el: 'quiere', nosotros: 'queremos', vosotros: 'queréis', ellos: 'quieren' },
+                { infinitive: 'poder', context: 'ayudar.', yo: 'puedo', tu: 'puedes', el: 'puede', nosotros: 'podemos', vosotros: 'podéis', ellos: 'pueden' },
+                { infinitive: 'hacer', context: 'la tarea.', yo: 'hago', tu: 'haces', el: 'hace', nosotros: 'hacemos', vosotros: 'hacéis', ellos: 'hacen' },
+                { infinitive: 'decir', context: 'la verdad.', yo: 'digo', tu: 'dices', el: 'dice', nosotros: 'decimos', vosotros: 'decís', ellos: 'dicen' },
+                { infinitive: 'venir', context: 'a la fiesta.', yo: 'vengo', tu: 'vienes', el: 'viene', nosotros: 'venimos', vosotros: 'venís', ellos: 'vienen' },
             ];
             
-            const PRONOUNS = ['yo', 'tú', 'el', 'nosotros', 'vosotros', 'ellos'];
+            const PRONOUNS = ['yo', 'tu', 'el', 'nosotros', 'vosotros', 'ellos'];
             const TOTAL_QUESTIONS = 15;
 
             // --- GAME STATE ---
-            let score = 0;
-            let streak = 0;
-            let maxStreak = 0;
+            let score = 0, streak = 0, maxStreak = 0;
             let currentQuestionIndex = 0;
             let gameVerbs = [];
-            let currentPronoun = '';
-            let currentVerb = null;
+            let currentPronoun = '', currentVerb = null;
 
             // --- DOM ELEMENTS ---
             const startScreen = document.getElementById('start-screen');
@@ -212,13 +226,13 @@
             const playAgainButton = document.getElementById('play-again-button');
             const scoreDisplay = document.getElementById('score');
             const streakDisplay = document.getElementById('streak');
-            const promptPronoun = document.getElementById('prompt-pronoun');
-            const promptVerb = document.getElementById('prompt-verb');
+            const promptSubject = document.getElementById('prompt-subject');
+            const promptVerbInfinitive = document.getElementById('prompt-verb-infinitive');
+            const promptContext = document.getElementById('prompt-context');
             const answerInput = document.getElementById('answer-input');
             const feedback = document.getElementById('feedback');
             const finalStats = document.getElementById('final-stats');
 
-            // --- HELPER FUNCTIONS ---
             function shuffleArray(array) {
                 for (let i = array.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -232,12 +246,8 @@
                 document.getElementById(screenId).classList.remove('hidden');
             }
 
-            // --- GAME LOGIC ---
             function startGame() {
-                score = 0;
-                streak = 0;
-                maxStreak = 0;
-                currentQuestionIndex = 0;
+                score = 0; streak = 0; maxStreak = 0; currentQuestionIndex = 0;
                 gameVerbs = shuffleArray([...VERB_DATA]);
                 updateStatus();
                 showScreen('game-screen');
@@ -258,13 +268,21 @@
                 currentVerb = gameVerbs[currentQuestionIndex];
                 currentPronoun = PRONOUNS[Math.floor(Math.random() * PRONOUNS.length)];
 
-                // Display Él/Ella/Usted for 'el' key for clarity
-                let displayPronoun = currentPronoun;
-                if(currentPronoun === 'el') displayPronoun = 'Él/Ella/Ud.';
-                if(currentPronoun === 'ellos') displayPronoun = 'Ellos/Ellas/Uds.';
+                // NEW: Logic to pick ONE display pronoun and format it
+                let displayPronoun;
+                switch (currentPronoun) {
+                    case 'yo':        displayPronoun = 'Yo'; break;
+                    case 'tu':        displayPronoun = 'Tú'; break;
+                    case 'el':        displayPronoun = shuffleArray(['Él', 'Ella', 'Usted'])[0]; break;
+                    case 'nosotros':  displayPronoun = 'Nosotros'; break;
+                    case 'vosotros':  displayPronoun = 'Vosotros'; break;
+                    case 'ellos':     displayPronoun = shuffleArray(['Ellos', 'Ellas', 'Ustedes'])[0]; break;
+                }
 
-                promptPronoun.textContent = displayPronoun;
-                promptVerb.textContent = currentVerb.infinitive;
+                // Populate the new sentence structure
+                promptSubject.textContent = displayPronoun;
+                promptVerbInfinitive.textContent = currentVerb.infinitive;
+                promptContext.textContent = currentVerb.context;
 
                 answerInput.focus();
             }
@@ -306,7 +324,6 @@
                 showScreen('end-screen');
             }
 
-            // --- EVENT LISTENERS ---
             startButton.addEventListener('click', startGame);
             playAgainButton.addEventListener('click', startGame);
 
