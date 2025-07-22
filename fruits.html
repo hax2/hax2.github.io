@@ -528,7 +528,7 @@
                     if (level === 1) document.querySelectorAll('#emoji-options .emoji-option').forEach(el => el.style.pointerEvents = 'auto');
                     if (level === 2) document.querySelectorAll('#name-options button').forEach(el => el.style.pointerEvents = 'auto');
                     if (level === 3) { submitAnswerButton.disabled = false; textAnswerInput.disabled = false; }
-                }, level === 1 ? 500 : 2000);
+                }, isCorrect ? 500 : 2000);
             }
 
             function endGame() {

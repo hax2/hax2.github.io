@@ -553,7 +553,7 @@
                 setTimeout(() => {
                     currentQuestionIndex++;
                     loadQuestion();
-                }, 500); // Increased timeout to allow reading the answer
+                }, isCorrect ? 500 : 2000);
             }
             
             function disableInputsForFeedback(level) {
