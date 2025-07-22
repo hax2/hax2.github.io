@@ -94,6 +94,7 @@
                 <div id="map-grid"></div>
                 <div id="player">🚶</div>
             </div>
+            <button id="tts-toggle" style="margin-top:10px;">🔊 TTS: Activado</button>
         </div>
         <div id="vocab-container">
             <h2>Vocabulario de Dirección</h2>
@@ -111,6 +112,26 @@
     const mapGrid = document.getElementById('map-grid');
     const playerElement = document.getElementById('player');
     const messageBox = document.getElementById('message-box');
+    const ttsToggle = document.getElementById('tts-toggle');
+
+    // --- TTS State ---
+    let ttsEnabled = true;
+    function speakText(text, lang = 'es-ES') {
+        if (!ttsEnabled) return;
+        window.speechSynthesis.cancel(); // Stop any previous speech
+        const utter = new window.SpeechSynthesisUtterance(text);
+        utter.lang = lang;
+        window.speechSynthesis.speak(utter);
+    }
+    ttsToggle.addEventListener('click', () => {
+        ttsEnabled = !ttsEnabled;
+        ttsToggle.textContent = ttsEnabled ? '🔊 TTS: Activado' : '🔇 TTS: Desactivado';
+        if (ttsEnabled) {
+            speakText('Texto a voz activado.');
+        } else {
+            window.speechSynthesis.cancel();
+        }
+    });
 
     // --- Game Configuration ---
     const CELL_SIZE = 40;
@@ -275,6 +296,12 @@
     
     function displayMessage(htmlContent) {
         messageBox.innerHTML = htmlContent;
+        // Strip HTML tags for TTS, but keep main instruction text
+        let ttsText = htmlContent
+            .replace(/<[^>]+>/g, ' ') // Remove HTML tags
+            .replace(/\s+/g, ' ')    // Collapse whitespace
+            .trim();
+        if (ttsText) speakText(ttsText);
     }
 
     function handleKeyPress(event) {
