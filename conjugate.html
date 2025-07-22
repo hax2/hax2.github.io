@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Conjugador ⚡</title>
+    <style>
+        /* --- General Styling --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #eef2f3; /* Light, clean background */
+            color: #333;
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        #game-container {
+            width: 90%;
+            max-width: 550px;
+            background: white;
+            border-radius: 15px;
+            padding: 2.5rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            text-align: center;
+        }
+
+        h1 {
+            color: #1e3a8a; /* Deep blue */
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .screen {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            background-color: #2563eb; /* A nice, modern blue */
+            color: white;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-3px);
+        }
+
+        /* --- Game Area Specifics --- */
+        #status-bar {
+            display: flex;
+            justify-content: space-around;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #444;
+            padding: 1rem;
+            background-color: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        #prompt-area {
+            font-size: 3.5rem;
+            font-weight: bold;
+            padding: 2rem 0;
+        }
+
+        #prompt-pronoun {
+            color: #dc2626; /* Red */
+        }
+
+        #prompt-verb {
+            color: #1e3a8a; /* Blue */
+        }
+        
+        #answer-input {
+            width: 80%;
+            padding: 15px;
+            font-size: 1.5rem;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        #answer-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+        
+        #feedback {
+            min-height: 40px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+
+        .correct {
+            color: #16a34a; /* Green */
+        }
+
+        .incorrect {
+            color: #dc2626; /* Red */
+        }
+        
+        #final-stats {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen">
+            <h1>El Conjugador ⚡</h1>
+            <p>Master your Spanish verbs! You will be given a pronoun and a verb. Type the correct present tense conjugation as fast as you can. Press <strong>Enter</strong> to check your answer.</p>
+            <button id="start-button" class="btn">¡Vamos!</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen hidden">
+            <div id="status-bar">
+                <span id="score">Puntos: 0</span>
+                <span id="streak">Racha: 0</span>
+            </div>
+            <div id="prompt-area">
+                (<span id="prompt-pronoun"></span>) + <span id="prompt-verb"></span>
+            </div>
+            <input type="text" id="answer-input" placeholder="Escribe aquí..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            <div id="feedback"></div>
+        </div>
+
+        <!-- End Screen -->
+        <div id="end-screen" class="screen hidden">
+            <h1>¡Buen Trabajo! 🎉</h1>
+            <p id="final-stats"></p>
+            <button id="play-again-button" class="btn">Jugar Otra Vez</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- DATA: A mix of regular and irregular verbs ---
+            const VERB_DATA = [
+                // Regular -ar
+                { infinitive: 'hablar', yo: 'hablo', tu: 'hablas', el: 'habla', nosotros: 'hablamos', vosotros: 'habláis', ellos: 'hablan' },
+                { infinitive: 'trabajar', yo: 'trabajo', tu: 'trabajas', el: 'trabaja', nosotros: 'trabajamos', vosotros: 'trabajáis', ellos: 'trabajan' },
+                { infinitive: 'comprar', yo: 'compro', tu: 'compras', el: 'compra', nosotros: 'compramos', vosotros: 'compráis', ellos: 'compran' },
+                // Regular -er
+                { infinitive: 'comer', yo: 'como', tu: 'comes', el: 'come', nosotros: 'comemos', vosotros: 'coméis', ellos: 'comen' },
+                { infinitive: 'aprender', yo: 'aprendo', tu: 'aprendes', el: 'aprende', nosotros: 'aprendemos', vosotros: 'aprendéis', ellos: 'aprenden' },
+                { infinitive: 'beber', yo: 'bebo', tu: 'bebes', el: 'bebe', nosotros: 'bebemos', vosotros: 'bebéis', ellos: 'beben' },
+                // Regular -ir
+                { infinitive: 'vivir', yo: 'vivo', tu: 'vives', el: 'vive', nosotros: 'vivimos', vosotros: 'vivís', ellos: 'viven' },
+                { infinitive: 'escribir', yo: 'escribo', tu: 'escribes', el: 'escribe', nosotros: 'escribimos', vosotros: 'escribís', ellos: 'escriben' },
+                { infinitive: 'abrir', yo: 'abro', tu: 'abres', el: 'abre', nosotros: 'abrimos', vosotros: 'abrís', ellos: 'abren' },
+                // Common Irregular Verbs
+                { infinitive: 'ser', yo: 'soy', tu: 'eres', el: 'es', nosotros: 'somos', vosotros: 'sois', ellos: 'son' },
+                { infinitive: 'estar', yo: 'estoy', tu: 'estás', el: 'está', nosotros: 'estamos', vosotros: 'estáis', ellos: 'están' },
+                { infinitive: 'tener', yo: 'tengo', tu: 'tienes', el: 'tiene', nosotros: 'tenemos', vosotros: 'tenéis', ellos: 'tienen' },
+                { infinitive: 'ir', yo: 'voy', tu: 'vas', el: 'va', nosotros: 'vamos', vosotros: 'vais', ellos: 'van' },
+                { infinitive: 'querer', yo: 'quiero', tu: 'quieres', el: 'quiere', nosotros: 'queremos', vosotros: 'queréis', ellos: 'quieren' },
+                { infinitive: 'poder', yo: 'puedo', tu: 'puedes', el: 'puede', nosotros: 'podemos', vosotros: 'podéis', ellos: 'pueden' },
+                { infinitive: 'hacer', yo: 'hago', tu: 'haces', el: 'hace', nosotros: 'hacemos', vosotros: 'hacéis', ellos: 'hacen' },
+                { infinitive: 'decir', yo: 'digo', tu: 'dices', el: 'dice', nosotros: 'decimos', vosotros: 'decís', ellos: 'dicen' },
+                { infinitive: 'venir', yo: 'vengo', tu: 'vienes', el: 'viene', nosotros: 'venimos', vosotros: 'venís', ellos: 'vienen' },
+            ];
+            
+            const PRONOUNS = ['yo', 'tú', 'el', 'nosotros', 'vosotros', 'ellos'];
+            const TOTAL_QUESTIONS = 15;
+
+            // --- GAME STATE ---
+            let score = 0;
+            let streak = 0;
+            let maxStreak = 0;
+            let currentQuestionIndex = 0;
+            let gameVerbs = [];
+            let currentPronoun = '';
+            let currentVerb = null;
+
+            // --- DOM ELEMENTS ---
+            const startScreen = document.getElementById('start-screen');
+            const gameScreen = document.getElementById('game-screen');
+            const endScreen = document.getElementById('end-screen');
+            const startButton = document.getElementById('start-button');
+            const playAgainButton = document.getElementById('play-again-button');
+            const scoreDisplay = document.getElementById('score');
+            const streakDisplay = document.getElementById('streak');
+            const promptPronoun = document.getElementById('prompt-pronoun');
+            const promptVerb = document.getElementById('prompt-verb');
+            const answerInput = document.getElementById('answer-input');
+            const feedback = document.getElementById('feedback');
+            const finalStats = document.getElementById('final-stats');
+
+            // --- HELPER FUNCTIONS ---
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            function showScreen(screenId) {
+                [startScreen, gameScreen, endScreen].forEach(s => s.classList.add('hidden'));
+                document.getElementById(screenId).classList.remove('hidden');
+            }
+
+            // --- GAME LOGIC ---
+            function startGame() {
+                score = 0;
+                streak = 0;
+                maxStreak = 0;
+                currentQuestionIndex = 0;
+                gameVerbs = shuffleArray([...VERB_DATA]);
+                updateStatus();
+                showScreen('game-screen');
+                loadQuestion();
+            }
+
+            function loadQuestion() {
+                if (currentQuestionIndex >= TOTAL_QUESTIONS) {
+                    endGame();
+                    return;
+                }
+
+                feedback.textContent = '';
+                feedback.className = '';
+                answerInput.value = '';
+                answerInput.disabled = false;
+                
+                currentVerb = gameVerbs[currentQuestionIndex];
+                currentPronoun = PRONOUNS[Math.floor(Math.random() * PRONOUNS.length)];
+
+                // Display Él/Ella/Usted for 'el' key for clarity
+                let displayPronoun = currentPronoun;
+                if(currentPronoun === 'el') displayPronoun = 'Él/Ella/Ud.';
+                if(currentPronoun === 'ellos') displayPronoun = 'Ellos/Ellas/Uds.';
+
+                promptPronoun.textContent = displayPronoun;
+                promptVerb.textContent = currentVerb.infinitive;
+
+                answerInput.focus();
+            }
+
+            function checkAnswer() {
+                const userAnswer = answerInput.value.trim().toLowerCase();
+                if (!userAnswer) return;
+
+                const correctAnswer = currentVerb[currentPronoun];
+
+                if (userAnswer === correctAnswer) {
+                    score++;
+                    streak++;
+                    if (streak > maxStreak) maxStreak = streak;
+                    feedback.textContent = '¡Correcto!';
+                    feedback.className = 'correct';
+                } else {
+                    streak = 0;
+                    feedback.textContent = `Incorrecto. Es: ${correctAnswer}`;
+                    feedback.className = 'incorrect';
+                }
+                
+                updateStatus();
+                answerInput.disabled = true;
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    loadQuestion();
+                }, 1500);
+            }
+
+            function updateStatus() {
+                scoreDisplay.textContent = `Puntos: ${score}`;
+                streakDisplay.textContent = `Racha: ${streak}`;
+            }
+
+            function endGame() {
+                finalStats.innerHTML = `Puntuación Final: ${score} / ${TOTAL_QUESTIONS}<br>Racha Máxima: ${maxStreak}`;
+                showScreen('end-screen');
+            }
+
+            // --- EVENT LISTENERS ---
+            startButton.addEventListener('click', startGame);
+            playAgainButton.addEventListener('click', startGame);
+
+            answerInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    checkAnswer();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
