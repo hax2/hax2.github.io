@@ -36,7 +36,6 @@ You can copy and paste this code directly into a single HTML file.
 --border-light: #e0e0e0;
 }
 
-Generated code
 /* --- General Styling & Animations --- */
     body {
         font-family: 'Nunito', sans-serif;
@@ -394,11 +393,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let distractors = shuffleArray(EMOJI_DATA.filter(d => d.emoji !== item.emoji)).slice(0, 3);
         
-        // TTS: Speak the Spanish word
-        speakWord(item.spanish);
-        
         switch(mode) {
             case 'emoji-match':
+                speakWord(item.spanish);
                 textPrompt.textContent = item.spanish;
                 textPrompt.classList.remove('hidden');
                 let emojiOptions = shuffleArray([item, ...distractors]);
@@ -406,6 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             
             case 'sentence-match':
+                speakWord(item.spanish);
                 mainEmojiPrompt.textContent = item.emoji;
                 mainEmojiPrompt.classList.remove('hidden');
                 let textOptions = shuffleArray([item, ...distractors]);
