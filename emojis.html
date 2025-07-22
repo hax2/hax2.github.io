@@ -34,7 +34,7 @@
         }
         
         h2 {
-            text-transform: capitalize;
+            text-transform: none; /* Allow sentences to be cased normally */
         }
 
         .screen {
@@ -75,17 +75,25 @@
             border-bottom: 2px solid #eee;
         }
 
-        #prompt-area {
-            min-height: 120px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .prompt-content {
+             min-height: 100px;
+             display: flex;
+             flex-direction: column;
+             justify-content: center;
+             align-items: center;
+             gap: 0.5rem;
         }
         
         /* --- EMOJI Styling --- */
         #emoji-prompt-2, #emoji-prompt-3 {
-            font-size: 8rem; /* Large emoji for Levels 2 & 3 */
+            font-size: 7rem; /* Large emoji for Levels 2 & 3 */
             line-height: 1;
+        }
+        
+        #sentence-prompt-3 {
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: #444;
         }
 
         .options-grid {
@@ -119,13 +127,13 @@
             align-items: center;
             justify-content: center;
             gap: 1rem;
+            flex-wrap: wrap;
         }
 
         #word-prompt {
-            font-size: 3rem;
+            font-size: 2.2rem;
             margin: 0;
             color: #d9534f;
-            text-transform: capitalize;
         }
 
         #speak-button {
@@ -141,7 +149,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            width: 80%;
+            width: 90%;
             margin: 0 auto;
         }
 
@@ -153,7 +161,7 @@
             border-radius: 8px;
             background-color: #f9f9f9;
             transition: background-color 0.3s, border-color 0.3s;
-            text-transform: capitalize;
+            text-transform: none; /* Allow sentences */
         }
 
         .name-option-btn:hover {
@@ -175,7 +183,7 @@
             width: 250px;
         }
 
-        #feedback {
+        .feedback {
             min-height: 30px;
             font-size: 1.5rem;
             font-weight: bold;
@@ -197,8 +205,8 @@
     <div id="game-container">
         <!-- Start Screen -->
         <div id="start-screen" class="screen">
-            <h1>Juego de Emojis en Español 🇪🇸</h1>
-            <p>Learn Spanish vocabulary by matching words to emojis!</p>
+            <h1>Juego de Frases en Español 🇪🇸</h1>
+            <p>Learn Spanish by forming sentences with emojis!</p>
             <button id="start-button" class="btn">Start Game 🚀</button>
         </div>
 
@@ -213,22 +221,22 @@
             <button class="btn" id="back-to-start">Volver al inicio</button>
         </div>
 
-        <!-- Level 1 Screen -->
+        <!-- Level 1 Screen: Sentence -> Emoji -->
         <div id="level-1-screen" class="screen hidden">
             <div id="status-bar-1" class="status-bar"></div>
             <div id="level-1-prompt-area" class="prompt-content">
                 <h2 id="word-prompt"></h2>
-                <button id="speak-button" title="Hear the word">🔊</button>
+                <button id="speak-button" title="Hear the sentence">🔊</button>
             </div>
             <div id="emoji-options" class="options-grid"></div>
             <div id="feedback-1" class="feedback"></div>
             <button class="btn" id="change-level-1">Cambiar nivel</button>
         </div>
 
-        <!-- Level 2 Screen -->
+        <!-- Level 2 Screen: Emoji -> Sentence -->
         <div id="level-2-screen" class="screen hidden">
             <div id="status-bar-2" class="status-bar"></div>
-            <div id="prompt-area">
+            <div class="prompt-content">
                 <div id="emoji-prompt-2"></div>
             </div>
             <div id="name-options" class="options-list"></div>
@@ -236,14 +244,15 @@
             <button class="btn" id="change-level-2">Cambiar nivel</button>
         </div>
 
-        <!-- Level 3 Screen -->
+        <!-- Level 3 Screen: Fill-in-the-blank -->
         <div id="level-3-screen" class="screen hidden">
             <div id="status-bar-3" class="status-bar"></div>
-            <div id="prompt-area">
+            <div class="prompt-content">
                 <div id="emoji-prompt-3"></div>
+                <div id="sentence-prompt-3"></div>
             </div>
             <div id="text-input-area">
-                <input type="text" id="text-answer" placeholder="Escribe el nombre aquí..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <input type="text" id="text-answer" placeholder="Escribe la palabra que falta..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 <button id="submit-answer" class="btn">Check</button>
             </div>
             <div id="feedback-3" class="feedback"></div>
@@ -262,7 +271,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
-            // --- DATA: Expanded list of emojis ---
             const EMOJI_DATA = [
                 // Fruits & Vegetables
                 { spanish: 'la manzana', emoji: '🍏' }, { spanish: 'el plátano', emoji: '🍌' }, { spanish: 'las uvas', emoji: '🍇' },
@@ -303,15 +311,12 @@
             let score = 0;
             let currentQuestionIndex = 0;
             let gameData = [];
-            const TOTAL_QUESTIONS_PER_ROUND = 15; // Set a reasonable number of questions per game round
+            const TOTAL_QUESTIONS_PER_ROUND = 15;
 
             // --- DOM ELEMENTS ---
+            const allScreens = document.querySelectorAll('.screen');
             const startScreen = document.getElementById('start-screen');
             const levelSelectScreen = document.getElementById('level-select-screen');
-            const level1Screen = document.getElementById('level-1-screen');
-            const level2Screen = document.getElementById('level-2-screen');
-            const level3Screen = document.getElementById('level-3-screen');
-            const endScreen = document.getElementById('end-screen');
             const startButton = document.getElementById('start-button');
             const playAgainButton = document.getElementById('play-again-button');
             const level1Select = document.getElementById('level-1-select');
@@ -319,20 +324,30 @@
             const level3Select = document.getElementById('level-3-select');
             const backToStart = document.getElementById('back-to-start');
             const changeLevelButtons = document.querySelectorAll('#change-level-1, #change-level-2, #change-level-3, #end-change-level');
+            
+            // Level 1
             const statusBar1 = document.getElementById('status-bar-1');
-            const statusBar2 = document.getElementById('status-bar-2');
-            const statusBar3 = document.getElementById('status-bar-3');
             const wordPrompt = document.getElementById('word-prompt');
             const speakButton = document.getElementById('speak-button');
-            const emojiPrompt2 = document.getElementById('emoji-prompt-2');
-            const emojiPrompt3 = document.getElementById('emoji-prompt-3');
             const emojiOptions = document.getElementById('emoji-options');
+            const feedback1 = document.getElementById('feedback-1');
+            
+            // Level 2
+            const statusBar2 = document.getElementById('status-bar-2');
+            const emojiPrompt2 = document.getElementById('emoji-prompt-2');
             const nameOptions = document.getElementById('name-options');
+            const feedback2 = document.getElementById('feedback-2');
+
+            // Level 3
+            const statusBar3 = document.getElementById('status-bar-3');
+            const emojiPrompt3 = document.getElementById('emoji-prompt-3');
+            const sentencePrompt3 = document.getElementById('sentence-prompt-3');
             const textAnswerInput = document.getElementById('text-answer');
             const submitAnswerButton = document.getElementById('submit-answer');
-            const feedback1 = document.getElementById('feedback-1');
-            const feedback2 = document.getElementById('feedback-2');
             const feedback3 = document.getElementById('feedback-3');
+
+            // End Screen
+            const endScreen = document.getElementById('end-screen');
             const finalScoreDisplay = document.getElementById('final-score');
             
             // --- HELPER FUNCTIONS ---
@@ -346,36 +361,61 @@
             }
 
             function speak(text) {
-                if (!window.speechSynthesis) {
-                    console.warn("Speech Synthesis not supported in this browser.");
-                    return;
-                }
+                if (!window.speechSynthesis) return;
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'es-ES';
                 utterance.rate = 0.9;
-                const voices = window.speechSynthesis.getVoices();
-                const esVoice = voices.find(v => v.lang.startsWith('es'));
+                const esVoice = window.speechSynthesis.getVoices().find(v => v.lang.startsWith('es'));
                 if (esVoice) utterance.voice = esVoice;
                 window.speechSynthesis.speak(utterance);
             }
-            
-            function levenshteinDistance(a, b) {
-                if (a.length === 0) return b.length;
-                if (b.length === 0) return a.length;
-                const matrix = Array.from({ length: b.length + 1 }, (_, i) => [i]);
-                for (let j = 1; j <= a.length; j++) { matrix[0][j] = j; }
-                for (let i = 1; i <= b.length; i++) {
-                    for (let j = 1; j <= a.length; j++) {
-                        const cost = b.charAt(i - 1) === a.charAt(j - 1) ? 0 : 1;
-                        matrix[i][j] = Math.min(
-                            matrix[i - 1][j] + 1,        // Deletion
-                            matrix[i][j - 1] + 1,        // Insertion
-                            matrix[i - 1][j - 1] + cost  // Substitution
-                        );
-                    }
+
+            /**
+             * Deconstructs a Spanish phrase like "la manzana" into its parts.
+             * @param {string} fullPhrase - e.g., "la manzana" or "los coches"
+             * @returns {{full: string, noun: string, definite_article: string, indefinite_article: string}}
+             */
+            function getNounParts(fullPhrase) {
+                const parts = fullPhrase.split(' ');
+                const definite_article = parts[0];
+                const noun = parts.slice(1).join(' ');
+                let indefinite_article = '';
+                
+                switch (definite_article) {
+                    case 'el': indefinite_article = 'un'; break;
+                    case 'la': indefinite_article = 'una'; break;
+                    case 'los': indefinite_article = 'unos'; break;
+                    case 'las': indefinite_article = 'unas'; break;
                 }
-                return matrix[b.length][a.length];
+                return { full: fullPhrase, noun, definite_article, indefinite_article };
             }
+
+            /**
+             * Creates a random sentence from a template.
+             * @param {{full: string, noun: string, definite_article: string, indefinite_article: string}} itemParts
+             * @param {string[]} templates - Array of template strings
+             * @returns {string} - The constructed sentence
+             */
+            function createSentence(itemParts, templates) {
+                let template = templates[Math.floor(Math.random() * templates.length)];
+                return template
+                    .replace('{full}', itemParts.full)
+                    .replace('{noun}', itemParts.noun)
+                    .replace('{indefinite_article}', itemParts.indefinite_article);
+            }
+
+            // --- SENTENCE TEMPLATES ---
+            const L1_L2_TEMPLATES = [
+                'Veo {indefinite_article} {noun}.', 'Me gusta {full}.', '¿Dónde está {full}?', 'Es {indefinite_article} {noun}.',
+                'Quiero {indefinite_article} {noun}.', '¡Mira, {indefinite_article} {noun}!', 'Aquí tienes {indefinite_article} {noun}.',
+                '¿Puedes ver {full}?'
+            ];
+
+            const L3_TEMPLATES = [
+                'Veo {indefinite_article} _____.', 'Me gusta mucho {definite_article} _____.', 'Es {indefinite_article} _____.',
+                'Quiero {indefinite_article} _____.', 'Busco {definite_article} _____.', 'El dibujo muestra {indefinite_article} _____.'
+            ];
+
 
             // --- GAME LOGIC ---
 
@@ -389,7 +429,7 @@
             }
 
             function showScreen(screenId) {
-                [startScreen, levelSelectScreen, level1Screen, level2Screen, level3Screen, endScreen].forEach(s => s.classList.add('hidden'));
+                allScreens.forEach(s => s.classList.add('hidden'));
                 const screenToShow = document.getElementById(screenId + '-screen');
                 if (screenToShow) screenToShow.classList.remove('hidden');
             }
@@ -406,9 +446,8 @@
                     return;
                 }
                 
-                feedback1.textContent = '';
-                feedback2.textContent = '';
-                feedback3.textContent = '';
+                // Clear feedback from previous question
+                [feedback1, feedback2, feedback3].forEach(f => f.textContent = '');
                 
                 const currentItem = gameData[currentQuestionIndex];
                 updateStatus(currentLevel);
@@ -423,9 +462,12 @@
             // --- LEVEL SETUPS ---
 
             function setupLevel1(item) {
-                wordPrompt.textContent = item.spanish;
-                speak(item.spanish);
-                speakButton.onclick = () => speak(item.spanish);
+                const itemParts = getNounParts(item.spanish);
+                const sentence = createSentence(itemParts, L1_L2_TEMPLATES);
+                
+                wordPrompt.textContent = sentence;
+                speak(sentence);
+                speakButton.onclick = () => speak(sentence);
 
                 emojiOptions.innerHTML = '';
                 const distractors = EMOJI_DATA.filter(d => d.emoji !== item.emoji).sort(() => 0.5 - Math.random()).slice(0, 5);
@@ -435,7 +477,7 @@
                     const emojiDiv = document.createElement('div');
                     emojiDiv.textContent = opt.emoji;
                     emojiDiv.className = 'emoji-option';
-                    emojiDiv.dataset.spanish = opt.spanish;
+                    emojiDiv.dataset.spanish = opt.spanish; // The base phrase is the answer key
                     emojiDiv.onclick = (e) => checkAnswer(e.target.dataset.spanish === item.spanish, 1);
                     emojiOptions.appendChild(emojiDiv);
                 });
@@ -444,20 +486,29 @@
             function setupLevel2(item) {
                 emojiPrompt2.textContent = item.emoji;
                 nameOptions.innerHTML = '';
-                const distractors = EMOJI_DATA.filter(d => d.spanish !== item.spanish).sort(() => 0.5 - Math.random()).slice(0, 3);
-                const options = shuffleArray([item, ...distractors]);
                 
-                options.forEach(opt => {
+                const distractors = EMOJI_DATA.filter(d => d.spanish !== item.spanish).sort(() => 0.5 - Math.random()).slice(0, 3);
+                const optionsData = shuffleArray([item, ...distractors]);
+                
+                optionsData.forEach(opt => {
+                    const itemParts = getNounParts(opt.spanish);
+                    const sentence = createSentence(itemParts, L1_L2_TEMPLATES);
+                    
                     const button = document.createElement('button');
-                    button.textContent = opt.spanish;
+                    button.textContent = sentence;
                     button.classList.add('name-option-btn');
-                    button.onclick = () => checkAnswer(opt.spanish === item.spanish, 2);
+                    button.dataset.spanish = opt.spanish; // Store the original key
+                    button.onclick = (e) => checkAnswer(e.target.dataset.spanish === item.spanish, 2);
                     nameOptions.appendChild(button);
                 });
             }
 
             function setupLevel3(item) {
+                const itemParts = getNounParts(item.spanish);
+                const sentenceTemplate = createSentence(itemParts, L3_TEMPLATES);
+
                 emojiPrompt3.textContent = item.emoji;
+                sentencePrompt3.textContent = sentenceTemplate;
                 textAnswerInput.value = '';
                 textAnswerInput.disabled = false;
                 submitAnswerButton.disabled = false;
@@ -467,24 +518,15 @@
                     const userAnswer = textAnswerInput.value.trim().toLowerCase();
                     if (!userAnswer) return;
                     
-                    const correctAnswerFull = item.spanish.toLowerCase();
-                    const correctAnswerSimple = correctAnswerFull.replace(/^(el|la|los|las)\s+/i, '');
-                    const userAnswerSimple = userAnswer.replace(/^(el|la|los|las)\s+/i, '');
-
-                    // Allow for a small typo (Levenshtein distance <= 1)
-                    // Or an exact match of the simple form (e.g., "manzana" for "la manzana")
-                    // Or an exact match of the full form (e.g., "la manzana")
-                    const isCorrect = levenshteinDistance(userAnswerSimple, correctAnswerSimple) <= 1 ||
-                                      userAnswerSimple === correctAnswerSimple ||
-                                      userAnswer === correctAnswerFull;
-
+                    // The user only needs to type the noun part
+                    const isCorrect = userAnswer === itemParts.noun;
                     checkAnswer(isCorrect, 3, item.spanish);
                 };
 
                 submitAnswerButton.onclick = checkSpelling;
                 textAnswerInput.onkeydown = (e) => {
                     if (e.key === 'Enter') {
-                        e.preventDefault(); // Prevent form submission
+                        e.preventDefault();
                         checkSpelling();
                     }
                 };
@@ -492,16 +534,16 @@
 
             // --- ANSWER CHECKING & PROGRESSION ---
 
-            function checkAnswer(isCorrect, level, correctAnswer) {
+            function checkAnswer(isCorrect, level, fullCorrectAnswer) {
                 const feedbackEl = document.getElementById(`feedback-${level}`);
-                const answer = correctAnswer || gameData[currentQuestionIndex].spanish;
+                const answerToShow = fullCorrectAnswer || gameData[currentQuestionIndex].spanish;
                 
                 if (isCorrect) {
                     score++;
                     feedbackEl.textContent = `¡Correcto! 👍`;
                     feedbackEl.className = 'feedback correct';
                 } else {
-                    feedbackEl.textContent = `Incorrecto. La respuesta es: ${answer}`;
+                    feedbackEl.textContent = `Incorrecto. La respuesta es: ${answerToShow}`;
                     feedbackEl.className = 'feedback incorrect';
                 }
                 
@@ -511,7 +553,7 @@
                 setTimeout(() => {
                     currentQuestionIndex++;
                     loadQuestion();
-                }, level === 1 ? 500 : 2000);
+                }, 2500); // Increased timeout to allow reading the answer
             }
             
             function disableInputsForFeedback(level) {
