@@ -478,24 +478,26 @@ class LanguageGameUI {
       return;
     }
 
-    // Create and show a subtle tip notification
-    const tipNotification = document.createElement('div');
-    tipNotification.className = 'tip-notification';
-    tipNotification.innerHTML = `
-      <div class="tip-content">
-        <span class="tip-text">💡 Click on a word to see its meaning, click anywhere else to flip the card</span>
-        <button class="tip-close" onclick="ui.hideFlashcardTip()">×</button>
+    // Create and show the tip modal
+    const tipOverlay = document.createElement('div');
+    tipOverlay.className = 'modal-overlay';
+    tipOverlay.innerHTML = `
+      <div class="modal-content flashcard-tip-modal">
+        <div class="modal-header">
+          <h2>💡 Helpful Tip</h2>
+          <button class="modal-close" onclick="ui.hideFlashcardTip()">×</button>
+        </div>
+        <div class="modal-body">
+          <p>You can click on a word in a flashcard to see its meaning, clicking anywhere else within the flashcard flips it</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn primary" onclick="ui.hideFlashcardTip()">Got it!</button>
+        </div>
       </div>
     `;
 
-    // Insert at the top of the panel body
-    this.elements.panelBody.insertBefore(tipNotification, this.elements.panelBody.firstChild);
-    this.flashcardTipOverlay = tipNotification;
-
-    // Auto-hide after 8 seconds
-    setTimeout(() => {
-      this.hideFlashcardTip();
-    }, 8000);
+    document.body.appendChild(tipOverlay);
+    this.flashcardTipOverlay = tipOverlay;
 
     // Mark as seen
     localStorage.setItem('flashcardTipSeen', 'true');
