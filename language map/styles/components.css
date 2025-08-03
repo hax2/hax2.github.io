@@ -846,6 +846,11 @@
   max-height: 80vh;
 }
 
+.flashcard-tip-modal {
+  width: 500px;
+  max-width: 90vw;
+}
+
 .modal-header {
   display: flex;
   justify-content: space-between;

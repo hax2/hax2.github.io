@@ -477,6 +477,53 @@ class LanguageGameUI {
   }
 
   /**
+   * Show first-time flashcard tip
+   */
+  showFirstTimeFlashcardTip() {
+    // Check if user has seen the tip before
+    const hasSeenTip = localStorage.getItem('flashcardTipSeen');
+    if (hasSeenTip) {
+      return;
+    }
+
+    // Create and show the tip overlay
+    const tipOverlay = document.createElement('div');
+    tipOverlay.className = 'modal-overlay';
+    tipOverlay.innerHTML = `
+      <div class="modal-content flashcard-tip-modal">
+        <div class="modal-header">
+          <h2>💡 Helpful Tip</h2>
+          <button class="modal-close" onclick="ui.hideFlashcardTip()">×</button>
+        </div>
+        <div class="modal-body">
+          <p>Welcome to flashcards! 🎉</p>
+          <p><strong>Tip:</strong> You can click on any word in the flashcards to see its meaning and explanation.</p>
+          <p>This will help you better understand each phrase and learn new vocabulary.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn primary" onclick="ui.hideFlashcardTip()">Got it!</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(tipOverlay);
+    this.flashcardTipOverlay = tipOverlay;
+
+    // Mark as seen
+    localStorage.setItem('flashcardTipSeen', 'true');
+  }
+
+  /**
+   * Hide first-time flashcard tip
+   */
+  hideFlashcardTip() {
+    if (this.flashcardTipOverlay) {
+      this.flashcardTipOverlay.remove();
+      this.flashcardTipOverlay = null;
+    }
+  }
+
+  /**
    * Render flashcards mode
    */
   renderFlashcards() {
@@ -485,6 +532,9 @@ class LanguageGameUI {
       this.elements.panelBody.innerHTML = '<p class="text-center">No hay flashcards disponibles.</p>';
       return;
     }
+
+    // Show first-time tip if user hasn't seen it before
+    this.showFirstTimeFlashcardTip();
 
     this.currentCards = flashcards;
     this.currentCardIndex = 0;
