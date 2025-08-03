@@ -100,94 +100,86 @@ class LanguageGameUI {
     return this.currentTab;
   }
 
-  /**
-   * Create clickable word spans from text
+   /**
+   * Create clickable word spans from text.
+   * This is a robust, multi-pass version that correctly handles punctuation and overlapping phrases.
    * @param {string} text - Text to make clickable
    * @param {Object} breakdown - Word breakdown object
    * @returns {string} - HTML with clickable words
    */
-  makeWordsClickable(text, breakdown = {}) {
+   makeWordsClickable(text, breakdown = {}) {
     if (!breakdown || Object.keys(breakdown).length === 0) {
-      return text; // Return original text if no breakdown available
+      return text;
     }
 
     let processedText = text;
+    const replacements = new Map();
+    let placeholderIndex = 0;
 
-    // First, identify and process multi-word phrases
-    // Sort breakdown keys by length (longest first) to handle overlapping phrases correctly
+    // 1. First Pass: Handle multi-word phrases (longest first to handle overlaps)
     const sortedKeys = Object.keys(breakdown).sort((a, b) => b.length - a.length);
 
     sortedKeys.forEach(phrase => {
-      // Only process phrases that contain spaces (multi-word phrases)
-      if (phrase.includes(' ')) {
-        const explanation = breakdown[phrase];
-        // Create a regex that matches the phrase, handling punctuation at start/end
-        // Escape special regex characters
-        const escapedPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      if (!phrase.includes(' ')) return; // Only process multi-word phrases in this pass
 
-        // For phrases that start with punctuation, don't use word boundary at the start
-        // For phrases that end with punctuation, don't use word boundary at the end
-        const startsWithPunctuation = /^[¿¡.,!?;:]/.test(phrase);
-        const endsWithPunctuation = /[.,!?;:]$/.test(phrase);
+      const explanation = breakdown[phrase];
+      const escapedPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        let regexPattern;
-        if (startsWithPunctuation && endsWithPunctuation) {
-          regexPattern = escapedPhrase; // No word boundaries
-        } else if (startsWithPunctuation) {
-          regexPattern = `${escapedPhrase}\\b`; // Only end boundary
-        } else if (endsWithPunctuation) {
-          regexPattern = `\\b${escapedPhrase}`; // Only start boundary
-        } else {
-          regexPattern = `\\b${escapedPhrase}\\b`; // Both boundaries
-        }
+      // Build a robust regex that handles word boundaries correctly,
+      // even if the phrase starts or ends with punctuation.
+      const prefix = /^\w/.test(phrase) ? '\\b' : ''; // Add \b only if it starts with a word character
+      const suffix = /\w$/.test(phrase) ? '\\b' : ''; // Add \b only if it ends with a word character
+      const regex = new RegExp(`${prefix}${escapedPhrase}${suffix}`, 'gi');
 
-        const regex = new RegExp(regexPattern, 'gi');
-
-        processedText = processedText.replace(regex, (match) => {
-          return `<span class="clickable-word multi-word-phrase" data-word="${phrase}" data-explanation="${explanation}">${match}</span>`;
-        });
-      }
+      processedText = processedText.replace(regex, (match) => {
+        const placeholder = `__PLACEHOLDER_${placeholderIndex++}__`;
+        const replacementHtml = `<span class="clickable-word multi-word-phrase" data-word="${match}" data-explanation="${explanation}">${match}</span>`;
+        replacements.set(placeholder, replacementHtml);
+        return placeholder;
+      });
     });
 
-    // Then process individual words that haven't been wrapped yet
-    // Use a more careful approach that preserves spacing
-    const tokens = processedText.split(/(\s+)/); // Split only on whitespace, preserve spaces
-
-    const result = tokens.map(token => {
-      // If it's just whitespace, return as-is
-      if (/^\s+$/.test(token)) {
+    // 2. Second Pass: Handle single words.
+    // We split the text by spaces and process each word-like token.
+    const tokens = processedText.split(/(\s+)/); // Split on whitespace, preserving it
+    const newTokens = tokens.map(token => {
+      if (/^\s+$/.test(token) || token.startsWith('__PLACEHOLDER_')) {
+        // If it's whitespace or an already-processed phrase, leave it.
         return token;
       }
+      
+      // For each token, check for a match in the breakdown, handling punctuation.
+      // This is more robust than splitting by punctuation.
+      const cleanToken = token.replace(/[.,!?;:¿¡]+$/, ''); // Remove trailing punctuation
+      const punctuation = token.substring(cleanToken.length); // Capture the punctuation
 
-      // If it already contains a span (already processed), return as-is
-      if (token.includes('<span')) {
-        return token;
+      // Check for a match in this order:
+      // a) The full token with punctuation (e.g., "comer?")
+      // b) The token without trailing punctuation (e.g., "comer")
+      const explanation = breakdown[token] || breakdown[cleanToken];
+
+      if (explanation) {
+        const wordToWrap = breakdown[token] ? token : cleanToken;
+        const remainingPunctuation = breakdown[token] ? '' : punctuation;
+        
+        const placeholder = `__PLACEHOLDER_${placeholderIndex++}__`;
+        const replacementHtml = `<span class="clickable-word" data-word="${wordToWrap}" data-explanation="${explanation}">${wordToWrap}</span>${remainingPunctuation}`;
+        replacements.set(placeholder, replacementHtml);
+        return placeholder;
       }
+      
+      // If no match was found, return the original token
+      return token;
+    });
+    
+    processedText = newTokens.join('');
+    
+    // 3. Final Pass: Replace all placeholders with their final HTML
+    replacements.forEach((html, placeholder) => {
+      processedText = processedText.replace(placeholder, html);
+    });
 
-      // Split the token by punctuation while preserving the punctuation
-      const parts = token.split(/([.,!?;:])/);
-
-      return parts.map(part => {
-        if (!part || /^[.,!?;:]$/.test(part)) {
-          return part; // Return punctuation as-is
-        }
-
-        const cleanPart = part.trim();
-        if (!cleanPart) {
-          return part;
-        }
-
-        // Check if this individual word exists in breakdown (and isn't a multi-word phrase)
-        const explanation = breakdown[cleanPart] || breakdown[part];
-        if (explanation && !cleanPart.includes(' ')) {
-          return `<span class="clickable-word" data-word="${cleanPart}" data-explanation="${explanation}">${part}</span>`;
-        }
-
-        return part; // Return part as-is if no explanation
-      }).join('');
-    }).join('');
-
-    return result;
+    return processedText;
   }
 
   /**
