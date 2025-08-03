@@ -11,15 +11,16 @@
   <div class="container">
     <!-- Header -->
     <header class="header">
-      <h1>🗺️ Language Map Quest</h1>
-      <div class="header-controls">
-        <div class="xp-display">
-          <span class="xp-label">XP:</span>
-          <span id="xpCounter" class="xp-value">0</span>
+      <div class="header-left">
+        <h1>🗺️ Language Map Quest</h1>
+      </div>
+      <div class="header-right">
+        <div class="xp-info">
+          <span id="xpCounter" class="xp-num">0 XP</span>
+          <span id="levelLabel" class="level">Lvl 1</span>
+          <progress id="xpBar" value="0" max="100"></progress>
         </div>
-        <button id="settingsBtn" class="settings-btn" aria-label="Settings">
-          ⚙️
-        </button>
+        <button id="settingsBtn" class="settings-btn" aria-label="Settings">⚙️</button>
         <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
           <span class="dark-icon">🌙</span>
           <span class="light-icon">☀️</span>
@@ -27,46 +28,65 @@
       </div>
     </header>
 
-    <!-- Main Game Area -->
-    <main class="main-content">
-      <!-- Map Section -->
-      <section class="map-section">
-        <h2>Regiones de Español</h2>
-        <div id="mapContainer" class="map-container">
-          <!-- Map regions will be generated here -->
+    <!-- Navigation Tabs -->
+    <nav class="tab-navigation">
+      <button class="tab-btn active" data-tab="map">
+        🗺️ Regiones de Español
+      </button>
+      <button class="tab-btn" data-tab="game">
+        🎮 Juego de Flashcards
+      </button>
+      <button class="tab-btn" data-tab="progress">
+        📊 Progreso
+      </button>
+    </nav>
+
+    <!-- Tab Content -->
+    <main class="tab-content">
+      <!-- Map Tab -->
+      <section id="map-tab" class="tab-panel active">
+        <div class="map-section">
+          <h2>Regiones de Español</h2>
+          <div id="mapContainer" class="map-container">
+            <!-- Map regions will be generated here -->
+          </div>
         </div>
       </section>
 
-      <!-- Panel Section -->
-      <section class="panel-section">
-        <div class="panel-header">
-          <h3 id="panelTitle">Selecciona una región</h3>
-          <div class="mode-buttons">
-            <button id="flashcardBtn" class="mode-btn active" data-mode="flashcard">
-              📚 Flashcards
-            </button>
-            <button id="quizBtn" class="mode-btn" data-mode="quiz">
-              ❓ Quiz
-            </button>
-            <button id="crBtn" class="mode-btn" data-mode="call-response">
-              💬 Call & Response
-            </button>
+      <!-- Game Tab -->
+      <section id="game-tab" class="tab-panel">
+        <div class="game-section">
+          <div class="panel-header">
+            <h3 id="panelTitle">Selecciona una región</h3>
+            <div class="mode-buttons">
+              <button id="flashcardBtn" class="mode-btn active" data-mode="flashcard">
+                📚 Flashcards
+              </button>
+              <button id="quizBtn" class="mode-btn" data-mode="quiz">
+                ❓ Quiz
+              </button>
+              <button id="crBtn" class="mode-btn" data-mode="call-response">
+                💬 Call & Response
+              </button>
+            </div>
+          </div>
+          
+          <div id="panelBody" class="panel-body">
+            <p class="placeholder-text">Elige una región del mapa para comenzar a aprender español.</p>
           </div>
         </div>
-        
-        <div id="panelBody" class="panel-body">
-          <p class="placeholder-text">Elige una región del mapa para comenzar a aprender español.</p>
+      </section>
+
+      <!-- Progress Tab -->
+      <section id="progress-tab" class="tab-panel">
+        <div class="progress-section">
+          <h3>Progreso</h3>
+          <div id="progressContainer" class="progress-container">
+            <!-- Progress bars will be generated here -->
+          </div>
         </div>
       </section>
     </main>
-
-    <!-- Progress Section -->
-    <section class="progress-section">
-      <h3>Progreso</h3>
-      <div id="progressContainer" class="progress-container">
-        <!-- Progress bars will be generated here -->
-      </div>
-    </section>
   </div>
 
   <!-- Scripts -->

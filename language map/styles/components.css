@@ -39,6 +39,71 @@
   position: relative;
 }
 
+/* Enhanced Tab Styling */
+.tab-navigation {
+  position: relative;
+  background: var(--clr-surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.tab-btn {
+  position: relative;
+}
+
+/* Tab Panel Animations */
+.tab-panel {
+  position: relative;
+}
+
+.tab-panel.active {
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Tab Content Enhancements */
+.tab-content {
+  background: var(--clr-surface);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+/* Map Tab Specific Styling */
+#map-tab .map-section {
+  padding: var(--spacing-xl);
+}
+
+#map-tab .map-container {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* Game Tab Specific Styling */
+#game-tab .game-section {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Progress Tab Specific Styling */
+#progress-tab .progress-section {
+  border-radius: 0;
+  box-shadow: none;
+  padding: var(--spacing-xl);
+}
+
 /* Region Progress Bar */
 .region-progress-bar {
   position: absolute;
@@ -58,84 +123,27 @@
   border-radius: 0 0 var(--radius-md) var(--radius-md);
 }
 
-/* XP Level Display */
-.xp-level {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: var(--spacing-sm);
-}
 
-.level-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--clr-primary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.level-number {
-  font-size: 0.75rem;
-  color: var(--clr-text-muted);
-  font-weight: 500;
-}
-
-.xp-details {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.xp-value {
-  font-weight: 700;
-  color: var(--clr-success);
-  font-size: 1.1rem;
-}
-
-.xp-progress-bar {
-  width: 100%;
-  height: 6px;
-  background: var(--clr-border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  margin: var(--spacing-xs) 0;
-}
-
-.xp-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--clr-success), var(--clr-primary));
-  transition: width 0.3s ease;
-  border-radius: var(--radius-sm);
-}
-
-.xp-next {
-  font-size: 0.75rem;
-  color: var(--clr-text-muted);
-  text-align: center;
-  line-height: 1.2;
-}
 
 /* Flashcard Components - FIXED DESIGN */
 .flashcard {
-  perspective: 1000px;
   width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
+  max-width: 600px;
+  height: clamp(240px, 40vh, 420px);
+  margin: var(--spacing-xl) auto var(--spacing-md);
+  position: relative;
+  cursor: pointer;
 }
 
 .flashcard-inner {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 100%;
   text-align: center;
-  transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
-  transform-style: preserve-3d;
-  cursor: pointer;
 }
 
-.flashcard.flipped .flashcard-inner {
-  transform: rotateY(180deg);
+.flashcard.flipped .flashcard-back {
+  clip-path: inset(0 0 0 0);
 }
 
 .flashcard-front,
@@ -143,7 +151,6 @@
   position: absolute;
   width: 100%;
   height: 100%;
-  backface-visibility: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -152,19 +159,21 @@
   box-shadow: var(--shadow-md);
   font-size: 1.25rem;
   font-weight: 600;
-  transition: all 0.3s ease;
+  transition: clip-path 0.4s cubic-bezier(0.45, 0, 0.55, 1);
 }
 
 .flashcard-front {
-  background: linear-gradient(135deg, var(--clr-primary), var(--clr-secondary));
+  background: var(--clr-primary);
   color: white;
+  z-index: 1;
 }
 
 .flashcard-back {
   background: var(--clr-surface);
   color: var(--clr-text);
-  transform: rotateY(180deg);
   border: 2px solid var(--clr-border);
+  clip-path: inset(0 0 100% 0);
+  z-index: 2;
 }
 
 /* TTS Button Styling */
@@ -269,7 +278,7 @@
   display: flex;
   justify-content: center;
   gap: var(--spacing-md);
-  margin-top: var(--spacing-lg);
+  margin-top: var(--spacing-md);
 }
 
 .flashcard-btn {
@@ -277,6 +286,7 @@
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
+  font-size: .9rem;
   font-weight: 600;
   transition: all 0.2s ease;
 }
@@ -440,6 +450,45 @@
 .correct-answer {
   font-weight: 600;
   margin: var(--spacing-xs) 0;
+}
+
+/* Call & Response Control Buttons */
+.cr-controls {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  margin-top: var(--spacing-md);
+}
+
+.cr-try-again,
+.cr-continue {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cr-try-again {
+  background: var(--clr-warning);
+  color: white;
+}
+
+.cr-try-again:hover {
+  background: #d97706;
+  transform: translateY(-1px);
+}
+
+.cr-continue {
+  background: var(--clr-primary);
+  color: white;
+}
+
+.cr-continue:hover {
+  background: var(--clr-secondary);
+  transform: translateY(-1px);
 }
 
 /* Progress Bar Components */
@@ -816,6 +865,20 @@
   transform: translateY(0);
 }
 
+/* Multi-word phrase styling */
+.clickable-word.multi-word-phrase {
+  border-bottom: 2px dotted rgba(59, 130, 246, 0.6);
+  padding: 2px 4px;
+  margin: 0 1px;
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.clickable-word.multi-word-phrase:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-bottom-color: var(--clr-primary);
+  border-bottom-style: solid;
+}
+
 /* Word Popup */
 .word-popup {
   position: fixed;
@@ -941,4 +1004,4 @@
 
 .cr-prompt .clickable-word:hover {
   background: rgba(59, 130, 246, 0.1);
-} 
+}

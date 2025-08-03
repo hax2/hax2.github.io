@@ -41,6 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     toggleTheme: () => {
       toggleTheme();
+    },
+    switchTab: (tabName) => {
+      ui.switchTab(tabName);
     }
   };
   
@@ -68,6 +71,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if ((e.ctrlKey || e.metaKey) && e.key === ',') {
       e.preventDefault();
       ui.showSettings();
+    }
+    
+    // Tab switching shortcuts
+    if (e.altKey) {
+      switch(e.key) {
+        case '1':
+          e.preventDefault();
+          ui.switchTab('map');
+          break;
+        case '2':
+          e.preventDefault();
+          ui.switchTab('game');
+          break;
+        case '3':
+          e.preventDefault();
+          ui.switchTab('progress');
+          break;
+      }
     }
   });
   
@@ -98,7 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   console.log('🚀 Language Map Quest initialized successfully!');
-  console.log('💡 Debug commands available: debugGame.addXP(100), debugGame.resetProgress(), debugGame.exportData()');
+  console.log('💡 Debug commands available: debugGame.addXP(100), debugGame.resetProgress(), debugGame.exportData(), debugGame.switchTab("map")');
+  console.log('⌨️ Keyboard shortcuts: Alt+1 (Map), Alt+2 (Game), Alt+3 (Progress), Ctrl/Cmd+D (Dark Mode), Ctrl/Cmd+, (Settings)');
 });
 
 /**
@@ -141,28 +163,34 @@ document.addEventListener('keydown', function(event) {
   
   switch(event.key) {
     case '1':
-      ui.switchMode('flashcard');
+      if (ui.getCurrentTab() === 'game') {
+        ui.switchMode('flashcard');
+      }
       break;
     case '2':
-      ui.switchMode('quiz');
+      if (ui.getCurrentTab() === 'game') {
+        ui.switchMode('quiz');
+      }
       break;
     case '3':
-      ui.switchMode('call-response');
+      if (ui.getCurrentTab() === 'game') {
+        ui.switchMode('call-response');
+      }
       break;
     case ' ':
       // Space to flip flashcard
-      if (game.currentMode === 'flashcard') {
+      if (ui.getCurrentTab() === 'game' && game.currentMode === 'flashcard') {
         ui.flipFlashcard();
       }
       event.preventDefault();
       break;
     case 'ArrowLeft':
-      if (game.currentMode === 'flashcard') {
+      if (ui.getCurrentTab() === 'game' && game.currentMode === 'flashcard') {
         ui.previousFlashcard();
       }
       break;
     case 'ArrowRight':
-      if (game.currentMode === 'flashcard') {
+      if (ui.getCurrentTab() === 'game' && game.currentMode === 'flashcard') {
         ui.nextFlashcard();
       }
       break;

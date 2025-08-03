@@ -10,14 +10,17 @@ class LanguageGameUI {
       progressContainer: document.getElementById('progressContainer'),
       flashcardBtn: document.getElementById('flashcardBtn'),
       quizBtn: document.getElementById('quizBtn'),
-      crBtn: document.getElementById('crBtn')
+      crBtn: document.getElementById('crBtn'),
+      levelLabel: document.getElementById('levelLabel'),
+      xpBar: document.getElementById('xpBar')
     };
-    
+
     this.currentCardIndex = 0;
     this.currentCards = [];
     this.currentCard = null; // Store current card for word lookups
     this.popup = null; // Store popup element
-    
+    this.currentTab = 'map'; // Track current active tab
+
     this.initializeEventListeners();
   }
 
@@ -29,13 +32,72 @@ class LanguageGameUI {
     this.elements.flashcardBtn.addEventListener('click', () => this.switchMode('flashcard'));
     this.elements.quizBtn.addEventListener('click', () => this.switchMode('quiz'));
     this.elements.crBtn.addEventListener('click', () => this.switchMode('call-response'));
-    
+
+    // Tab navigation listeners
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabName = btn.getAttribute('data-tab');
+        this.switchTab(tabName);
+      });
+    });
+
     // Close popup when clicking outside
     document.addEventListener('click', (e) => {
       if (this.popup && !this.popup.contains(e.target) && !e.target.classList.contains('clickable-word')) {
         this.hidePopup();
       }
     });
+  }
+
+  /**
+   * Switch between tabs
+   * @param {string} tabName - Name of the tab to switch to
+   */
+  switchTab(tabName) {
+    // Update tab button states
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.getAttribute('data-tab') === tabName) {
+        btn.classList.add('active');
+      }
+    });
+
+    // Update tab panel visibility
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    tabPanels.forEach(panel => {
+      panel.classList.remove('active');
+      if (panel.id === `${tabName}-tab`) {
+        panel.classList.add('active');
+      }
+    });
+
+    this.currentTab = tabName;
+
+    // Update content based on tab
+    switch (tabName) {
+      case 'map':
+        this.renderMap();
+        break;
+      case 'game':
+        this.renderCurrentMode();
+        break;
+      case 'progress':
+        this.renderProgress();
+        break;
+    }
+
+    // Save current tab to localStorage
+    localStorage.setItem('currentTab', tabName);
+  }
+
+  /**
+   * Get the current active tab
+   * @returns {string} Current tab name
+   */
+  getCurrentTab() {
+    return this.currentTab;
   }
 
   /**
@@ -48,24 +110,84 @@ class LanguageGameUI {
     if (!breakdown || Object.keys(breakdown).length === 0) {
       return text; // Return original text if no breakdown available
     }
-    
-    // Split text into words and punctuation
-    const words = text.split(/(\s+|[.,!?;:])/);
-    
-    return words.map(word => {
-      const cleanWord = word.trim();
-      if (!cleanWord || /^\s*$/.test(word)) {
-        return word; // Return spaces and punctuation as-is
+
+    let processedText = text;
+
+    // First, identify and process multi-word phrases
+    // Sort breakdown keys by length (longest first) to handle overlapping phrases correctly
+    const sortedKeys = Object.keys(breakdown).sort((a, b) => b.length - a.length);
+
+    sortedKeys.forEach(phrase => {
+      // Only process phrases that contain spaces (multi-word phrases)
+      if (phrase.includes(' ')) {
+        const explanation = breakdown[phrase];
+        // Create a regex that matches the phrase, handling punctuation at start/end
+        // Escape special regex characters
+        const escapedPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        // For phrases that start with punctuation, don't use word boundary at the start
+        // For phrases that end with punctuation, don't use word boundary at the end
+        const startsWithPunctuation = /^[¿¡.,!?;:]/.test(phrase);
+        const endsWithPunctuation = /[.,!?;:]$/.test(phrase);
+
+        let regexPattern;
+        if (startsWithPunctuation && endsWithPunctuation) {
+          regexPattern = escapedPhrase; // No word boundaries
+        } else if (startsWithPunctuation) {
+          regexPattern = `${escapedPhrase}\\b`; // Only end boundary
+        } else if (endsWithPunctuation) {
+          regexPattern = `\\b${escapedPhrase}`; // Only start boundary
+        } else {
+          regexPattern = `\\b${escapedPhrase}\\b`; // Both boundaries
+        }
+
+        const regex = new RegExp(regexPattern, 'gi');
+
+        processedText = processedText.replace(regex, (match) => {
+          return `<span class="clickable-word multi-word-phrase" data-word="${phrase}" data-explanation="${explanation}">${match}</span>`;
+        });
       }
-      
-      // Check if this word exists in breakdown
-      const explanation = breakdown[cleanWord] || breakdown[word];
-      if (explanation) {
-        return `<span class="clickable-word" data-word="${cleanWord}" data-explanation="${explanation}">${word}</span>`;
+    });
+
+    // Then process individual words that haven't been wrapped yet
+    // Use a more careful approach that preserves spacing
+    const tokens = processedText.split(/(\s+)/); // Split only on whitespace, preserve spaces
+
+    const result = tokens.map(token => {
+      // If it's just whitespace, return as-is
+      if (/^\s+$/.test(token)) {
+        return token;
       }
-      
-      return word; // Return word as-is if no explanation
+
+      // If it already contains a span (already processed), return as-is
+      if (token.includes('<span')) {
+        return token;
+      }
+
+      // Split the token by punctuation while preserving the punctuation
+      const parts = token.split(/([.,!?;:])/);
+
+      return parts.map(part => {
+        if (!part || /^[.,!?;:]$/.test(part)) {
+          return part; // Return punctuation as-is
+        }
+
+        const cleanPart = part.trim();
+        if (!cleanPart) {
+          return part;
+        }
+
+        // Check if this individual word exists in breakdown (and isn't a multi-word phrase)
+        const explanation = breakdown[cleanPart] || breakdown[part];
+        if (explanation && !cleanPart.includes(' ')) {
+          return `<span class="clickable-word" data-word="${cleanPart}" data-explanation="${explanation}">${part}</span>`;
+        }
+
+        return part; // Return part as-is if no explanation
+      }).join('');
     }).join('');
+
+    return result;
   }
 
   /**
@@ -77,7 +199,7 @@ class LanguageGameUI {
   showPopup(word, explanation, event) {
     // Hide existing popup
     this.hidePopup();
-    
+
     // Create popup element
     this.popup = document.createElement('div');
     this.popup.className = 'word-popup';
@@ -92,24 +214,24 @@ class LanguageGameUI {
         </div>
       </div>
     `;
-    
+
     // Position popup near the clicked word
     const rect = event.target.getBoundingClientRect();
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-    
+
     // Calculate initial position
     let top = rect.bottom + scrollTop + 5;
     let left = rect.left + scrollLeft;
-    
+
     // Add to body first to get popup dimensions
     document.body.appendChild(this.popup);
-    
+
     // Adjust position to keep popup on screen
     const popupRect = this.popup.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    
+
     // Adjust horizontal position
     if (left + popupRect.width > viewportWidth + scrollLeft) {
       left = viewportWidth + scrollLeft - popupRect.width - 10;
@@ -117,7 +239,7 @@ class LanguageGameUI {
     if (left < scrollLeft) {
       left = scrollLeft + 10;
     }
-    
+
     // Adjust vertical position
     if (top + popupRect.height > viewportHeight + scrollTop) {
       // Show above the word if there's not enough space below
@@ -126,11 +248,11 @@ class LanguageGameUI {
     if (top < scrollTop) {
       top = scrollTop + 10;
     }
-    
+
     this.popup.style.position = 'absolute';
     this.popup.style.top = `${top}px`;
     this.popup.style.left = `${left}px`;
-    
+
     // Add click event to close popup
     this.popup.addEventListener('click', (e) => {
       if (e.target.classList.contains('popup-close')) {
@@ -159,19 +281,27 @@ class LanguageGameUI {
         e.stopPropagation();
         const wordText = word.dataset.word;
         const explanation = word.dataset.explanation;
+
+        // Determine language by checking if the word is on the front or back of the card
+        const isFront = e.target.closest('.flashcard-front');
+        const lang = isFront ? 'es' : 'en';
+
+        // Speak the clicked word
+        speakSpanish(wordText, lang);
+
+        // Show the definition popup
         this.showPopup(wordText, explanation, e);
       });
     });
-    
-    // Add click handlers for quiz options
+  }
+
+  /**
+   * Add click handlers to quiz options
+   */
+  addQuizOptionHandlers() {
     const quizOptions = document.querySelectorAll('.quiz-option');
     quizOptions.forEach(option => {
       option.addEventListener('click', (e) => {
-        // Don't trigger if clicking on a clickable word
-        if (e.target.classList.contains('clickable-word')) {
-          return;
-        }
-        
         const userAnswer = option.dataset.answer;
         const correctAnswer = option.dataset.correct;
         this.checkQuizAnswer(userAnswer, correctAnswer);
@@ -183,20 +313,12 @@ class LanguageGameUI {
    * Update XP display with level information
    */
   updateXPDisplay() {
-    const levelInfo = game.getLevelInfo();
-    this.elements.xpCounter.innerHTML = `
-      <div class="xp-level">
-        <span class="level-title">${levelInfo.title}</span>
-        <span class="level-number">Nivel ${levelInfo.level}</span>
-      </div>
-      <div class="xp-details">
-        <span class="xp-value">${formatXP(game.xp)} XP</span>
-        <div class="xp-progress-bar">
-          <div class="xp-progress-fill" style="width: ${levelInfo.levelProgress}%"></div>
-        </div>
-        <span class="xp-next">${formatXP(levelInfo.xpNeeded - levelInfo.xpProgress)} XP para el siguiente nivel</span>
-      </div>
-    `;
+    const lvl = game.getLevelInfo();
+    this.elements.xpCounter.textContent = `${formatXP(game.xp)} XP`;
+    document.getElementById('levelLabel').textContent = `Lvl ${lvl.level}`;
+    const bar = document.getElementById('xpBar');
+    bar.max = lvl.xpNeeded;
+    bar.value = lvl.xpProgress;
   }
 
   /**
@@ -204,18 +326,18 @@ class LanguageGameUI {
    */
   renderMap() {
     this.elements.mapContainer.innerHTML = '';
-    
+
     const regionsWithProgress = game.getAllRegionsWithProgress();
-    
+
     Object.entries(regionsWithProgress).forEach(([regionKey, regionData]) => {
       const regionCard = document.createElement('div');
       regionCard.className = 'region-card';
       regionCard.style.backgroundColor = regionData.color;
       regionCard.setAttribute('data-region', regionKey);
-      
+
       const progress = regionData.progress;
       const percentage = Math.round(progress.percentage);
-      
+
       regionCard.innerHTML = `
         <div>
           <h3>${regionData.name}</h3>
@@ -227,9 +349,9 @@ class LanguageGameUI {
           <div class="region-progress-fill" style="width: ${percentage}%"></div>
         </div>
       `;
-      
+
       regionCard.addEventListener('click', () => this.selectRegion(regionKey));
-      
+
       this.elements.mapContainer.appendChild(regionCard);
     });
   }
@@ -240,21 +362,22 @@ class LanguageGameUI {
    */
   selectRegion(regionKey) {
     game.setCurrentRegion(regionKey);
-    
+
     // Update map selection
     const regionCards = this.elements.mapContainer.querySelectorAll('.region-card');
     regionCards.forEach(card => card.classList.remove('selected'));
-    
+
     const selectedCard = this.elements.mapContainer.querySelector(`[data-region="${regionKey}"]`);
     if (selectedCard) {
       selectedCard.classList.add('selected');
     }
-    
+
     // Update panel title
     const region = REGIONS[regionKey];
     this.elements.panelTitle.textContent = region.name;
-    
-    // Render current mode
+
+    // Switch to game tab and render current mode
+    this.switchTab('game');
     this.renderCurrentMode();
   }
 
@@ -264,16 +387,16 @@ class LanguageGameUI {
    */
   switchMode(mode) {
     game.setCurrentMode(mode);
-    
+
     // Update button states
     const modeButtons = [this.elements.flashcardBtn, this.elements.quizBtn, this.elements.crBtn];
     modeButtons.forEach(btn => btn.classList.remove('active'));
-    
+
     const activeButton = this.elements[`${mode.replace('-', '')}Btn`];
     if (activeButton) {
       activeButton.classList.add('active');
     }
-    
+
     // Render the new mode
     this.renderCurrentMode();
   }
@@ -286,7 +409,7 @@ class LanguageGameUI {
       this.renderPlaceholder();
       return;
     }
-    
+
     switch (game.currentMode) {
       case 'flashcard':
         this.renderFlashcards();
@@ -318,7 +441,7 @@ class LanguageGameUI {
       this.elements.panelBody.innerHTML = '<p class="text-center">No hay flashcards disponibles.</p>';
       return;
     }
-    
+
     this.currentCards = flashcards;
     this.currentCardIndex = 0;
     this.renderCurrentFlashcard();
@@ -340,13 +463,13 @@ class LanguageGameUI {
       `;
       return;
     }
-    
+
     const card = this.currentCards[this.currentCardIndex];
     this.currentCard = card; // Store current card for word lookups
-    
+
     // Check if card has enhanced information
     const hasEnhancedInfo = card.context || card.grammar || card.breakdown;
-    
+
     this.elements.panelBody.innerHTML = `
       <div class="flashcard" onclick="ui.flipFlashcard()">
         <div class="flashcard-inner">
@@ -385,9 +508,9 @@ class LanguageGameUI {
               <div class="word-breakdown">
                 <strong>🔍 Desglose:</strong>
                 <div class="breakdown-items">
-                  ${Object.entries(card.breakdown).map(([word, explanation]) => 
-                    `<div class="breakdown-item"><span class="word">${word}</span>: ${explanation}</div>`
-                  ).join('')}
+                  ${Object.entries(card.breakdown).map(([word, explanation]) =>
+      `<div class="breakdown-item"><span class="word">${word}</span>: ${explanation}</div>`
+    ).join('')}
                 </div>
               </div>
             ` : ''}
@@ -423,7 +546,7 @@ class LanguageGameUI {
     const flashcard = this.elements.panelBody.querySelector('.flashcard');
     if (flashcard) {
       flashcard.classList.toggle('flipped');
-      
+
       // Auto-play TTS based on settings
       setTimeout(() => {
         const card = this.currentCards[this.currentCardIndex];
@@ -450,7 +573,7 @@ class LanguageGameUI {
     if (detailsCard) {
       const isVisible = detailsCard.style.display !== 'none';
       detailsCard.style.display = isVisible ? 'none' : 'block';
-      
+
       // Update button text
       const detailsBtn = this.elements.panelBody.querySelector('.flashcard-btn[onclick*="toggleFlashcardDetails"]');
       if (detailsBtn) {
@@ -485,13 +608,13 @@ class LanguageGameUI {
   markAsLearned() {
     const card = this.currentCards[this.currentCardIndex];
     const wasNewlyLearned = game.addLearned(card.front, card.back, game.currentRegionKey, 10);
-    
+
     if (wasNewlyLearned) {
       this.updateXPDisplay();
       this.renderProgress();
       this.renderMap(); // Update map progress
     }
-    
+
     this.nextFlashcard();
   }
 
@@ -512,25 +635,25 @@ class LanguageGameUI {
       `;
       return;
     }
-    
+
     this.currentCard = card; // Store current card for word lookups
     const options = game.getQuizOptions(card);
-    
+
     this.elements.panelBody.innerHTML = `
       <div class="quiz-question">
-        <h4>¿Cómo se dice "${this.makeWordsClickable(card.back, card.breakdown)}" en español?</h4>
+        <h4>¿Cómo se dice "${card.back}" en español?</h4>
       </div>
       <div class="quiz-options">
         ${options.map(option => `
           <div class="quiz-option" data-answer="${option.front}" data-correct="${card.front}">
-            ${this.makeWordsClickable(option.front, card.breakdown)}
+            ${option.front}
           </div>
         `).join('')}
       </div>
     `;
-    
-    // Add click handlers to clickable words
-    this.addWordClickHandlers();
+
+    // Add click handlers for quiz options (not for words)
+    this.addQuizOptionHandlers();
   }
 
   /**
@@ -541,15 +664,15 @@ class LanguageGameUI {
   checkQuizAnswer(userAnswer, correctAnswer) {
     const isCorrect = userAnswer === correctAnswer;
     const card = { front: correctAnswer, back: '' };
-    
+
     // Add feedback
     const feedback = document.createElement('div');
     feedback.className = `quiz-feedback ${isCorrect ? 'correct' : 'incorrect'}`;
     feedback.textContent = isCorrect ? '¡Correcto!' : `Incorrecto. La respuesta correcta es: ${correctAnswer}`;
-    
+
     const quizOptions = this.elements.panelBody.querySelector('.quiz-options');
     quizOptions.appendChild(feedback);
-    
+
     // Mark as learned if correct
     if (isCorrect) {
       game.addLearned(card.front, card.back, game.currentRegionKey, 15);
@@ -557,7 +680,7 @@ class LanguageGameUI {
       this.renderProgress();
       this.renderMap(); // Update map progress
     }
-    
+
     // Disable all options
     const options = this.elements.panelBody.querySelectorAll('.quiz-option');
     options.forEach(option => {
@@ -566,7 +689,7 @@ class LanguageGameUI {
         option.classList.add(isCorrect ? 'correct' : 'incorrect');
       }
     });
-    
+
     // Continue after delay
     setTimeout(() => {
       this.renderQuiz();
@@ -590,9 +713,9 @@ class LanguageGameUI {
       `;
       return;
     }
-    
+
     this.currentCard = card; // Store current card for word lookups
-    
+
     this.elements.panelBody.innerHTML = `
       <div class="cr-prompt">
         <button class="tts-btn" onclick="speakSpanish('${card.back}')">🔊</button>
@@ -605,9 +728,30 @@ class LanguageGameUI {
       </button>
       <div id="crFeedback" style="margin-top: 0.6rem; text-align: center;"></div>
     `;
-    
+
     // Add click handlers to clickable words
     this.addWordClickHandlers();
+  }
+
+  /**
+   * Clear call & response answer to allow retry
+   */
+  clearCRAnswer() {
+    const input = this.elements.panelBody.querySelector('.cr-input');
+    const submitBtn = this.elements.panelBody.querySelector('.cr-submit');
+    const feedback = document.getElementById('crFeedback');
+
+    // Clear and re-enable input
+    input.value = '';
+    input.disabled = false;
+    input.style.borderColor = '';
+    input.focus();
+
+    // Re-enable submit button
+    submitBtn.disabled = false;
+
+    // Clear feedback
+    feedback.innerHTML = '';
   }
 
   /**
@@ -619,27 +763,46 @@ class LanguageGameUI {
     const validation = game.checkCRAnswer(userAnswer, { front: correctAnswer });
     const feedback = document.getElementById('crFeedback');
     const input = this.elements.panelBody.querySelector('.cr-input');
-    
+
     if (validation.isCorrect) {
       input.style.borderColor = 'var(--clr-success)';
+
+      // Show correct answer if confidence is less than 99% (not perfect)
+      const showCorrectAnswer = validation.confidence < 0.99;
+
       feedback.innerHTML = `
         <div class="cr-feedback correct">
           <strong>¡Correcto!</strong>
+          ${showCorrectAnswer ? `
+            <div class="correct-answer">
+              Respuesta ideal: <strong>${correctAnswer}</strong>
+            </div>
+          ` : ''}
           <div class="feedback-details">
-            ${validation.type === 'exact' ? 'Respuesta perfecta' : 
-              validation.type === 'partial' ? 'Respuesta parcial aceptada' :
-              validation.type === 'fuzzy' ? `Respuesta aceptada (similitud: ${Math.round(validation.confidence * 100)}%)` :
+            ${validation.type === 'exact' ? 'Respuesta perfecta' :
+          validation.type === 'partial' ? 'Respuesta parcial aceptada' :
+            validation.type === 'fuzzy' ? `Respuesta aceptada (similitud: ${Math.round(validation.confidence * 100)}%)` :
               'Respuesta aceptada'}
           </div>
+          ${showCorrectAnswer ? `
+            <div class="feedback-details">
+              Tu respuesta: "${userAnswer}"
+            </div>
+          ` : ''}
         </div>
       `;
       feedback.style.color = 'var(--clr-success)';
-      
+
       const card = { front: correctAnswer, back: '' };
       game.addLearned(card.front, card.back, game.currentRegionKey, 15);
       this.updateXPDisplay();
       this.renderProgress();
       this.renderMap(); // Update map progress
+
+      // Auto-advance to next question after correct answer
+      setTimeout(() => {
+        this.renderCallResponse();
+      }, 2000);
     } else {
       input.style.borderColor = 'var(--clr-error)';
       feedback.innerHTML = `
@@ -653,15 +816,23 @@ class LanguageGameUI {
             <br>
             Similitud: ${Math.round(validation.confidence * 100)}%
           </div>
+          <div class="cr-controls">
+            <button class="cr-try-again" onclick="ui.clearCRAnswer()">
+              Intentar de nuevo
+            </button>
+            <button class="cr-continue" onclick="ui.renderCallResponse()">
+              Continuar →
+            </button>
+          </div>
         </div>
       `;
       feedback.style.color = 'var(--clr-error)';
+
+      // Disable the submit button and input after wrong answer
+      const submitBtn = this.elements.panelBody.querySelector('.cr-submit');
+      input.disabled = true;
+      submitBtn.disabled = true;
     }
-    
-    // Continue after delay
-    setTimeout(() => {
-      this.renderCallResponse();
-    }, 3000);
   }
 
   /**
@@ -669,13 +840,13 @@ class LanguageGameUI {
    */
   renderProgress() {
     this.elements.progressContainer.innerHTML = '';
-    
+
     const regionsWithProgress = game.getAllRegionsWithProgress();
-    
+
     Object.entries(regionsWithProgress).forEach(([regionKey, regionData]) => {
       const progress = regionData.progress;
       const percentage = Math.round(progress.percentage);
-      
+
       const progressItem = document.createElement('div');
       progressItem.className = 'progress-item';
       progressItem.innerHTML = `
@@ -687,7 +858,7 @@ class LanguageGameUI {
           <div class="progress-fill" style="width: ${percentage}%"></div>
         </div>
       `;
-      
+
       this.elements.progressContainer.appendChild(progressItem);
     });
   }
@@ -700,6 +871,10 @@ class LanguageGameUI {
     this.renderMap();
     this.renderProgress();
     this.renderPlaceholder();
+
+    // Restore last active tab
+    const lastTab = localStorage.getItem('currentTab') || 'map';
+    this.switchTab(lastTab);
   }
 
   /**
@@ -736,6 +911,10 @@ class LanguageGameUI {
             <div class="setting-item">
               <label>Velocidad: <input type="range" id="ttsRate" min="0.5" max="2" step="0.1" value="${game.getSetting('ttsRate')}"></label>
               <span id="ttsRateValue">${game.getSetting('ttsRate')}x</span>
+            </div>
+            <div class="setting-item">
+              <label>Tiempo de espera: <input type="range" id="ttsCooldown" min="1000" max="10000" step="500" value="${game.getSetting('ttsCooldown')}"></label>
+              <span id="ttsCooldownValue">${game.getSetting('ttsCooldown') / 1000}s</span>
             </div>
           </div>
           
@@ -828,9 +1007,7 @@ class LanguageGameUI {
         </div>
       </div>
     `;
-    
-    document.body.appendChild(modal);
-    
+
     // Add event listeners for range inputs
     this.setupSettingsListeners();
   }
@@ -847,7 +1024,7 @@ class LanguageGameUI {
         volumeValue.textContent = Math.round(e.target.value * 100) + '%';
       });
     }
-    
+
     // Rate range
     const rateInput = document.getElementById('ttsRate');
     const rateValue = document.getElementById('ttsRateValue');
@@ -856,7 +1033,16 @@ class LanguageGameUI {
         rateValue.textContent = e.target.value + 'x';
       });
     }
-    
+
+    // Cooldown range
+    const cooldownInput = document.getElementById('ttsCooldown');
+    const cooldownValue = document.getElementById('ttsCooldownValue');
+    if (cooldownInput) {
+      cooldownInput.addEventListener('input', (e) => {
+        cooldownValue.textContent = (e.target.value / 1000) + 's';
+      });
+    }
+
     // Flip speed range
     const flipSpeedInput = document.getElementById('flashcardFlipSpeed');
     const flipSpeedValue = document.getElementById('flashcardFlipSpeedValue');
@@ -872,40 +1058,41 @@ class LanguageGameUI {
    */
   saveSettings() {
     const settings = {};
-    
+
     // TTS Settings
     settings.ttsAutoPlay = document.getElementById('ttsAutoPlay').checked;
     settings.ttsAutoPlayEnglish = document.getElementById('ttsAutoPlayEnglish').checked;
     settings.ttsVolume = parseFloat(document.getElementById('ttsVolume').value);
     settings.ttsRate = parseFloat(document.getElementById('ttsRate').value);
-    
+    settings.ttsCooldown = parseInt(document.getElementById('ttsCooldown').value);
+
     // Animation Settings
     settings.animationsEnabled = document.getElementById('animationsEnabled').checked;
     settings.flashcardFlipSpeed = parseFloat(document.getElementById('flashcardFlipSpeed').value);
-    
+
     // Game Settings
     settings.showProgressBars = document.getElementById('showProgressBars').checked;
     settings.showXP = document.getElementById('showXP').checked;
     settings.showCorrectAnswers = document.getElementById('showCorrectAnswers').checked;
     settings.flexibleAnswerValidation = document.getElementById('flexibleAnswerValidation').checked;
-    
+
     // UI Settings
     settings.darkMode = document.getElementById('darkMode').value;
     settings.compactMode = document.getElementById('compactMode').checked;
     settings.largeText = document.getElementById('largeText').checked;
-    
+
     // Accessibility
     settings.highContrast = document.getElementById('highContrast').checked;
     settings.reduceMotion = document.getElementById('reduceMotion').checked;
-    
+
     // Update game settings
     Object.entries(settings).forEach(([key, value]) => {
       game.updateSetting(key, value);
     });
-    
+
     // Apply settings immediately
     this.applySettings();
-    
+
     this.closeSettings();
   }
 
@@ -939,27 +1126,27 @@ class LanguageGameUI {
     } else {
       setTheme(darkMode);
     }
-    
+
     // Apply animations
     const animationsEnabled = game.getSetting('animationsEnabled');
     document.body.style.setProperty('--transition-speed', animationsEnabled ? game.getSetting('transitionSpeed') + 's' : '0s');
-    
+
     // Apply compact mode
     const compactMode = game.getSetting('compactMode');
     document.body.classList.toggle('compact-mode', compactMode);
-    
+
     // Apply large text
     const largeText = game.getSetting('largeText');
     document.body.classList.toggle('large-text', largeText);
-    
+
     // Apply high contrast
     const highContrast = game.getSetting('highContrast');
     document.body.classList.toggle('high-contrast', highContrast);
-    
+
     // Apply reduce motion
     const reduceMotion = game.getSetting('reduceMotion');
     document.body.classList.toggle('reduce-motion', reduceMotion);
-    
+
     // Re-render UI elements that depend on settings
     this.renderMap();
     this.updateXPDisplay();
@@ -967,4 +1154,4 @@ class LanguageGameUI {
 }
 
 // Create global UI instance
-const ui = new LanguageGameUI(); 
+const ui = new LanguageGameUI();

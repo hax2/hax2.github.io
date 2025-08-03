@@ -58,6 +58,22 @@ function shuffle(array) {
   return shuffled;
 }
 
+// TTS cache to prevent repeated messages
+const ttsCache = {
+  messages: new Map()
+};
+
+/**
+ * Get TTS cooldown time from settings
+ * @returns {number} - Cooldown time in milliseconds
+ */
+function getTTSCooldown() {
+  if (typeof game !== 'undefined' && game.getSetting) {
+    return game.getSetting('ttsCooldown');
+  }
+  return 3000; // Default 3 seconds
+}
+
 /**
  * Speak Spanish text using Web Speech API
  * @param {string} text - Text to speak
@@ -65,24 +81,51 @@ function shuffle(array) {
  */
 function speakSpanish(text, lang = 'es') {
   if ('speechSynthesis' in window) {
-    // Stop any current speech
+    const messageKey = `${text}_${lang}`;
+    const now = Date.now();
+    const cooldownTime = getTTSCooldown();
+
+    const lastSpoken = ttsCache.messages.get(messageKey);
+    if (lastSpoken && (now - lastSpoken) < cooldownTime) {
+      return;
+    }
+
     speechSynthesis.cancel();
-    
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang === 'en' ? 'en-US' : 'es-ES';
-    
-    // Apply TTS settings if game is available
+
+    // Find a preferred voice for English
+    if (lang === 'en') {
+      const voices = speechSynthesis.getVoices();
+      const preferredVoice = voices.find(voice => 
+        voice.lang.startsWith('en') && 
+        (voice.name.includes('Google') || voice.name.includes('Microsoft'))
+      );
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+    }
+
     if (typeof game !== 'undefined' && game.getSetting) {
       utterance.volume = game.getSetting('ttsVolume');
       utterance.rate = game.getSetting('ttsRate');
       utterance.pitch = game.getSetting('ttsPitch');
     } else {
-      // Default values
       utterance.volume = 0.8;
       utterance.rate = 1.0;
       utterance.pitch = 1.0;
     }
-    
+
+    ttsCache.messages.set(messageKey, now);
+
+    const oneMinuteAgo = now - 60000;
+    for (const [key, timestamp] of ttsCache.messages.entries()) {
+      if (timestamp < oneMinuteAgo) {
+        ttsCache.messages.delete(key);
+      }
+    }
+
     speechSynthesis.speak(utterance);
   }
 }
