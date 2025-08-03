@@ -100,14 +100,14 @@ class LanguageGameUI {
     return this.currentTab;
   }
 
-   /**
-   * Create clickable word spans from text.
-   * This is a robust, multi-pass version that correctly handles punctuation and overlapping phrases.
-   * @param {string} text - Text to make clickable
-   * @param {Object} breakdown - Word breakdown object
-   * @returns {string} - HTML with clickable words
-   */
-   makeWordsClickable(text, breakdown = {}) {
+  /**
+  * Create clickable word spans from text.
+  * This is a robust, multi-pass version that correctly handles punctuation and overlapping phrases.
+  * @param {string} text - Text to make clickable
+  * @param {Object} breakdown - Word breakdown object
+  * @returns {string} - HTML with clickable words
+  */
+  makeWordsClickable(text, breakdown = {}) {
     if (!breakdown || Object.keys(breakdown).length === 0) {
       return text;
     }
@@ -147,7 +147,7 @@ class LanguageGameUI {
         // If it's whitespace or an already-processed phrase, leave it.
         return token;
       }
-      
+
       // For each token, check for a match in the breakdown, handling punctuation.
       // This is more robust than splitting by punctuation.
       const cleanToken = token.replace(/[.,!?;:¿¡]+$/, ''); // Remove trailing punctuation
@@ -161,19 +161,19 @@ class LanguageGameUI {
       if (explanation) {
         const wordToWrap = breakdown[token] ? token : cleanToken;
         const remainingPunctuation = breakdown[token] ? '' : punctuation;
-        
+
         const placeholder = `__PLACEHOLDER_${placeholderIndex++}__`;
         const replacementHtml = `<span class="clickable-word" data-word="${wordToWrap}" data-explanation="${explanation}">${wordToWrap}</span>${remainingPunctuation}`;
         replacements.set(placeholder, replacementHtml);
         return placeholder;
       }
-      
+
       // If no match was found, return the original token
       return token;
     });
-    
+
     processedText = newTokens.join('');
-    
+
     // 3. Final Pass: Replace all placeholders with their final HTML
     replacements.forEach((html, placeholder) => {
       processedText = processedText.replace(placeholder, html);
@@ -320,7 +320,7 @@ class LanguageGameUI {
     this.elements.mapContainer.innerHTML = '';
 
     const regionsWithProgress = game.getAllRegionsWithProgress();
-    
+
     // Group regions by category
     const groupedRegions = {};
     Object.entries(regionsWithProgress).forEach(([regionKey, regionData]) => {
@@ -347,13 +347,13 @@ class LanguageGameUI {
       // Create category section
       const categorySection = document.createElement('div');
       categorySection.className = 'category-section';
-      
+
       const categoryHeader = document.createElement('div');
       categoryHeader.className = 'category-header';
       categoryHeader.innerHTML = `
         <h3>${categoryEmojis[category]} ${category}</h3>
       `;
-      
+
       const categoryGrid = document.createElement('div');
       categoryGrid.className = 'category-grid';
 
@@ -478,28 +478,24 @@ class LanguageGameUI {
       return;
     }
 
-    // Create and show the tip overlay
-    const tipOverlay = document.createElement('div');
-    tipOverlay.className = 'modal-overlay';
-    tipOverlay.innerHTML = `
-      <div class="modal-content flashcard-tip-modal">
-        <div class="modal-header">
-          <h2>💡 Helpful Tip</h2>
-          <button class="modal-close" onclick="ui.hideFlashcardTip()">×</button>
-        </div>
-        <div class="modal-body">
-          <p>Welcome to flashcards! 🎉</p>
-          <p><strong>Tip:</strong> You can click on any word in the flashcards to see its meaning and explanation.</p>
-          <p>This will help you better understand each phrase and learn new vocabulary.</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn primary" onclick="ui.hideFlashcardTip()">Got it!</button>
-        </div>
+    // Create and show a subtle tip notification
+    const tipNotification = document.createElement('div');
+    tipNotification.className = 'tip-notification';
+    tipNotification.innerHTML = `
+      <div class="tip-content">
+        <span class="tip-text">💡 Click on a word to see its meaning, click anywhere else to flip the card</span>
+        <button class="tip-close" onclick="ui.hideFlashcardTip()">×</button>
       </div>
     `;
 
-    document.body.appendChild(tipOverlay);
-    this.flashcardTipOverlay = tipOverlay;
+    // Insert at the top of the panel body
+    this.elements.panelBody.insertBefore(tipNotification, this.elements.panelBody.firstChild);
+    this.flashcardTipOverlay = tipNotification;
+
+    // Auto-hide after 8 seconds
+    setTimeout(() => {
+      this.hideFlashcardTip();
+    }, 8000);
 
     // Mark as seen
     localStorage.setItem('flashcardTipSeen', 'true');
