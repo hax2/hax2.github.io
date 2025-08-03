@@ -3,7 +3,9 @@
 const REGIONS = {
   basics: {
     name: 'Básicos',
+    emoji: '🌟',
     color: '#F87171',
+    category: 'Fundamentos',
     description: 'Essential phrases for everyday communication - Use these when you need to be polite, ask for help, or express basic needs in any situation.',
     flashcards: [
       { 
@@ -73,7 +75,9 @@ const REGIONS = {
   },
   greetings: {
     name: 'Saludos',
+    emoji: '👋',
     color: '#F59E0B',
+    category: 'Fundamentos',
     description: 'Greetings and introductions - Use these when meeting people, starting conversations, or being polite in social situations.',
     flashcards: [
       { 
@@ -143,7 +147,9 @@ const REGIONS = {
   },
   travel: {
     name: 'Viaje',
+    emoji: '✈️',
     color: '#10B981',
+    category: 'Situaciones',
     description: 'Travel and transportation vocabulary - Use these when navigating airports, train stations, hotels, and asking for directions while traveling.',
     flashcards: [
       { 
@@ -192,7 +198,9 @@ const REGIONS = {
   },
   food: {
     name: 'Comida',
+    emoji: '🍽️',
     color: '#3B82F6',
+    category: 'Situaciones',
     description: 'Food and dining vocabulary - Use these in restaurants, cafes, and when discussing food preferences or dietary needs.',
     flashcards: [
       { 
@@ -248,7 +256,9 @@ const REGIONS = {
   },
   shopping: {
     name: 'Compras',
+    emoji: '🛍️',
     color: '#8B5CF6',
+    category: 'Situaciones',
     description: 'Shopping and commerce vocabulary - Use these in stores, markets, and when making purchases or asking about products.',
     flashcards: [
       { 
@@ -297,7 +307,9 @@ const REGIONS = {
   },
   directions: {
     name: 'Direcciones',
+    emoji: '🧭',
     color: '#0EA5E9',
+    category: 'Situaciones',
     description: 'Navigating and asking for directions - Use these phrases when you are lost or trying to find a specific location.',
     flashcards: [
       {
@@ -339,7 +351,9 @@ const REGIONS = {
   },
   weather: {
     name: 'El Clima',
+    emoji: '🌤️',
     color: '#F472B6',
+    category: 'Conversación',
     description: 'Talking about the weather - Use these common phrases to describe or ask about meteorological conditions.',
     flashcards: [
       {
@@ -381,7 +395,9 @@ const REGIONS = {
   },
   health: {
     name: 'Salud',
+    emoji: '🏥',
     color: '#14B8A6',
+    category: 'Situaciones',
     description: 'Health and medical vocabulary - Use these when visiting doctors, pharmacies, or describing health problems.',
     flashcards: [
       { 
@@ -423,7 +439,9 @@ const REGIONS = {
   },
   family: {
     name: 'Familia',
+    emoji: '👨‍👩‍👧‍👦',
     color: '#A78BFA',
+    category: 'Conversación',
     description: 'Talking about family - Phrases to introduce, describe, and ask about family members.',
     flashcards: [
         {
@@ -465,7 +483,9 @@ const REGIONS = {
   },
   hobbies: {
     name: 'Pasatiempos',
+    emoji: '🎨',
     color: '#FB923C',
+    category: 'Conversación',
     description: 'Discussing hobbies and leisure activities - What you like to do in your free time.',
     flashcards: [
         {
@@ -507,7 +527,9 @@ const REGIONS = {
   },
   pastTensePreterite: {
     name: 'Pasado (Pretérito)',
+    emoji: '⏰',
     color: '#60A5FA',
+    category: 'Gramática',
     description: 'Talking about the past using the Preterite tense, for completed actions.',
     flashcards: [
       {
@@ -549,7 +571,9 @@ const REGIONS = {
   },
   futureTense: {
     name: 'Futuro',
+    emoji: '🔮',
     color: '#F472B6',
+    category: 'Gramática',
     description: 'Talking about the future - Phrases for plans, predictions, and upcoming events.',
     flashcards: [
       {
@@ -586,6 +610,284 @@ const REGIONS = {
         context: 'Asking about long-term future plans.',
         grammar: 'Harás = you will do (irregular future of hacer)',
         breakdown: { '¿Qué': 'What', 'harás': 'will you do', 'después de': 'after', 'la universidad?': 'the university?' }
+      }
+    ]
+  },
+  pastTenseArVerbs: {
+    name: 'Pretérito: Verbos -AR',
+    emoji: '📚',
+    color: '#34D399',
+    category: 'Gramática',
+    description: 'Learn the past tense (preterite) for regular -AR verbs. This tense is used for completed actions in the past. We will conjugate the verb "hablar" (to speak).',
+    flashcards: [
+      {
+        front: 'Yo hablé con el profesor ayer.',
+        back: 'I spoke with the professor yesterday.',
+        context: 'This is the "yo" (I) form. The accent on the final "é" is critical. It changes the pronunciation and distinguishes it from other words. Without the accent, "hable" would be a subjunctive form. This ending, "-é", is the rule for all regular -AR verbs in the "yo" form preterite.',
+        grammar: "Preterite 'yo' form for -AR verbs. Stem 'habl-' + ending '-é'.",
+        breakdown: {
+          'Yo': 'I',
+          'hablé': 'spoke',
+          'con': 'with',
+          'el': 'the',
+          'profesor': 'professor',
+          'ayer': 'yesterday'
+        }
+      },
+      {
+        front: 'Tú hablaste con María por teléfono.',
+        back: 'You spoke with María on the phone.',
+        context: 'This is the "tú" (you, informal) form. The ending "-aste" is consistent for all regular -AR verbs. Unlike the "yo" and "él/ella" forms, this one does not have a written accent mark.',
+        grammar: "Preterite 'tú' form for -AR verbs. Stem 'habl-' + ending '-aste'.",
+        breakdown: {
+          'Tú': 'You (informal)',
+          'hablaste': 'spoke',
+          'con': 'with',
+          'María': 'María',
+          'por': 'by / on',
+          'teléfono': 'telephone'
+        }
+      },
+      {
+        front: 'Usted habló de un tema muy interesante.',
+        back: 'You (formal) spoke about a very interesting topic.',
+        context: 'This is the "él/ella/usted" (he/she/you formal) form. The verb ending "-ó" is the same for all three pronouns. Again, the accent is crucial. "Habló" (he spoke) is very different from "hablo" (I speak).',
+        grammar: "Preterite 'él/ella/usted' form for -AR verbs. Stem 'habl-' + ending '-ó'.",
+        breakdown: {
+          'Usted': 'You (formal)',
+          'habló': 'spoke',
+          'de': 'of / about',
+          'un': 'a',
+          'tema': 'topic',
+          'muy': 'very',
+          'interesante': 'interesting'
+        }
+      },
+      {
+        front: 'Nosotros hablamos sobre la película anoche.',
+        back: 'We spoke about the movie last night.',
+        context: 'This is the most confusing form for learners. The "nosotros" (we) form of -AR verbs in the preterite is IDENTICAL to the present tense form. Only the context words (like "anoche", "ayer", "la semana pasada") tell you it\'s in the past.',
+        grammar: "Preterite 'nosotros' form for -AR verbs. Stem 'habl-' + ending '-amos'. Note: Identical to the present tense form.",
+        breakdown: {
+          'Nosotros': 'We',
+          'hablamos': 'spoke',
+          'sobre': 'about',
+          'la': 'the',
+          'película': 'movie',
+          'anoche': 'last night'
+        }
+      },
+      {
+        front: 'Vosotros hablasteis con el guía turístico.',
+        back: 'You (all) spoke with the tour guide. (Spain, informal)',
+        context: 'This is the "vosotros" (you all, informal) form, used primarily in Spain. The "-asteis" ending is the standard for this form with regular -AR verbs. In Latin America, you would use the "ustedes" form instead.',
+        grammar: "Preterite 'vosotros' form for -AR verbs. Stem 'habl-' + ending '-asteis'.",
+        breakdown: {
+          'Vosotros': 'You (plural, informal)',
+          'hablasteis': 'spoke',
+          'con': 'with',
+          'el': 'the',
+          'guía': 'guide',
+          'turístico': 'tourist'
+        }
+      },
+      {
+        front: 'Ellos hablaron durante toda la reunión.',
+        back: 'They spoke during the whole meeting.',
+        context: 'This is the "ellos/ellas/ustedes" (they/you all) form. The "-aron" ending is the standard for this conjugation. This form is used for "they" (masculine or mixed), "they" (feminine), and "you all" (in Latin America and formal in Spain).',
+        grammar: "Preterite 'ellos/ellas/ustedes' form for -AR verbs. Stem 'habl-' + ending '-aron'.",
+        breakdown: {
+          'Ellos': 'They',
+          'hablaron': 'spoke',
+          'durante': 'during',
+          'toda': 'all / the whole',
+          'la': 'the',
+          'reunión': 'meeting'
+        }
+      }
+    ]
+  },
+  pastTenseErVerbs: {
+    name: 'Pretérito: Verbos -ER',
+    emoji: '🍽️',
+    color: '#F9A825',
+    category: 'Gramática',
+    description: 'Learn the past tense (preterite) for regular -ER verbs. We will conjugate the verb "comer" (to eat) to show the pattern for completed past actions.',
+    flashcards: [
+      {
+        front: 'Yo comí una ensalada para el almuerzo.',
+        back: 'I ate a salad for lunch.',
+        context: 'This is the "yo" (I) form for -ER verbs. The ending is "-í", with a required accent. This ending applies to all regular -ER verbs in this form.',
+        grammar: "Preterite 'yo' form for -ER verbs. Stem 'com-' + ending '-í'.",
+        breakdown: {
+          'Yo': 'I',
+          'comí': 'ate',
+          'una': 'a',
+          'ensalada': 'salad',
+          'para': 'for',
+          'el': 'the',
+          'almuerzo': 'lunch'
+        }
+      },
+      {
+        front: '¿Tú comiste todo el pastel?',
+        back: 'Did you eat the whole cake?',
+        context: 'This is the "tú" (you, informal) form. The ending is "-iste". This is one of the most consistent and recognizable preterite endings.',
+        grammar: "Preterite 'tú' form for -ER verbs. Stem 'com-' + ending '-iste'.",
+        breakdown: {
+          '¿Tú': 'You (informal)',
+          'comiste': 'ate',
+          'todo': 'all',
+          'el': 'the',
+          'pastel?': 'cake?'
+        }
+      },
+      {
+        front: 'Él comió en ese restaurante la semana pasada.',
+        back: 'He ate at that restaurant last week.',
+        context: 'This is the "él/ella/usted" form. The ending "-ió" with the accent is the standard. This helps distinguish it from the present tense.',
+        grammar: "Preterite 'él/ella/usted' form for -ER verbs. Stem 'com-' + ending '-ió'.",
+        breakdown: {
+          'Él': 'He',
+          'comió': 'ate',
+          'en': 'in / at',
+          'ese': 'that',
+          'restaurante': 'restaurant',
+          'la': 'the',
+          'semana': 'week',
+          'pasada': 'last'
+        }
+      },
+      {
+        front: 'Nosotros comimos paella en Valencia.',
+        back: 'We ate paella in Valencia.',
+        context: 'This is a key difference from -AR verbs. For regular -ER verbs, the "nosotros" preterite form ("comimos") is DIFFERENT from the present tense form ("comemos"). This makes it less ambiguous.',
+        grammar: "Preterite 'nosotros' form for -ER verbs. Stem 'com-' + ending '-imos'. Note: This is different from the present tense 'comemos'.",
+        breakdown: {
+          'Nosotros': 'We',
+          'comimos': 'ate',
+          'paella': 'paella',
+          'en': 'in',
+          'Valencia': 'Valencia'
+        }
+      },
+      {
+        front: 'Vosotros comisteis mucho en la fiesta.',
+        back: 'You (all) ate a lot at the party. (Spain, informal)',
+        context: 'This is the "vosotros" (you all, informal) form, used in Spain. The ending is "-isteis".',
+        grammar: "Preterite 'vosotros' form for -ER verbs. Stem 'com-' + ending '-isteis'.",
+        breakdown: {
+          'Vosotros': 'You (plural, informal)',
+          'comisteis': 'ate',
+          'mucho': 'a lot',
+          'en': 'at',
+          'la': 'the',
+          'fiesta': 'party'
+        }
+      },
+      {
+        front: 'Ustedes comieron antes de venir.',
+        back: 'You (all) ate before coming.',
+        context: 'This is the "ellos/ellas/ustedes" form. The ending is "-ieron". This form is used for "they" and for the plural "you" in Latin America (and formal "you" in Spain).',
+        grammar: "Preterite 'ellos/ellas/ustedes' form for -ER verbs. Stem 'com-' + ending '-ieron'.",
+        breakdown: {
+          'Ustedes': 'You (plural)',
+          'comieron': 'ate',
+          'antes': 'before',
+          'de': 'of',
+          'venir': 'coming / to come'
+        }
+      }
+    ]
+  },
+  pastTenseIrVerbs: {
+    name: 'Pretérito: Verbos -IR',
+    emoji: '🏠',
+    color: '#60A5FA',
+    category: 'Gramática',
+    description: 'Learn the past tense (preterite) for regular -IR verbs. We will conjugate "vivir" (to live). Note how similar the endings are to -ER verbs.',
+    flashcards: [
+      {
+        front: 'Yo viví en Argentina por dos años.',
+        back: 'I lived in Argentina for two years.',
+        context: 'The "yo" form preterite for -IR verbs is "-í", exactly the same as for -ER verbs. This makes learning them together easier.',
+        grammar: "Preterite 'yo' form for -IR verbs. Stem 'viv-' + ending '-í'.",
+        breakdown: {
+          'Yo': 'I',
+          'viví': 'lived',
+          'en': 'in',
+          'Argentina': 'Argentina',
+          'por': 'for',
+          'dos': 'two',
+          'años': 'years'
+        }
+      },
+      {
+        front: 'Tú viviste una experiencia increíble.',
+        back: 'You lived an incredible experience.',
+        context: 'The "tú" form ending is "-iste", which is also identical to the ending for regular -ER verbs in the preterite.',
+        grammar: "Preterite 'tú' form for -IR verbs. Stem 'viv-' + ending '-iste'.",
+        breakdown: {
+          'Tú': 'You (informal)',
+          'viviste': 'lived',
+          'una': 'an',
+          'experiencia': 'experience',
+          'increíble': 'incredible'
+        }
+      },
+      {
+        front: 'Ella vivió cerca de la playa.',
+        back: 'She lived near the beach.',
+        context: 'The "él/ella/usted" form ending is "-ió", once again the same as the corresponding -ER verb ending.',
+        grammar: "Preterite 'él/ella/usted' form for -IR verbs. Stem 'viv-' + ending '-ió'.",
+        breakdown: {
+          'Ella': 'She',
+          'vivió': 'lived',
+          'cerca': 'near',
+          'de': 'of',
+          'la': 'the',
+          'playa': 'beach'
+        }
+      },
+      {
+        front: 'Nosotros vivimos allí el año pasado.',
+        back: 'We lived there last year.',
+        context: 'This is the first major difference from -ER verbs and a critical point. For -IR verbs, the "nosotros" preterite form ("vivimos") is IDENTICAL to the present tense form ("vivimos"), just like with -AR verbs. You need context to know the tense.',
+        grammar: "Preterite 'nosotros' form for -IR verbs. Stem 'viv-' + ending '-imos'. Note: Identical to the present tense form.",
+        breakdown: {
+          'Nosotros': 'We',
+          'vivimos': 'lived',
+          'allí': 'there',
+          'el': 'the',
+          'año': 'year',
+          'pasado': 'last'
+        }
+      },
+      {
+        front: 'Vosotros vivisteis en Madrid, ¿verdad?',
+        back: 'You (all) lived in Madrid, right? (Spain, informal)',
+        context: 'This is the second difference from -ER verbs. The "vosotros" ending for -IR verbs is "-isteis", just like for -ER verbs. So only the "nosotros" and "vosotros" forms of -er and -ir differ in the present tense, but only the "nosotros" forms differ in the preterite (by being identical to present). This card shows the "-isteis" ending, same as -ER verbs.',
+        grammar: "Preterite 'vosotros' form for -IR verbs. Stem 'viv-' + ending '-isteis'.",
+        breakdown: {
+          'Vosotros': 'You (plural, informal)',
+          'vivisteis': 'lived',
+          'en': 'in',
+          'Madrid': 'Madrid',
+          '¿verdad?': 'right? / true?'
+        }
+      },
+      {
+        front: 'Ellos escribieron un libro juntos.',
+        back: 'They wrote a book together.',
+        context: 'Using another -IR verb, "escribir", to show the pattern holds. The "ellos/ellas/ustedes" form ends in "-ieron", which is the same as the ending for -ER verbs.',
+        grammar: "Preterite 'ellos/ellas/ustedes' form for -IR verbs. Stem 'escrib-' + ending '-ieron'.",
+        breakdown: {
+          'Ellos': 'They',
+          'escribieron': 'wrote',
+          'un': 'a',
+          'libro': 'book',
+          'juntos': 'together'
+        }
       }
     ]
   }
