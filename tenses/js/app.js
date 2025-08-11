@@ -8,7 +8,7 @@ let isWalkthroughOpen = false;
 let currentWalkthroughStep = 0;
 
 // DOM elements - will be initialized in init()
-let tabMap, tabFlow, tabRef, searchInput, overlay, sheet, timeOverlay, timeSheet, walkthroughOverlay, walkthroughModal;
+let tabMap, tabFlow, tabRef, searchInput, timeOverlay, timeSheet, walkthroughOverlay, walkthroughModal;
 
 // Initialize the application
 function init() {
@@ -17,8 +17,6 @@ function init() {
     tabFlow = $("#tab-flow");
     tabRef = $("#tab-reference");
     searchInput = $("#search");
-    overlay = $("#overlay");
-    sheet = $("#sheet");
     timeOverlay = $("#time-overlay");
     timeSheet = $("#time-sheet");
     walkthroughOverlay = $("#walkthrough-overlay");
@@ -99,18 +97,18 @@ function setupEventListeners() {
         });
     });
 
-    // Modal close handlers
-    if (overlay) {
-        overlay.addEventListener('click', closeDetail);
-    }
-
     if (timeOverlay) {
         timeOverlay.addEventListener('click', closeTimeModal);
     }
 
     // Walkthrough modal close handler
     if (walkthroughOverlay) {
-        walkthroughOverlay.addEventListener('click', closeWalkthrough);
+        walkthroughOverlay.addEventListener('click', (e) => {
+            // Only close if clicking the overlay itself, not the modal content
+            if (e.target === walkthroughOverlay) {
+                closeWalkthrough();
+            }
+        });
     }
 
     // Keyboard navigation
@@ -294,30 +292,30 @@ function showSearchSuggestions() {
 }
 
 function openDetail(tense) {
-    if (!sheet || !overlay) return;
+    if (!walkthroughModal || !walkthroughOverlay) return;
 
     isDetailOpen = true;
 
-    // Build detail content
+    // Build detail content using the same modal as walkthrough
     const content = buildDetailContent(tense);
-    sheet.innerHTML = '';
-    sheet.appendChild(content);
+    walkthroughModal.innerHTML = '';
+    walkthroughModal.appendChild(content);
 
     // Show modal
-    overlay.classList.remove('hidden');
-    sheet.classList.remove('hidden');
+    walkthroughOverlay.classList.remove('hidden');
+    walkthroughModal.classList.remove('hidden');
 
     // Add animation classes
-    overlay.classList.add('modal-enter');
-    sheet.classList.add('sheet-enter');
+    walkthroughOverlay.classList.add('modal-enter');
+    walkthroughModal.classList.add('sheet-enter');
 
     requestAnimationFrame(() => {
-        overlay.classList.add('modal-enter-active');
-        sheet.classList.add('sheet-enter-active');
+        walkthroughOverlay.classList.add('modal-enter-active');
+        walkthroughModal.classList.add('sheet-enter-active');
     });
 
     // Focus management
-    const firstFocusable = sheet.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const firstFocusable = walkthroughModal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
     if (firstFocusable) {
         firstFocusable.focus();
     }
@@ -334,16 +332,16 @@ function closeDetail() {
     isDetailOpen = false;
 
     // Add exit animation
-    overlay.classList.add('fade-exit-active');
-    sheet.classList.add('sheet-exit-active');
+    walkthroughOverlay.classList.add('fade-exit-active');
+    walkthroughModal.classList.add('sheet-exit-active');
 
     setTimeout(() => {
-        overlay.classList.add('hidden');
-        sheet.classList.add('hidden');
+        walkthroughOverlay.classList.add('hidden');
+        walkthroughModal.classList.add('hidden');
 
         // Clean up classes
-        overlay.classList.remove('modal-enter', 'modal-enter-active', 'fade-exit-active');
-        sheet.classList.remove('sheet-enter', 'sheet-enter-active', 'sheet-exit-active');
+        walkthroughOverlay.classList.remove('modal-enter', 'modal-enter-active', 'fade-exit-active');
+        walkthroughModal.classList.remove('sheet-enter', 'sheet-enter-active', 'sheet-exit-active');
 
         // Restore body scroll
         document.body.style.overflow = '';
@@ -909,14 +907,14 @@ function startWalkthrough() {
     const quickMenu = $('#quick-menu');
     if (quickMenu) quickMenu.classList.add('hidden');
     
-    annou
-nceToScreenReader('Iniciada guía de tiempos esenciales');
+    announceToScreenReader('Iniciada guía de tiempos esenciales');
 }
 
 function closeWalkthrough() {
-    if (!isWalkthroughOpen) return;
+    if (!isWalkthroughOpen && !isDetailOpen) return;
     
     isWalkthroughOpen = false;
+    isDetailOpen = false;
     
     // Hide modal
     walkthroughOverlay.classList.add('hidden');
@@ -925,7 +923,7 @@ function closeWalkthrough() {
     // Restore body scroll
     document.body.style.overflow = '';
     
-    announceToScreenReader('Guía cerrada');
+    announceToScreenReader('Modal cerrado');
 }
 
 function renderWalkthroughStep() {
@@ -1020,6 +1018,10 @@ function renderWalkthroughStep() {
         if (currentWalkthroughStep > 0) {
             currentWalkthroughStep--;
             renderWalkthroughStep();
+            // Scroll to top of modal content
+            setTimeout(() => {
+                walkthroughModal.scrollTop = 0;
+            }, 100);
         }
     };
     
@@ -1043,6 +1045,10 @@ function renderWalkthroughStep() {
         nextBtn.onclick = () => {
             currentWalkthroughStep++;
             renderWalkthroughStep();
+            // Scroll to top of modal content
+            setTimeout(() => {
+                walkthroughModal.scrollTop = 0;
+            }, 100);
         };
     }
     
@@ -1200,22 +1206,19 @@ function renderTenseStep(content, step) {
         content.appendChild(relationshipSection);
     }
     
-    // Quick action to explore more
+    // Quick action to show more details inline
     const actionSection = el('div', 'text-center mt-6');
     const exploreBtn = el('button', 'btn-secondary');
     exploreBtn.innerHTML = `
         <span class="flex items-center gap-2">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                <path d="M10 17l5-5-5-5"></path>
-                <path d="M15 12H3"></path>
+                <path d="M6 9l6 6 6-6"></path>
             </svg>
-            Ver detalles completos
+            Ver más detalles
         </span>
     `;
     exploreBtn.onclick = () => {
-        closeWalkthrough();
-        setTimeout(() => openDetail(tense), 300);
+        showExpandedTenseDetails(content, tense, exploreBtn);
     };
     actionSection.appendChild(exploreBtn);
     content.appendChild(actionSection);
@@ -1294,3 +1297,171 @@ init = function () {
         handleError(error, 'Initialization');
     }
 };
+
+// Function to show expanded tense details inline in walkthrough
+function showExpandedTenseDetails(content, tense, exploreBtn) {
+    // Hide the explore button
+    exploreBtn.style.display = 'none';
+    
+    // Create expanded details section
+    const expandedSection = el('div', 'mt-6 space-y-6 border-t border-slate-200 pt-6');
+    
+    // All usage examples
+    if (tense.usage && tense.usage.length > 2) {
+        const allUsageSection = el('div', '');
+        const allUsageTitle = el('h4', 'font-bold text-slate-800 mb-3 flex items-center gap-2');
+        allUsageTitle.innerHTML = `
+            <svg class="w-5 h-5 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 12l2 2 4-4"></path>
+                <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c2.03 0 3.89.67 5.39 1.8"></path>
+            </svg>
+            Todos los Usos
+        `;
+        
+        const allUsageList = el('div', 'space-y-3');
+        tense.usage.forEach((use, index) => {
+            const useCard = el('div', 'bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200');
+            const useNumber = el('span', 'inline-flex items-center justify-center w-6 h-6 rounded-full bg-purple-500 text-white text-xs font-bold mr-3');
+            useNumber.textContent = index + 1;
+            const useText = el('span', 'text-slate-700');
+            useText.textContent = use;
+            
+            const useContent = el('div', 'flex items-start');
+            useContent.appendChild(useNumber);
+            useContent.appendChild(useText);
+            useCard.appendChild(useContent);
+            allUsageList.appendChild(useCard);
+        });
+        
+        allUsageSection.appendChild(allUsageTitle);
+        allUsageSection.appendChild(allUsageList);
+        expandedSection.appendChild(allUsageSection);
+    }
+    
+    // All examples
+    if (tense.examples && tense.examples.length > 2) {
+        const allExamplesSection = el('div', '');
+        const allExamplesTitle = el('h4', 'font-bold text-slate-800 mb-3 flex items-center gap-2');
+        allExamplesTitle.innerHTML = `
+            <svg class="w-5 h-5 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 8h10"></path>
+                <path d="M7 12h4"></path>
+                <path d="M7 16h1"></path>
+                <path d="M17 4v16l-5-3-5 3V4z"></path>
+            </svg>
+            Más Ejemplos
+        `;
+        
+        const allExamplesList = el('div', 'grid grid-cols-1 md:grid-cols-2 gap-4');
+        tense.examples.slice(2).forEach(example => {
+            const exampleCard = el('div', 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200');
+            const spanish = el('div', 'font-semibold text-slate-800 mb-1');
+            spanish.textContent = `"${example.es}"`;
+            const english = el('div', 'text-slate-600 text-sm');
+            english.textContent = example.en;
+            exampleCard.appendChild(spanish);
+            exampleCard.appendChild(english);
+            allExamplesList.appendChild(exampleCard);
+        });
+        
+        allExamplesSection.appendChild(allExamplesTitle);
+        allExamplesSection.appendChild(allExamplesList);
+        expandedSection.appendChild(allExamplesSection);
+    }
+    
+    // Formation details
+    if (tense.formation) {
+        const formationSection = el('div', '');
+        const formationTitle = el('h4', 'font-bold text-slate-800 mb-3 flex items-center gap-2');
+        formationTitle.innerHTML = `
+            <svg class="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+            </svg>
+            Cómo se Forma
+        `;
+        
+        const formationCard = el('div', 'bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200');
+        const formationText = el('div', 'font-mono text-slate-800 text-lg font-semibold mb-3');
+        formationText.textContent = tense.formation;
+        
+        const formationDesc = el('div', 'text-slate-600 text-sm');
+        formationDesc.textContent = 'Fórmula para conjugar este tiempo verbal';
+        
+        formationCard.appendChild(formationText);
+        formationCard.appendChild(formationDesc);
+        formationSection.appendChild(formationTitle);
+        formationSection.appendChild(formationCard);
+        expandedSection.appendChild(formationSection);
+    }
+    
+    // Conjugation preview
+    const conjugationSection = buildConjugationSection(tense);
+    if (conjugationSection) {
+        const conjugationTitle = el('h4', 'font-bold text-slate-800 mb-3 flex items-center gap-2');
+        conjugationTitle.innerHTML = `
+            <svg class="w-5 h-5 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <path d="M14 2v6h6"></path>
+                <path d="M16 13H8"></path>
+                <path d="M16 17H8"></path>
+                <path d="M10 9H8"></path>
+            </svg>
+            Conjugación
+        `;
+        
+        const conjugationWrapper = el('div', '');
+        conjugationWrapper.appendChild(conjugationTitle);
+        conjugationWrapper.appendChild(conjugationSection);
+        expandedSection.appendChild(conjugationWrapper);
+    }
+    
+    // Tags if available
+    if (tense.tags && tense.tags.length > 0) {
+        const tagsSection = el('div', '');
+        const tagsTitle = el('h4', 'font-bold text-slate-800 mb-3 flex items-center gap-2');
+        tagsTitle.innerHTML = `
+            <svg class="w-5 h-5 text-pink-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+            Etiquetas
+        `;
+        
+        const tagsList = el('div', 'flex flex-wrap gap-2');
+        tense.tags.forEach(tag => {
+            const tagEl = el('span', 'chip bg-gradient-to-r from-pink-400 to-rose-400 text-white font-medium');
+            tagEl.textContent = tag;
+            tagsList.appendChild(tagEl);
+        });
+        
+        tagsSection.appendChild(tagsTitle);
+        tagsSection.appendChild(tagsList);
+        expandedSection.appendChild(tagsSection);
+    }
+    
+    // Add collapse button
+    const collapseSection = el('div', 'text-center mt-6 pt-4 border-t border-slate-200');
+    const collapseBtn = el('button', 'btn-secondary');
+    collapseBtn.innerHTML = `
+        <span class="flex items-center gap-2">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 15l-6-6-6 6"></path>
+            </svg>
+            Ocultar detalles
+        </span>
+    `;
+    collapseBtn.onclick = () => {
+        expandedSection.remove();
+        exploreBtn.style.display = 'block';
+    };
+    collapseSection.appendChild(collapseBtn);
+    expandedSection.appendChild(collapseSection);
+    
+    // Add the expanded section to content
+    content.appendChild(expandedSection);
+    
+    // Smooth scroll to the expanded content
+    setTimeout(() => {
+        expandedSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
+}
