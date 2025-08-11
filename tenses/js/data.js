@@ -540,45 +540,157 @@ const GAME_TENSE_COLLECTIONS = {
   }
 };
 
+// Real example sentences for each verb and tense combination
 const GAME_EXAMPLE_SENTENCES = {
-  "ind-presente": [
-    "Yo ___ español todos los días.",
-    "Tú ___ en la oficina.",
-    "Ella ___ libros interesantes.",
-    "Nosotros ___ juntos.",
-    "Vosotros ___ muy bien.",
-    "Ellos ___ en casa."
-  ],
-  "ind-pret-perf-sim": [
-    "Ayer yo ___ con mis amigos.",
-    "Tú ___ la tarea anoche.",
-    "Él ___ al cine el sábado.",
-    "Nosotros ___ temprano.",
-    "Vosotros ___ la verdad.",
-    "Ellas ___ toda la noche."
-  ],
-  "ind-imperfecto": [
-    "Cuando era niño, yo ___ mucho.",
-    "Tú ___ todos los días.",
-    "Ella ___ mientras estudiaba.",
-    "Nosotros ___ en verano.",
-    "Vosotros ___ por las tardes.",
-    "Ellos ___ frecuentemente."
-  ],
-  "ind-futuro": [
-    "Mañana yo ___ temprano.",
-    "Tú ___ la respuesta.",
-    "Él ___ a visitarnos.",
-    "Nosotros ___ juntos.",
-    "Vosotros ___ la verdad.",
-    "Ellas ___ pronto."
-  ],
-  "subj-presente": [
-    "Espero que yo ___.",
-    "Quiero que tú ___.",
-    "Es posible que ella ___.",
-    "Ojalá que nosotros ___.",
-    "Dudo que vosotros ___.",
-    "No creo que ellos ___."
-  ]
+  // HABLAR (to speak)
+  "hablar": {
+    "ind-presente": [
+      { es: "Yo ___ español con mis amigos.", en: "I speak Spanish with my friends.", subject: 0 },
+      { es: "Tú ___ muy rápido por teléfono.", en: "You speak very fast on the phone.", subject: 1 },
+      { es: "Ella ___ tres idiomas perfectamente.", en: "She speaks three languages perfectly.", subject: 2 },
+      { es: "Nosotros ___ en voz baja en la biblioteca.", en: "We speak quietly in the library.", subject: 3 },
+      { es: "Vosotros ___ demasiado alto en clase.", en: "You all speak too loudly in class.", subject: 4 },
+      { es: "Ellos ___ sobre política en la cena.", en: "They speak about politics at dinner.", subject: 5 }
+    ],
+    "ind-pret-perf-sim": [
+      { es: "Yo ___ con el director ayer.", en: "I spoke with the director yesterday.", subject: 0 },
+      { es: "Tú ___ en la reunión muy bien.", en: "You spoke very well in the meeting.", subject: 1 },
+      { es: "Él ___ por dos horas seguidas.", en: "He spoke for two hours straight.", subject: 2 },
+      { es: "Nosotros ___ del problema anoche.", en: "We spoke about the problem last night.", subject: 3 },
+      { es: "Vosotros ___ con los vecinos ayer.", en: "You all spoke with the neighbors yesterday.", subject: 4 },
+      { es: "Ellas ___ en la conferencia.", en: "They spoke at the conference.", subject: 5 }
+    ],
+    "ind-imperfecto": [
+      { es: "Yo ___ mucho cuando era niño.", en: "I used to speak a lot when I was a child.", subject: 0 },
+      { es: "Tú ___ inglés antes de mudarte.", en: "You used to speak English before moving.", subject: 1 },
+      { es: "Ella ___ con su abuela cada día.", en: "She used to speak with her grandmother every day.", subject: 2 },
+      { es: "Nosotros ___ en secreto durante clase.", en: "We used to speak secretly during class.", subject: 3 },
+      { es: "Vosotros ___ de fútbol constantemente.", en: "You all used to speak about soccer constantly.", subject: 4 },
+      { es: "Ellos ___ en francés en casa.", en: "They used to speak French at home.", subject: 5 }
+    ],
+    "ind-futuro": [
+      { es: "Yo ___ en la presentación mañana.", en: "I will speak in the presentation tomorrow.", subject: 0 },
+      { es: "Tú ___ con el jefe la próxima semana.", en: "You will speak with the boss next week.", subject: 1 },
+      { es: "Ella ___ en público por primera vez.", en: "She will speak in public for the first time.", subject: 2 },
+      { es: "Nosotros ___ sobre el proyecto pronto.", en: "We will speak about the project soon.", subject: 3 },
+      { es: "Vosotros ___ en la ceremonia.", en: "You all will speak at the ceremony.", subject: 4 },
+      { es: "Ellos ___ con los inversionistas.", en: "They will speak with the investors.", subject: 5 }
+    ],
+    "subj-presente": [
+      { es: "Espero que yo ___ bien en la entrevista.", en: "I hope I speak well in the interview.", subject: 0 },
+      { es: "Quiero que tú ___ más despacio.", en: "I want you to speak more slowly.", subject: 1 },
+      { es: "Es importante que ella ___ con sinceridad.", en: "It's important that she speak sincerely.", subject: 2 },
+      { es: "Ojalá que nosotros ___ el mismo idioma.", en: "I hope we speak the same language.", subject: 3 },
+      { es: "Dudo que vosotros ___ en público.", en: "I doubt you all speak in public.", subject: 4 },
+      { es: "No creo que ellos ___ la verdad.", en: "I don't think they speak the truth.", subject: 5 }
+    ]
+  },
+  
+  // COMER (to eat)
+  "comer": {
+    "ind-presente": [
+      { es: "Yo ___ frutas todos los días.", en: "I eat fruits every day.", subject: 0 },
+      { es: "Tú ___ demasiado rápido.", en: "You eat too fast.", subject: 1 },
+      { es: "Él ___ en restaurantes caros.", en: "He eats at expensive restaurants.", subject: 2 },
+      { es: "Nosotros ___ juntos los domingos.", en: "We eat together on Sundays.", subject: 3 },
+      { es: "Vosotros ___ mucha pizza.", en: "You all eat a lot of pizza.", subject: 4 },
+      { es: "Ellas ___ comida vegetariana.", en: "They eat vegetarian food.", subject: 5 }
+    ],
+    "ind-pret-perf-sim": [
+      { es: "Yo ___ paella ayer en Valencia.", en: "I ate paella yesterday in Valencia.", subject: 0 },
+      { es: "Tú ___ todo el pastel anoche.", en: "You ate the whole cake last night.", subject: 1 },
+      { es: "Ella ___ sushi por primera vez.", en: "She ate sushi for the first time.", subject: 2 },
+      { es: "Nosotros ___ en el nuevo restaurante.", en: "We ate at the new restaurant.", subject: 3 },
+      { es: "Vosotros ___ tapas en el bar.", en: "You all ate tapas at the bar.", subject: 4 },
+      { es: "Ellos ___ muy tarde anoche.", en: "They ate very late last night.", subject: 5 }
+    ],
+    "ind-imperfecto": [
+      { es: "Yo ___ verduras cuando era pequeño.", en: "I used to eat vegetables when I was little.", subject: 0 },
+      { es: "Tú ___ en la cafetería cada día.", en: "You used to eat in the cafeteria every day.", subject: 1 },
+      { es: "Él ___ mucho chocolate antes.", en: "He used to eat a lot of chocolate before.", subject: 2 },
+      { es: "Nosotros ___ cena a las ocho.", en: "We used to eat dinner at eight.", subject: 3 },
+      { es: "Vosotros ___ bocadillos en el recreo.", en: "You all used to eat sandwiches at recess.", subject: 4 },
+      { es: "Ellas ___ helado todos los veranos.", en: "They used to eat ice cream every summer.", subject: 5 }
+    ]
+  },
+
+  // VIVIR (to live)
+  "vivir": {
+    "ind-presente": [
+      { es: "Yo ___ en el centro de la ciudad.", en: "I live in the city center.", subject: 0 },
+      { es: "Tú ___ cerca del parque.", en: "You live near the park.", subject: 1 },
+      { es: "Ella ___ sola en un apartamento.", en: "She lives alone in an apartment.", subject: 2 },
+      { es: "Nosotros ___ en una casa grande.", en: "We live in a big house.", subject: 3 },
+      { es: "Vosotros ___ en el mismo barrio.", en: "You all live in the same neighborhood.", subject: 4 },
+      { es: "Ellos ___ muy lejos del trabajo.", en: "They live very far from work.", subject: 5 }
+    ],
+    "ind-pret-perf-sim": [
+      { es: "Yo ___ en París durante dos años.", en: "I lived in Paris for two years.", subject: 0 },
+      { es: "Tú ___ una experiencia increíble.", en: "You lived an incredible experience.", subject: 1 },
+      { es: "Él ___ en esa casa hasta los 18.", en: "He lived in that house until he was 18.", subject: 2 },
+      { es: "Nosotros ___ momentos muy felices.", en: "We lived very happy moments.", subject: 3 },
+      { es: "Vosotros ___ en Londres el año pasado.", en: "You all lived in London last year.", subject: 4 },
+      { es: "Ellas ___ juntas en la universidad.", en: "They lived together in university.", subject: 5 }
+    ]
+  },
+
+  // SER (to be)
+  "ser": {
+    "ind-presente": [
+      { es: "Yo ___ profesor de matemáticas.", en: "I am a math teacher.", subject: 0 },
+      { es: "Tú ___ muy inteligente.", en: "You are very intelligent.", subject: 1 },
+      { es: "Ella ___ doctora en el hospital.", en: "She is a doctor at the hospital.", subject: 2 },
+      { es: "Nosotros ___ estudiantes universitarios.", en: "We are university students.", subject: 3 },
+      { es: "Vosotros ___ de España.", en: "You all are from Spain.", subject: 4 },
+      { es: "Ellos ___ muy amables.", en: "They are very kind.", subject: 5 }
+    ],
+    "ind-pret-perf-sim": [
+      { es: "Yo ___ el ganador del concurso.", en: "I was the winner of the contest.", subject: 0 },
+      { es: "Tú ___ muy valiente ayer.", en: "You were very brave yesterday.", subject: 1 },
+      { es: "Él ___ el mejor de la clase.", en: "He was the best in the class.", subject: 2 },
+      { es: "Nosotros ___ los primeros en llegar.", en: "We were the first to arrive.", subject: 3 },
+      { es: "Vosotros ___ muy divertidos anoche.", en: "You all were very funny last night.", subject: 4 },
+      { es: "Ellas ___ las organizadoras del evento.", en: "They were the organizers of the event.", subject: 5 }
+    ]
+  },
+
+  // ESTAR (to be)
+  "estar": {
+    "ind-presente": [
+      { es: "Yo ___ en casa ahora mismo.", en: "I am at home right now.", subject: 0 },
+      { es: "Tú ___ muy cansado hoy.", en: "You are very tired today.", subject: 1 },
+      { es: "Ella ___ estudiando para el examen.", en: "She is studying for the exam.", subject: 2 },
+      { es: "Nosotros ___ preparando la cena.", en: "We are preparing dinner.", subject: 3 },
+      { es: "Vosotros ___ listos para salir.", en: "You all are ready to leave.", subject: 4 },
+      { es: "Ellos ___ trabajando en el proyecto.", en: "They are working on the project.", subject: 5 }
+    ],
+    "ind-pret-perf-sim": [
+      { es: "Yo ___ enfermo la semana pasada.", en: "I was sick last week.", subject: 0 },
+      { es: "Tú ___ en la oficina hasta tarde.", en: "You were at the office until late.", subject: 1 },
+      { es: "Él ___ muy nervioso antes del examen.", en: "He was very nervous before the exam.", subject: 2 },
+      { es: "Nosotros ___ en el parque toda la tarde.", en: "We were at the park all afternoon.", subject: 3 },
+      { es: "Vosotros ___ ocupados todo el día.", en: "You all were busy all day.", subject: 4 },
+      { es: "Ellas ___ contentas con los resultados.", en: "They were happy with the results.", subject: 5 }
+    ]
+  },
+
+  // TENER (to have)
+  "tener": {
+    "ind-presente": [
+      { es: "Yo ___ dos hermanos mayores.", en: "I have two older brothers.", subject: 0 },
+      { es: "Tú ___ mucha suerte siempre.", en: "You always have a lot of luck.", subject: 1 },
+      { es: "Ella ___ un coche nuevo.", en: "She has a new car.", subject: 2 },
+      { es: "Nosotros ___ una reunión importante.", en: "We have an important meeting.", subject: 3 },
+      { es: "Vosotros ___ razón sobre esto.", en: "You all are right about this.", subject: 4 },
+      { es: "Ellos ___ muchos amigos.", en: "They have many friends.", subject: 5 }
+    ],
+    "ind-pret-perf-sim": [
+      { es: "Yo ___ una idea brillante ayer.", en: "I had a brilliant idea yesterday.", subject: 0 },
+      { es: "Tú ___ mucho éxito en el proyecto.", en: "You had a lot of success in the project.", subject: 1 },
+      { es: "Él ___ problemas con el coche.", en: "He had problems with the car.", subject: 2 },
+      { es: "Nosotros ___ una cena fantástica.", en: "We had a fantastic dinner.", subject: 3 },
+      { es: "Vosotros ___ tiempo libre ayer.", en: "You all had free time yesterday.", subject: 4 },
+      { es: "Ellas ___ una conversación interesante.", en: "They had an interesting conversation.", subject: 5 }
+    ]
+  }
 };

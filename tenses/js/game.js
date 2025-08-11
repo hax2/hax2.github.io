@@ -339,45 +339,135 @@ function generateGameContent() {
   
   gameState.examples = [];
   gameState.questions = [];
+  gameState.learningBlocks = [];
   
-  // Generate examples for each tense and subject combination
+  // Generate examples and questions for each tense and subject combination
   collection.tenses.forEach(tenseId => {
     const tense = TENSES.find(t => t.id === tenseId);
     if (!tense) return;
+    
+    const tenseExamples = [];
+    const tenseQuestions = [];
     
     subjects.forEach(subject => {
       const conjugation = conjugateVerb(verb.verb, tenseId);
       if (conjugation && conjugation[subject.index]) {
         const conjugatedForm = conjugation[subject.index];
         
-        // Create example sentence
-        const exampleSentence = `${subject.pronoun} ${conjugatedForm}.`;
-        const englishTranslation = `${subject.meaning} ${verb.meaning} (${tense.name.toLowerCase()})`;
+        // Get real example sentences for this verb and tense
+        const verbSentences = GAME_EXAMPLE_SENTENCES[verb.verb];
+        const tenseSentences = verbSentences && verbSentences[tenseId] 
+          ? verbSentences[tenseId].filter(s => s.subject === subject.index)
+          : [];
         
-        gameState.examples.push({
-          tense: tense,
-          subject: subject,
-          conjugation: conjugatedForm,
-          sentence: exampleSentence,
-          translation: englishTranslation
-        });
-        
-        // Create practice question
-        const questionSentence = `${subject.pronoun} _____.`;
-        gameState.questions.push({
-          tense: tense,
-          subject: subject,
-          question: questionSentence,
-          correctAnswer: conjugatedForm,
-          options: generateOptions(conjugatedForm, verb.verb, tenseId, subject.index)
-        });
+        // Create 2-3 examples per conjugation
+        if (tenseSentences.length > 0) {
+          tenseSentences.slice(0, 3).forEach(sentenceData => {
+            tenseExamples.push({
+              tense: tense,
+              subject: subject,
+              conjugation: conjugatedForm,
+              sentence: sentenceData.es.replace('___', conjugatedForm),
+              translation: sentenceData.en,
+              originalSentence: sentenceData.es
+            });
+            
+            // Create corresponding question
+            tenseQuestions.push({
+              tense: tense,
+              subject: subject,
+              question: sentenceData.es,
+              correctAnswer: conjugatedForm,
+              translation: sentenceData.en,
+              hint: `${verb.meaning} (${tense.name.toLowerCase()})`
+            });
+          });
+        } else {
+          // Fallback to simple sentences if no specific examples exist
+          const fallbackSentence = `${subject.pronoun} ___ ${getVerbContext(verb.verb)}.`;
+          const fallbackTranslation = `${subject.meaning} ${verb.meaning} ${getVerbContext(verb.verb)}.`;
+          
+          tenseExamples.push({
+            tense: tense,
+            subject: subject,
+            conjugation: conjugatedForm,
+            sentence: fallbackSentence.replace('___', conjugatedForm),
+            translation: fallbackTranslation,
+            originalSentence: fallbackSentence
+          });
+          
+          tenseQuestions.push({
+            tense: tense,
+            subject: subject,
+            question: fallbackSentence,
+            correctAnswer: conjugatedForm,
+            translation: fallbackTranslation,
+            hint: `${verb.meaning} (${tense.name.toLowerCase()})`
+          });
+        }
       }
     });
+    
+    // Add examples and questions for this tense
+    gameState.examples.push(...tenseExamples);
+    gameState.questions.push(...tenseQuestions);
   });
   
-  // Shuffle questions for variety
-  gameState.questions = shuffleArray(gameState.questions);
+  // Create learning blocks: alternating examples and practice
+  // Group by tense for better learning flow
+  const tenseGroups = {};
+  gameState.examples.forEach(example => {
+    const tenseId = example.tense.id;
+    if (!tenseGroups[tenseId]) {
+      tenseGroups[tenseId] = { examples: [], questions: [] };
+    }
+    tenseGroups[tenseId].examples.push(example);
+  });
+  
+  gameState.questions.forEach(question => {
+    const tenseId = question.tense.id;
+    if (tenseGroups[tenseId]) {
+      tenseGroups[tenseId].questions.push(question);
+    }
+  });
+  
+  // Create alternating learning blocks
+  Object.entries(tenseGroups).forEach(([tenseId, group]) => {
+    const examples = shuffleArray(group.examples);
+    const questions = shuffleArray(group.questions);
+    
+    // Show 1-2 examples, then 2-3 questions, then more examples, etc.
+    let exampleIndex = 0;
+    let questionIndex = 0;
+    
+    while (exampleIndex < examples.length || questionIndex < questions.length) {
+      // Add 1-2 examples
+      const exampleBatch = examples.slice(exampleIndex, exampleIndex + 2);
+      if (exampleBatch.length > 0) {
+        gameState.learningBlocks.push({
+          type: 'examples',
+          content: exampleBatch,
+          tense: TENSES.find(t => t.id === tenseId)
+        });
+        exampleIndex += 2;
+      }
+      
+      // Add 2-3 questions
+      const questionBatch = questions.slice(questionIndex, questionIndex + 3);
+      if (questionBatch.length > 0) {
+        gameState.learningBlocks.push({
+          type: 'practice',
+          content: questionBatch,
+          tense: TENSES.find(t => t.id === tenseId)
+        });
+        questionIndex += 3;
+      }
+    }
+  });
+  
   gameState.totalQuestions = gameState.questions.length;
+  gameState.currentBlockIndex = 0;
+  gameState.currentItemIndex = 0;
 }
 
 function generateOptions(correctAnswer, verb, tenseId, subjectIndex) {
@@ -423,6 +513,35 @@ function shuffleArray(array) {
   return shuffled;
 }
 
+function getVerbContext(verb) {
+  const contexts = {
+    'hablar': 'con amigos',
+    'comer': 'en casa',
+    'vivir': 'aquí',
+    'estudiar': 'mucho',
+    'trabajar': 'duro',
+    'beber': 'agua',
+    'escribir': 'cartas',
+    'leer': 'libros',
+    'caminar': 'rápido',
+    'correr': 'en el parque',
+    'ser': 'feliz',
+    'estar': 'bien',
+    'tener': 'tiempo',
+    'hacer': 'ejercicio',
+    'ir': 'al trabajo',
+    'venir': 'temprano',
+    'poder': 'ayudar',
+    'querer': 'aprender',
+    'saber': 'la verdad',
+    'decir': 'algo',
+    'ver': 'películas',
+    'dar': 'regalos',
+    'poner': 'música'
+  };
+  return contexts[verb] || 'bien';
+}
+
 // Normalize answers to ignore accent marks and case
 function normalizeAnswer(answer) {
   return answer.toLowerCase()
@@ -441,6 +560,8 @@ function resetGame() {
   gameState.currentPhase = 'learning';
   gameState.currentExampleIndex = 0;
   gameState.currentQuestionIndex = 0;
+  gameState.currentBlockIndex = 0;
+  gameState.currentItemIndex = 0;
   gameState.score = 0;
   gameState.correctAnswers = 0;
   gameState.userAnswers = [];
@@ -458,12 +579,15 @@ function startNewGame() {
     currentPhase: 'setup',
     currentExampleIndex: 0,
     currentQuestionIndex: 0,
+    currentBlockIndex: 0,
+    currentItemIndex: 0,
     score: 0,
     totalQuestions: 0,
     correctAnswers: 0,
     examples: [],
     questions: [],
-    userAnswers: []
+    userAnswers: [],
+    learningBlocks: []
   };
   
   renderCurrentTab();

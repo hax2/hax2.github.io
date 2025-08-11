@@ -15,12 +15,15 @@ let gameState = {
   currentPhase: 'setup', // setup, learning, practice, results
   currentExampleIndex: 0,
   currentQuestionIndex: 0,
+  currentBlockIndex: 0,
+  currentItemIndex: 0,
   score: 0,
   totalQuestions: 0,
   correctAnswers: 0,
   examples: [],
   questions: [],
-  userAnswers: []
+  userAnswers: [],
+  learningBlocks: []
 };
 
 // DOM elements - will be initialized in init()
