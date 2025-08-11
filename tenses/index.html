@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Spanish Tense Atlas — Vanilla JS</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="min-h-screen bg-gradient-to-b from-white to-slate-50 text-slate-900">
+  <div class="max-w-7xl mx-auto px-4 md:px-8 pt-8 pb-24 smooth-scroll">
+    <!-- Enhanced Title Section -->
+    <div class="flex items-center gap-6 mb-8">
+      <div class="p-4 rounded-3xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-xl card-hover">
+        <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 3l6 2 6-2v18l-6 2-6-2-6 2V5l6-2z"></path><path d="M9 3v18"></path><path d="M15 5v18"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-3xl md:text-5xl font-black tracking-tight bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          Spanish Tense Atlas
+        </h1>
+        <p class="text-base md:text-lg text-slate-600 mt-2 font-medium">
+          Mapa visual + asistente interactivo de tiempos verbales
+        </p>
+        <div class="flex items-center gap-2 mt-3">
+          <span class="chip bg-gradient-to-r from-green-500 to-emerald-500">✨ Interactivo</span>
+          <span class="chip bg-gradient-to-r from-blue-500 to-cyan-500">📚 Educativo</span>
+          <span class="chip bg-gradient-to-r from-purple-500 to-pink-500">🎯 Preciso</span>
+        </div>
+        <div class="mt-4">
+          <button onclick="startWalkthrough()" class="btn-primary flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 12l2 2 4-4"></path>
+              <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c2.03 0 3.89.67 5.39 1.8"></path>
+            </svg>
+            Guía de Tiempos Esenciales
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enhanced Controls Section -->
+    <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-4 mb-8">
+      <!-- Enhanced Search -->
+      <div class="relative flex-1">
+        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.3-4.3"></path>
+          </svg>
+        </div>
+        <input id="search" 
+               class="search-input pl-12 pr-4 h-14 rounded-2xl w-full bg-white shadow-sm text-base font-medium placeholder:text-slate-400"
+               placeholder="Buscar tiempos verbales: 'pasado reciente', 'hipótesis', 'subjuntivo'…" />
+        <div class="absolute right-3 top-1/2 -translate-y-1/2">
+          <kbd class="px-2 py-1 text-xs font-semibold text-slate-500 bg-slate-100 border border-slate-300 rounded">⌘K</kbd>
+        </div>
+      </div>
+
+      <!-- Enhanced Timeline -->
+      <div class="timeline-mini hidden lg:block p-6 rounded-3xl bg-white shadow-lg border border-slate-100 relative z-10">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="p-2 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500">
+            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2l9 5-9 5-9-5 9-5z"></path>
+              <path d="M3 12l9 5 9-5"></path>
+              <path d="M3 19l9 5 9-5"></path>
+            </svg>
+          </div>
+          <span class="text-sm font-bold text-slate-700">Navegación Temporal</span>
+        </div>
+        
+        <div class="relative">
+          <div class="absolute left-0 right-0 top-6 h-2 bg-gradient-to-r from-sky-400 via-violet-500 to-emerald-500 rounded-full shadow-sm"></div>
+          <div class="relative grid grid-cols-3 gap-8 text-center">
+            <button data-time="Pasado" class="timeline-btn flex flex-col items-center group">
+              <div class="timeline-icon z-10 w-12 h-12 rounded-full bg-white border-2 border-sky-200 grid place-items-center shadow-md group-hover:border-sky-400">
+                <svg class="w-5 h-5 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                  <path d="M3 3v5h5"></path>
+                </svg>
+              </div>
+              <div class="mt-3 text-sm font-semibold text-slate-700 group-hover:text-sky-600 transition-colors">Pasado</div>
+            </button>
+            <button data-time="Presente" class="timeline-btn flex flex-col items-center group">
+              <div class="timeline-icon z-10 w-12 h-12 rounded-full bg-white border-2 border-violet-200 grid place-items-center shadow-md group-hover:border-violet-400">
+                <svg class="w-5 h-5 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M12 6v6l4 2"></path>
+                </svg>
+              </div>
+              <div class="mt-3 text-sm font-semibold text-slate-700 group-hover:text-violet-600 transition-colors">Presente</div>
+            </button>
+            <button data-time="Futuro" class="timeline-btn flex flex-col items-center group">
+              <div class="timeline-icon z-10 w-12 h-12 rounded-full bg-white border-2 border-emerald-200 grid place-items-center shadow-md group-hover:border-emerald-400">
+                <svg class="w-5 h-5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                  <path d="M3 3v5h5"></path>
+                  <path d="M12 12l4 4"></path>
+                </svg>
+              </div>
+              <div class="mt-3 text-sm font-semibold text-slate-700 group-hover:text-emerald-600 transition-colors">Futuro</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enhanced Tabs -->
+    <div class="bg-white rounded-3xl shadow-lg border border-slate-100 p-2 mb-8">
+      <div class="grid grid-cols-3 gap-1">
+        <button data-tab="map" class="tab-btn rounded-2xl py-4 px-6 font-semibold flex items-center justify-center gap-3 text-slate-600 hover:text-slate-900 transition-all duration-300">
+          <div class="p-2 rounded-xl bg-slate-100 group-hover:bg-indigo-100 transition-colors">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 3l6 2 6-2v18l-6 2-6-2-6 2V5l6-2z"></path><path d="M9 3v18"></path><path d="M15 5v18"></path>
+            </svg>
+          </div>
+          <span class="hidden sm:inline">Mapa Visual</span>
+          <span class="sm:hidden">Mapa</span>
+        </button>
+        <button data-tab="flow" class="tab-btn rounded-2xl py-4 px-6 font-semibold flex items-center justify-center gap-3 text-slate-600 hover:text-slate-900 transition-all duration-300">
+          <div class="p-2 rounded-xl bg-slate-100 group-hover:bg-indigo-100 transition-colors">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M9 6h6a3 3 0 0 1 0 6H6"></path><path d="M9 18h6"></path>
+            </svg>
+          </div>
+          <span class="hidden sm:inline">Asistente</span>
+          <span class="sm:hidden">Flow</span>
+        </button>
+        <button data-tab="reference" class="tab-btn rounded-2xl py-4 px-6 font-semibold flex items-center justify-center gap-3 text-slate-600 hover:text-slate-900 transition-all duration-300">
+          <div class="p-2 rounded-xl bg-slate-100 group-hover:bg-indigo-100 transition-colors">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 3H2l8 9v7l4 2v-9l8-9z"></path>
+            </svg>
+          </div>
+          <span class="hidden sm:inline">Referencia</span>
+          <span class="sm:hidden">Ref</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="min-h-[600px]">
+      <section id="tab-map"></section>
+      <section id="tab-flow" class="hidden"></section>
+      <section id="tab-reference" class="hidden"></section>
+    </div>
+  </div>
+
+  <!-- Enhanced Detail Modal -->
+  <div id="overlay" class="modal-backdrop fixed inset-0 z-50 hidden"></div>
+  <div id="sheet" class="modal-content fixed left-0 right-0 bottom-0 md:left-1/2 md:right-6 md:bottom-6 md:top-6 bg-white p-8 z-50 hidden custom-scrollbar"></div>
+
+  <!-- Enhanced Time Picker Modal -->
+  <div id="time-overlay" class="modal-backdrop fixed inset-0 z-40 hidden"></div>
+  <div id="time-sheet" class="modal-content fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-3xl bg-white p-6 z-50 hidden"></div>
+
+  <!-- Walkthrough Modal -->
+  <div id="walkthrough-overlay" class="modal-backdrop fixed inset-0 z-[70] hidden"></div>
+  <div id="walkthrough-modal" class="modal-content fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-4xl max-h-[90vh] bg-white rounded-3xl shadow-2xl z-[70] hidden overflow-y-auto custom-scrollbar"></div>
+
+  <!-- Quick Actions Floating Button -->
+  <div class="fixed bottom-6 right-6 z-40">
+    <div class="relative">
+      <button id="quick-actions" class="btn-primary w-14 h-14 rounded-full shadow-2xl flex items-center justify-center group transition-all duration-300 hover:scale-110">
+        <svg class="w-6 h-6 transition-transform group-hover:rotate-45" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14"></path>
+          <path d="M5 12h14"></path>
+        </svg>
+      </button>
+      
+      <!-- Quick Actions Menu -->
+      <div id="quick-menu" class="absolute bottom-16 right-0 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 min-w-48 hidden">
+        <div class="space-y-1">
+          <button class="quick-action-btn w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-3" onclick="focusSearch()">
+            <div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
+              <svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.3-4.3"></path>
+              </svg>
+            </div>
+            <div>
+              <div class="font-medium text-slate-800">Buscar</div>
+              <div class="text-xs text-slate-500">Cmd+K</div>
+            </div>
+          </button>
+          
+          <button class="quick-action-btn w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-3" onclick="switchTab('flow')">
+            <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+              <svg class="w-4 h-4 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M9 6h6a3 3 0 0 1 0 6H6"></path><path d="M9 18h6"></path>
+              </svg>
+            </div>
+            <div>
+              <div class="font-medium text-slate-800">Asistente</div>
+              <div class="text-xs text-slate-500">Encuentra tu tiempo</div>
+            </div>
+          </button>
+          
+          <button class="quick-action-btn w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-3" onclick="startWalkthrough()">
+            <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+              <svg class="w-4 h-4 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 12l2 2 4-4"></path>
+                <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c2.03 0 3.89.67 5.39 1.8"></path>
+              </svg>
+            </div>
+            <div>
+              <div class="font-medium text-slate-800">Guía Esencial</div>
+              <div class="text-xs text-slate-500">Tiempos más importantes</div>
+            </div>
+          </button>
+          
+          <button class="quick-action-btn w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-3" onclick="showRandomTense()">
+            <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+              <svg class="w-4 h-4 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+              </svg>
+            </div>
+            <div>
+              <div class="font-medium text-slate-800">Sorpréndeme</div>
+              <div class="text-xs text-slate-500">Tiempo aleatorio</div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toast-container" class="fixed top-6 right-6 z-50 space-y-2"></div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/conjugation.js"></script>
+  <script src="js/recommender.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
