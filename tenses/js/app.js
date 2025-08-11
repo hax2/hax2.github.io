@@ -7,6 +7,22 @@ let isDetailOpen = false;
 let isWalkthroughOpen = false;
 let currentWalkthroughStep = 0;
 
+// Game state
+let gameState = {
+  selectedVerb: null,
+  selectedSubjects: [],
+  selectedTenseCollection: 'essential',
+  currentPhase: 'setup', // setup, learning, practice, results
+  currentExampleIndex: 0,
+  currentQuestionIndex: 0,
+  score: 0,
+  totalQuestions: 0,
+  correctAnswers: 0,
+  examples: [],
+  questions: [],
+  userAnswers: []
+};
+
 // DOM elements - will be initialized in init()
 let tabMap, tabFlow, tabRef, searchInput, timeOverlay, timeSheet, walkthroughOverlay, walkthroughModal;
 
@@ -205,6 +221,9 @@ function renderCurrentTab() {
                 break;
             case 'reference':
                 content = ReferenceTable();
+                break;
+            case 'game':
+                content = VerbMasteryGame();
                 break;
             default:
                 content = el('div', 'p-4 text-center text-slate-500', 'Contenido no disponible');

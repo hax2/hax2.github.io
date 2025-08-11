@@ -730,6 +730,58 @@ function ReferenceTable() {
   return container;
 }
 
+// VERB MASTERY GAME COMPONENTS
+function VerbMasteryGame() {
+  const container = el("div", "space-y-8");
+  
+  // Game header
+  const header = el("div", "bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-8 text-white");
+  const headerContent = el("div", "text-center");
+  
+  const icon = el("div", "w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center");
+  icon.innerHTML = `
+    <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+    </svg>
+  `;
+  
+  const title = el("h2", "text-3xl font-bold mb-2");
+  title.textContent = "Maestría de Verbos";
+  
+  const subtitle = el("p", "text-white/90 text-lg");
+  subtitle.textContent = "Domina la conjugación con práctica interactiva";
+  
+  headerContent.appendChild(icon);
+  headerContent.appendChild(title);
+  headerContent.appendChild(subtitle);
+  header.appendChild(headerContent);
+  container.appendChild(header);
+  
+  // Game content based on current phase
+  const gameContent = el("div", "");
+  gameContent.id = "game-content";
+  
+  switch (gameState.currentPhase) {
+    case 'setup':
+      gameContent.appendChild(GameSetup());
+      break;
+    case 'learning':
+      gameContent.appendChild(GameLearning());
+      break;
+    case 'practice':
+      gameContent.appendChild(GamePractice());
+      break;
+    case 'results':
+      gameContent.appendChild(GameResults());
+      break;
+    default:
+      gameContent.appendChild(GameSetup());
+  }
+  
+  container.appendChild(gameContent);
+  return container;
+}
+
 function updateReferenceFilter(moodFilter) {
   const tbody = $("#reference-table-body");
   if (!tbody) return;
@@ -802,4 +854,454 @@ function updateReferenceFilter(moodFilter) {
       btn.classList.add("bg-indigo-500", "text-white");
     }
   });
+}
+function GameLearning() {
+  const container = el("div", "space-y-8");
+  
+  // Progress bar
+  const progressSection = el("div", "bg-white rounded-2xl shadow-lg border border-slate-100 p-6");
+  const progressHeader = el("div", "flex items-center justify-between mb-4");
+  
+  const progressTitle = el("h3", "font-semibold text-slate-800");
+  progressTitle.textContent = "Fase de Aprendizaje";
+  
+  const progressCounter = el("div", "text-sm text-slate-600");
+  progressCounter.textContent = `${gameState.currentExampleIndex + 1} de ${gameState.examples.length}`;
+  
+  progressHeader.appendChild(progressTitle);
+  progressHeader.appendChild(progressCounter);
+  progressSection.appendChild(progressHeader);
+  
+  const progressBar = el("div", "w-full bg-slate-200 rounded-full h-2");
+  const progressFill = el("div", "bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300");
+  progressFill.style.width = `${((gameState.currentExampleIndex + 1) / gameState.examples.length) * 100}%`;
+  progressBar.appendChild(progressFill);
+  progressSection.appendChild(progressBar);
+  
+  container.appendChild(progressSection);
+  
+  // Current example
+  if (gameState.currentExampleIndex < gameState.examples.length) {
+    const example = gameState.examples[gameState.currentExampleIndex];
+    
+    const exampleCard = el("div", "bg-white rounded-2xl shadow-lg border border-slate-100 p-8");
+    
+    // Tense info
+    const tenseHeader = el("div", "flex items-center gap-3 mb-6");
+    const tenseIcon = el("div", "w-12 h-12 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white flex items-center justify-center");
+    tenseIcon.innerHTML = `
+      <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+      </svg>
+    `;
+    
+    const tenseInfo = el("div", "");
+    const tenseName = el("h3", "text-xl font-bold text-slate-800");
+    tenseName.textContent = example.tense.name;
+    
+    const tenseUsage = el("p", "text-slate-600 text-sm");
+    tenseUsage.textContent = (example.tense.usage || [])[0] || "";
+    
+    tenseInfo.appendChild(tenseName);
+    tenseInfo.appendChild(tenseUsage);
+    tenseHeader.appendChild(tenseIcon);
+    tenseHeader.appendChild(tenseInfo);
+    exampleCard.appendChild(tenseHeader);
+    
+    // Example sentence
+    const sentenceSection = el("div", "bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 mb-6");
+    const sentenceLabel = el("div", "text-sm font-semibold text-purple-700 mb-2");
+    sentenceLabel.textContent = "EJEMPLO";
+    
+    const sentence = el("div", "text-2xl font-bold text-slate-800 mb-2");
+    sentence.textContent = example.sentence;
+    
+    const translation = el("div", "text-slate-600");
+    translation.textContent = example.translation;
+    
+    sentenceSection.appendChild(sentenceLabel);
+    sentenceSection.appendChild(sentence);
+    sentenceSection.appendChild(translation);
+    exampleCard.appendChild(sentenceSection);
+    
+    // Conjugation breakdown
+    const breakdownSection = el("div", "bg-slate-50 rounded-xl p-6");
+    const breakdownTitle = el("h4", "font-semibold text-slate-800 mb-4");
+    breakdownTitle.textContent = "Análisis";
+    
+    const breakdownGrid = el("div", "grid grid-cols-1 md:grid-cols-3 gap-4");
+    
+    const verbInfo = el("div", "text-center");
+    const verbLabel = el("div", "text-xs font-semibold text-slate-500 mb-1");
+    verbLabel.textContent = "VERBO";
+    const verbValue = el("div", "font-bold text-slate-800");
+    verbValue.textContent = gameState.selectedVerb.verb;
+    verbInfo.appendChild(verbLabel);
+    verbInfo.appendChild(verbValue);
+    
+    const subjectInfo = el("div", "text-center");
+    const subjectLabel = el("div", "text-xs font-semibold text-slate-500 mb-1");
+    subjectLabel.textContent = "SUJETO";
+    const subjectValue = el("div", "font-bold text-slate-800");
+    subjectValue.textContent = example.subject.pronoun;
+    subjectInfo.appendChild(subjectLabel);
+    subjectInfo.appendChild(subjectValue);
+    
+    const conjugationInfo = el("div", "text-center");
+    const conjugationLabel = el("div", "text-xs font-semibold text-slate-500 mb-1");
+    conjugationLabel.textContent = "CONJUGACIÓN";
+    const conjugationValue = el("div", "font-bold text-purple-600 text-lg");
+    conjugationValue.textContent = example.conjugation;
+    conjugationInfo.appendChild(conjugationLabel);
+    conjugationInfo.appendChild(conjugationValue);
+    
+    breakdownGrid.appendChild(verbInfo);
+    breakdownGrid.appendChild(subjectInfo);
+    breakdownGrid.appendChild(conjugationInfo);
+    
+    breakdownSection.appendChild(breakdownTitle);
+    breakdownSection.appendChild(breakdownGrid);
+    exampleCard.appendChild(breakdownSection);
+    
+    container.appendChild(exampleCard);
+  }
+  
+  // Navigation buttons
+  const navSection = el("div", "flex justify-between items-center");
+  
+  const prevBtn = el("button", "btn-secondary");
+  prevBtn.innerHTML = `
+    <span class="flex items-center gap-2">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5"></path>
+        <path d="M12 19l-7-7 7-7"></path>
+      </svg>
+      Anterior
+    </span>
+  `;
+  prevBtn.disabled = gameState.currentExampleIndex === 0;
+  prevBtn.onclick = () => navigateExample(-1);
+  
+  const nextBtn = el("button", "btn-primary");
+  if (gameState.currentExampleIndex === gameState.examples.length - 1) {
+    nextBtn.innerHTML = `
+      <span class="flex items-center gap-2">
+        ¡Comenzar Práctica!
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 5v14l11-7z"></path>
+        </svg>
+      </span>
+    `;
+    nextBtn.onclick = startPractice;
+  } else {
+    nextBtn.innerHTML = `
+      <span class="flex items-center gap-2">
+        Siguiente
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14"></path>
+          <path d="M12 5l7 7-7 7"></path>
+        </svg>
+      </span>
+    `;
+    nextBtn.onclick = () => navigateExample(1);
+  }
+  
+  navSection.appendChild(prevBtn);
+  navSection.appendChild(nextBtn);
+  container.appendChild(navSection);
+  
+  return container;
+}
+
+function navigateExample(direction) {
+  gameState.currentExampleIndex += direction;
+  gameState.currentExampleIndex = Math.max(0, Math.min(gameState.currentExampleIndex, gameState.examples.length - 1));
+  renderCurrentTab();
+}
+
+function startPractice() {
+  gameState.currentPhase = 'practice';
+  gameState.currentQuestionIndex = 0;
+  gameState.score = 0;
+  gameState.correctAnswers = 0;
+  gameState.userAnswers = [];
+  
+  renderCurrentTab();
+  showToast('¡Comenzando la práctica!', 'success');
+}
+
+function GamePractice() {
+  const container = el("div", "space-y-8");
+  
+  // Progress and score
+  const statsSection = el("div", "grid grid-cols-1 md:grid-cols-2 gap-4");
+  
+  const progressCard = el("div", "bg-white rounded-2xl shadow-lg border border-slate-100 p-6");
+  const progressTitle = el("h3", "font-semibold text-slate-800 mb-4");
+  progressTitle.textContent = "Progreso";
+  
+  const progressInfo = el("div", "flex items-center justify-between mb-2");
+  const progressText = el("span", "text-slate-600");
+  progressText.textContent = `Pregunta ${gameState.currentQuestionIndex + 1} de ${gameState.totalQuestions}`;
+  const progressPercent = el("span", "font-bold text-purple-600");
+  progressPercent.textContent = `${Math.round(((gameState.currentQuestionIndex + 1) / gameState.totalQuestions) * 100)}%`;
+  
+  progressInfo.appendChild(progressText);
+  progressInfo.appendChild(progressPercent);
+  progressCard.appendChild(progressTitle);
+  progressCard.appendChild(progressInfo);
+  
+  const progressBar = el("div", "w-full bg-slate-200 rounded-full h-3");
+  const progressFill = el("div", "bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-300");
+  progressFill.style.width = `${((gameState.currentQuestionIndex + 1) / gameState.totalQuestions) * 100}%`;
+  progressBar.appendChild(progressFill);
+  progressCard.appendChild(progressBar);
+  
+  const scoreCard = el("div", "bg-white rounded-2xl shadow-lg border border-slate-100 p-6");
+  const scoreTitle = el("h3", "font-semibold text-slate-800 mb-4");
+  scoreTitle.textContent = "Puntuación";
+  
+  const scoreGrid = el("div", "grid grid-cols-2 gap-4 text-center");
+  
+  const correctScore = el("div", "");
+  const correctNumber = el("div", "text-2xl font-bold text-green-600");
+  correctNumber.textContent = gameState.correctAnswers;
+  const correctLabel = el("div", "text-sm text-slate-600");
+  correctLabel.textContent = "Correctas";
+  correctScore.appendChild(correctNumber);
+  correctScore.appendChild(correctLabel);
+  
+  const totalScore = el("div", "");
+  const totalNumber = el("div", "text-2xl font-bold text-slate-800");
+  totalNumber.textContent = gameState.currentQuestionIndex;
+  const totalLabel = el("div", "text-sm text-slate-600");
+  totalLabel.textContent = "Respondidas";
+  totalScore.appendChild(totalNumber);
+  totalScore.appendChild(totalLabel);
+  
+  scoreGrid.appendChild(correctScore);
+  scoreGrid.appendChild(totalScore);
+  scoreCard.appendChild(scoreTitle);
+  scoreCard.appendChild(scoreGrid);
+  
+  statsSection.appendChild(progressCard);
+  statsSection.appendChild(scoreCard);
+  container.appendChild(statsSection);
+  
+  // Current question
+  if (gameState.currentQuestionIndex < gameState.questions.length) {
+    const question = gameState.questions[gameState.currentQuestionIndex];
+    
+    const questionCard = el("div", "bg-white rounded-2xl shadow-lg border border-slate-100 p-8");
+    
+    // Question header
+    const questionHeader = el("div", "text-center mb-8");
+    const tenseChip = el("span", `badge ${moodBadge(question.tense.mood)} mb-4`);
+    tenseChip.textContent = question.tense.name;
+    
+    const questionTitle = el("h3", "text-2xl font-bold text-slate-800 mb-2");
+    questionTitle.textContent = "Completa la oración";
+    
+    const questionSubtitle = el("p", "text-slate-600");
+    questionSubtitle.textContent = `Conjuga "${gameState.selectedVerb.verb}" en ${question.tense.name.toLowerCase()}`;
+    
+    questionHeader.appendChild(tenseChip);
+    questionHeader.appendChild(questionTitle);
+    questionHeader.appendChild(questionSubtitle);
+    questionCard.appendChild(questionHeader);
+    
+    // Question sentence
+    const sentenceSection = el("div", "bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 mb-8 text-center");
+    const sentence = el("div", "text-3xl font-bold text-slate-800");
+    sentence.innerHTML = question.question.replace('_____', '<span class="text-purple-600 bg-white px-4 py-2 rounded-lg border-2 border-dashed border-purple-300">?</span>');
+    sentenceSection.appendChild(sentence);
+    questionCard.appendChild(sentenceSection);
+    
+    // Answer options
+    const optionsGrid = el("div", "grid grid-cols-2 gap-4");
+    question.options.forEach((option, index) => {
+      const btn = el("button", "p-4 text-center rounded-xl border-2 border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all duration-300 font-bold text-lg");
+      btn.textContent = option;
+      btn.onclick = () => selectAnswer(option, question.correctAnswer);
+      optionsGrid.appendChild(btn);
+    });
+    
+    questionCard.appendChild(optionsGrid);
+    container.appendChild(questionCard);
+  }
+  
+  return container;
+}
+
+function selectAnswer(selectedAnswer, correctAnswer) {
+  const isCorrect = normalizeAnswer(selectedAnswer) === normalizeAnswer(correctAnswer);
+  
+  // Record the answer
+  gameState.userAnswers.push({
+    question: gameState.questions[gameState.currentQuestionIndex],
+    selectedAnswer,
+    correctAnswer,
+    isCorrect
+  });
+  
+  if (isCorrect) {
+    gameState.correctAnswers++;
+    showToast('¡Correcto!', 'success', 1500);
+  } else {
+    showToast(`Incorrecto. La respuesta era: ${correctAnswer}`, 'error', 3000);
+  }
+  
+  // Move to next question or finish
+  setTimeout(() => {
+    gameState.currentQuestionIndex++;
+    
+    if (gameState.currentQuestionIndex >= gameState.questions.length) {
+      // Finished all questions
+      gameState.currentPhase = 'results';
+      gameState.score = Math.round((gameState.correctAnswers / gameState.totalQuestions) * 100);
+    }
+    
+    renderCurrentTab();
+  }, isCorrect ? 1500 : 3000);
+}
+
+function GameResults() {
+  const container = el("div", "space-y-8");
+  
+  // Results header
+  const headerCard = el("div", "bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-8 text-white text-center");
+  
+  const resultIcon = el("div", "w-20 h-20 mx-auto mb-4 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center");
+  
+  let iconContent, title, subtitle;
+  if (gameState.score >= 90) {
+    iconContent = `<svg class="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>`;
+    title = "¡Excelente!";
+    subtitle = "Dominas este verbo perfectamente";
+  } else if (gameState.score >= 70) {
+    iconContent = `<svg class="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"></path><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c2.03 0 3.89.67 5.39 1.8"></path></svg>`;
+    title = "¡Muy bien!";
+    subtitle = "Buen progreso, sigue practicando";
+  } else {
+    iconContent = `<svg class="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+    title = "Sigue practicando";
+    subtitle = "La práctica hace al maestro";
+  }
+  
+  resultIcon.innerHTML = iconContent;
+  
+  const titleEl = el("h2", "text-3xl font-bold mb-2");
+  titleEl.textContent = title;
+  
+  const subtitleEl = el("p", "text-white/90 text-lg mb-6");
+  subtitleEl.textContent = subtitle;
+  
+  const scoreEl = el("div", "text-6xl font-black mb-2");
+  scoreEl.textContent = `${gameState.score}%`;
+  
+  const scoreLabel = el("div", "text-white/80");
+  scoreLabel.textContent = `${gameState.correctAnswers} de ${gameState.totalQuestions} correctas`;
+  
+  headerCard.appendChild(resultIcon);
+  headerCard.appendChild(titleEl);
+  headerCard.appendChild(subtitleEl);
+  headerCard.appendChild(scoreEl);
+  headerCard.appendChild(scoreLabel);
+  container.appendChild(headerCard);
+  
+  // Detailed results
+  const detailsCard = el("div", "bg-white rounded-2xl shadow-lg border border-slate-100 p-8");
+  const detailsTitle = el("h3", "text-xl font-bold text-slate-800 mb-6");
+  detailsTitle.textContent = "Resumen detallado";
+  detailsCard.appendChild(detailsTitle);
+  
+  // Stats grid
+  const statsGrid = el("div", "grid grid-cols-2 md:grid-cols-4 gap-4 mb-8");
+  
+  const stats = [
+    { label: "Puntuación", value: `${gameState.score}%`, color: "text-purple-600" },
+    { label: "Correctas", value: gameState.correctAnswers, color: "text-green-600" },
+    { label: "Incorrectas", value: gameState.totalQuestions - gameState.correctAnswers, color: "text-red-600" },
+    { label: "Total", value: gameState.totalQuestions, color: "text-slate-800" }
+  ];
+  
+  stats.forEach(stat => {
+    const statCard = el("div", "text-center p-4 bg-slate-50 rounded-xl");
+    const statValue = el("div", `text-2xl font-bold ${stat.color}`);
+    statValue.textContent = stat.value;
+    const statLabel = el("div", "text-sm text-slate-600 mt-1");
+    statLabel.textContent = stat.label;
+    
+    statCard.appendChild(statValue);
+    statCard.appendChild(statLabel);
+    statsGrid.appendChild(statCard);
+  });
+  
+  detailsCard.appendChild(statsGrid);
+  
+  // Review incorrect answers
+  const incorrectAnswers = gameState.userAnswers.filter(a => !a.isCorrect);
+  if (incorrectAnswers.length > 0) {
+    const reviewTitle = el("h4", "font-semibold text-slate-800 mb-4");
+    reviewTitle.textContent = "Respuestas para revisar";
+    detailsCard.appendChild(reviewTitle);
+    
+    const reviewList = el("div", "space-y-3");
+    incorrectAnswers.forEach(answer => {
+      const reviewItem = el("div", "p-4 bg-red-50 border border-red-200 rounded-xl");
+      
+      const questionText = el("div", "font-medium text-slate-800 mb-2");
+      questionText.textContent = answer.question.question.replace('_____', `[${answer.question.subject.pronoun}]`);
+      
+      const answerInfo = el("div", "flex items-center gap-4 text-sm");
+      const yourAnswer = el("span", "text-red-600");
+      yourAnswer.innerHTML = `Tu respuesta: <strong>${answer.selectedAnswer}</strong>`;
+      const correctAnswer = el("span", "text-green-600");
+      correctAnswer.innerHTML = `Correcto: <strong>${answer.correctAnswer}</strong>`;
+      
+      answerInfo.appendChild(yourAnswer);
+      answerInfo.appendChild(correctAnswer);
+      
+      reviewItem.appendChild(questionText);
+      reviewItem.appendChild(answerInfo);
+      reviewList.appendChild(reviewItem);
+    });
+    
+    detailsCard.appendChild(reviewList);
+  }
+  
+  container.appendChild(detailsCard);
+  
+  // Action buttons
+  const actionsSection = el("div", "flex flex-col sm:flex-row gap-4 justify-center");
+  
+  const playAgainBtn = el("button", "btn-primary");
+  playAgainBtn.innerHTML = `
+    <span class="flex items-center gap-2">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+        <path d="M21 21v-5h-5"></path>
+      </svg>
+      Jugar de nuevo
+    </span>
+  `;
+  playAgainBtn.onclick = resetGame;
+  
+  const newGameBtn = el("button", "btn-secondary");
+  newGameBtn.innerHTML = `
+    <span class="flex items-center gap-2">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14"></path>
+        <path d="M5 12h14"></path>
+      </svg>
+      Nuevo juego
+    </span>
+  `;
+  newGameBtn.onclick = startNewGame;
+  
+  actionsSection.appendChild(playAgainBtn);
+  actionsSection.appendChild(newGameBtn);
+  container.appendChild(actionsSection);
+  
+  return container;
 }

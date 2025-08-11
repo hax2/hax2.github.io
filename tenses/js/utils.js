@@ -5,11 +5,11 @@ const $ = (q, el = document) => el.querySelector(q);
 const $$ = (q, el = document) => Array.from(el.querySelectorAll(q));
 
 // Element creation helper
-const el = (tag, cls = "", html = "") => { 
-  const n = document.createElement(tag); 
-  if (cls) n.className = cls; 
-  if (html) n.innerHTML = html; 
-  return n; 
+const el = (tag, cls = "", html = "") => {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (html) n.innerHTML = html;
+  return n;
 };
 
 // Class name utility
@@ -21,17 +21,17 @@ function classNames(...xs) {
 function searchAmong(tenses, q) {
   const s = q.trim().toLowerCase();
   if (!s) return tenses;
-  
+
   return tenses.filter(t => {
     const searchableText = [
-      t.name, 
-      t.mood, 
-      t.time, 
-      t.aspect, 
-      ...(t.tags || []), 
+      t.name,
+      t.mood,
+      t.time,
+      t.aspect,
+      ...(t.tags || []),
       ...(t.usage || [])
     ].join(" ").toLowerCase();
-    
+
     return searchableText.includes(s);
   });
 }
@@ -63,41 +63,41 @@ function safeExecute(fn, fallback = null) {
 function fadeIn(element, duration = 200) {
   element.style.opacity = '0';
   element.style.display = 'block';
-  
+
   let start = null;
   function animate(timestamp) {
     if (!start) start = timestamp;
     const progress = timestamp - start;
     const opacity = Math.min(progress / duration, 1);
-    
+
     element.style.opacity = opacity;
-    
+
     if (progress < duration) {
       requestAnimationFrame(animate);
     }
   }
-  
+
   requestAnimationFrame(animate);
 }
 
 function fadeOut(element, duration = 200) {
   let start = null;
   const initialOpacity = parseFloat(getComputedStyle(element).opacity);
-  
+
   function animate(timestamp) {
     if (!start) start = timestamp;
     const progress = timestamp - start;
     const opacity = Math.max(initialOpacity - (progress / duration), 0);
-    
+
     element.style.opacity = opacity;
-    
+
     if (progress < duration) {
       requestAnimationFrame(animate);
     } else {
       element.style.display = 'none';
     }
   }
-  
+
   requestAnimationFrame(animate);
 }
 
@@ -126,7 +126,7 @@ function announceToScreenReader(message) {
   announcement.setAttribute('aria-live', 'polite');
   announcement.textContent = message;
   document.body.appendChild(announcement);
-  
+
   setTimeout(() => {
     document.body.removeChild(announcement);
   }, 1000);

@@ -462,3 +462,123 @@ const moodBadge = (m) => ({
   "No personal":"bg-zinc-700",
   "Perífrasis":"bg-emerald-600",
 }[m]||"bg-slate-600");
+
+// VERB MASTERY GAME DATA
+const GAME_VERBS = [
+  { verb: "hablar", meaning: "to speak", group: "ar", difficulty: 1 },
+  { verb: "comer", meaning: "to eat", group: "er", difficulty: 1 },
+  { verb: "vivir", meaning: "to live", group: "ir", difficulty: 1 },
+  { verb: "estudiar", meaning: "to study", group: "ar", difficulty: 1 },
+  { verb: "trabajar", meaning: "to work", group: "ar", difficulty: 1 },
+  { verb: "beber", meaning: "to drink", group: "er", difficulty: 1 },
+  { verb: "escribir", meaning: "to write", group: "ir", difficulty: 1 },
+  { verb: "leer", meaning: "to read", group: "er", difficulty: 1 },
+  { verb: "caminar", meaning: "to walk", group: "ar", difficulty: 1 },
+  { verb: "correr", meaning: "to run", group: "er", difficulty: 1 },
+  
+  // Irregular verbs (difficulty 2)
+  { verb: "ser", meaning: "to be", group: "irregular", difficulty: 2 },
+  { verb: "estar", meaning: "to be", group: "irregular", difficulty: 2 },
+  { verb: "tener", meaning: "to have", group: "irregular", difficulty: 2 },
+  { verb: "hacer", meaning: "to do/make", group: "irregular", difficulty: 2 },
+  { verb: "ir", meaning: "to go", group: "irregular", difficulty: 2 },
+  { verb: "venir", meaning: "to come", group: "irregular", difficulty: 2 },
+  { verb: "poder", meaning: "can/to be able", group: "irregular", difficulty: 2 },
+  { verb: "querer", meaning: "to want", group: "irregular", difficulty: 2 },
+  { verb: "saber", meaning: "to know", group: "irregular", difficulty: 2 },
+  { verb: "decir", meaning: "to say", group: "irregular", difficulty: 2 },
+  { verb: "ver", meaning: "to see", group: "irregular", difficulty: 2 },
+  { verb: "dar", meaning: "to give", group: "irregular", difficulty: 2 },
+  { verb: "poner", meaning: "to put", group: "irregular", difficulty: 2 }
+];
+
+const GAME_SUBJECTS = [
+  { pronoun: "yo", index: 0, meaning: "I" },
+  { pronoun: "tú", index: 1, meaning: "you (informal)" },
+  { pronoun: "él/ella/usted", index: 2, meaning: "he/she/you (formal)" },
+  { pronoun: "nosotros", index: 3, meaning: "we" },
+  { pronoun: "vosotros", index: 4, meaning: "you all (Spain)" },
+  { pronoun: "ellos/ustedes", index: 5, meaning: "they/you all" }
+];
+
+const GAME_TENSE_COLLECTIONS = {
+  "essential": {
+    name: "Tiempos Esenciales",
+    description: "Los 8 tiempos más importantes del español",
+    tenses: ["ind-presente", "ind-pret-perf-sim", "ind-imperfecto", "ind-pret-perf-comp", "ind-futuro", "subj-presente", "subj-imperf", "ind-cond"],
+    difficulty: 1
+  },
+  "present": {
+    name: "Presente",
+    description: "Enfoque en el presente",
+    tenses: ["ind-presente"],
+    difficulty: 1
+  },
+  "past": {
+    name: "Pasados",
+    description: "Todos los tiempos pasados",
+    tenses: ["ind-pret-perf-sim", "ind-imperfecto", "ind-pret-perf-comp", "ind-pluscuam"],
+    difficulty: 2
+  },
+  "future": {
+    name: "Futuros",
+    description: "Tiempos de futuro",
+    tenses: ["ind-futuro", "ind-futuro-comp", "perif-ir-a"],
+    difficulty: 2
+  },
+  "subjunctive": {
+    name: "Subjuntivo",
+    description: "Modo subjuntivo completo",
+    tenses: ["subj-presente", "subj-imperf", "subj-perf", "subj-pluscuam"],
+    difficulty: 3
+  },
+  "all": {
+    name: "Todos los Tiempos",
+    description: "Desafío completo",
+    tenses: TENSES.map(t => t.id),
+    difficulty: 3
+  }
+};
+
+const GAME_EXAMPLE_SENTENCES = {
+  "ind-presente": [
+    "Yo ___ español todos los días.",
+    "Tú ___ en la oficina.",
+    "Ella ___ libros interesantes.",
+    "Nosotros ___ juntos.",
+    "Vosotros ___ muy bien.",
+    "Ellos ___ en casa."
+  ],
+  "ind-pret-perf-sim": [
+    "Ayer yo ___ con mis amigos.",
+    "Tú ___ la tarea anoche.",
+    "Él ___ al cine el sábado.",
+    "Nosotros ___ temprano.",
+    "Vosotros ___ la verdad.",
+    "Ellas ___ toda la noche."
+  ],
+  "ind-imperfecto": [
+    "Cuando era niño, yo ___ mucho.",
+    "Tú ___ todos los días.",
+    "Ella ___ mientras estudiaba.",
+    "Nosotros ___ en verano.",
+    "Vosotros ___ por las tardes.",
+    "Ellos ___ frecuentemente."
+  ],
+  "ind-futuro": [
+    "Mañana yo ___ temprano.",
+    "Tú ___ la respuesta.",
+    "Él ___ a visitarnos.",
+    "Nosotros ___ juntos.",
+    "Vosotros ___ la verdad.",
+    "Ellas ___ pronto."
+  ],
+  "subj-presente": [
+    "Espero que yo ___.",
+    "Quiero que tú ___.",
+    "Es posible que ella ___.",
+    "Ojalá que nosotros ___.",
+    "Dudo que vosotros ___.",
+    "No creo que ellos ___."
+  ]
+};
