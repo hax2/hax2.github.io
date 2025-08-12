@@ -862,8 +862,8 @@ function GameLearning() {
     // All blocks completed, show results
     gameState.currentPhase = 'results';
     gameState.score = Math.round((gameState.correctAnswers / gameState.totalQuestions) * 100);
-    renderCurrentTab();
-    return container;
+    // Don't call renderCurrentTab() here, let the switch statement handle it
+    return GameResults();
   }
 
   const currentBlock = gameState.learningBlocks[gameState.currentBlockIndex];
@@ -902,6 +902,38 @@ function GameLearning() {
 function renderExampleBlock(block) {
   const container = el("div", "space-y-6");
 
+  // Check if we've finished all examples in this block
+  if (gameState.currentItemIndex >= block.content.length) {
+    // Finished this example block, move to next block
+    gameState.currentBlockIndex++;
+    gameState.currentItemIndex = 0;
+    return GameLearning();
+  }
+
+  const currentExample = block.content[gameState.currentItemIndex];
+
+  // Progress within block
+  const blockProgress = el("div", "bg-white rounded-2xl shadow-lg border border-slate-100 p-6");
+  const blockHeader = el("div", "flex items-center justify-between mb-4");
+
+  const blockTitle = el("h3", "font-semibold text-slate-800");
+  blockTitle.textContent = `Aprendiendo: ${block.tense.name}`;
+
+  const blockCounter = el("div", "text-sm text-slate-600");
+  blockCounter.textContent = `Ejemplo ${gameState.currentItemIndex + 1} de ${block.content.length}`;
+
+  blockHeader.appendChild(blockTitle);
+  blockHeader.appendChild(blockCounter);
+  blockProgress.appendChild(blockHeader);
+
+  const blockBar = el("div", "w-full bg-slate-200 rounded-full h-2");
+  const blockFill = el("div", "bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300");
+  blockFill.style.width = `${((gameState.currentItemIndex + 1) / block.content.length) * 100}%`;
+  blockBar.appendChild(blockFill);
+  blockProgress.appendChild(blockBar);
+
+  container.appendChild(blockProgress);
+
   // Tense header
   const tenseHeader = el("div", "bg-white rounded-2xl shadow-lg border border-slate-100 p-6");
   const headerContent = el("div", "flex items-center gap-4");
@@ -928,83 +960,94 @@ function renderExampleBlock(block) {
   tenseHeader.appendChild(headerContent);
   container.appendChild(tenseHeader);
 
-  // Examples
-  block.content.forEach((example, index) => {
-    const exampleCard = el("div", "bg-white rounded-2xl shadow-lg border border-slate-100 p-8");
+  // Current example
+  const exampleCard = el("div", "bg-white rounded-2xl shadow-lg border border-slate-100 p-8");
 
-    // Example sentence
-    const sentenceSection = el("div", "bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 mb-6");
-    const sentenceLabel = el("div", "text-sm font-semibold text-purple-700 mb-2");
-    sentenceLabel.textContent = `EJEMPLO ${index + 1}`;
+  // Example sentence
+  const sentenceSection = el("div", "bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 mb-6");
+  const sentenceLabel = el("div", "text-sm font-semibold text-purple-700 mb-2");
+  sentenceLabel.textContent = `EJEMPLO ${gameState.currentItemIndex + 1}`;
 
-    const sentence = el("div", "text-2xl font-bold text-slate-800 mb-3");
-    sentence.textContent = example.sentence;
+  const sentence = el("div", "text-2xl font-bold text-slate-800 mb-3");
+  sentence.textContent = currentExample.sentence;
 
-    const translation = el("div", "text-slate-600 text-lg");
-    translation.textContent = example.translation;
+  const translation = el("div", "text-slate-600 text-lg mb-4");
+  translation.textContent = currentExample.translation;
 
-    sentenceSection.appendChild(sentenceLabel);
-    sentenceSection.appendChild(sentence);
-    sentenceSection.appendChild(translation);
-    exampleCard.appendChild(sentenceSection);
+  // Add TTS button for the example sentence
+  const ttsButton = createTTSButton(currentExample.sentence, "btn-secondary text-sm");
 
-    // Conjugation breakdown
-    const breakdownSection = el("div", "bg-slate-50 rounded-xl p-6");
-    const breakdownTitle = el("h4", "font-semibold text-slate-800 mb-4");
-    breakdownTitle.textContent = "Análisis";
+  sentenceSection.appendChild(sentenceLabel);
+  sentenceSection.appendChild(sentence);
+  sentenceSection.appendChild(translation);
+  sentenceSection.appendChild(ttsButton);
+  exampleCard.appendChild(sentenceSection);
 
-    const breakdownGrid = el("div", "grid grid-cols-1 md:grid-cols-3 gap-4");
+  // Auto-play TTS for the example sentence after a short delay
+  setTimeout(() => {
+    speakText(currentExample.sentence);
+  }, 1000);
 
-    const verbInfo = el("div", "text-center");
-    const verbLabel = el("div", "text-xs font-semibold text-slate-500 mb-1");
-    verbLabel.textContent = "VERBO";
-    const verbValue = el("div", "font-bold text-slate-800");
-    verbValue.textContent = gameState.selectedVerb.verb;
-    verbInfo.appendChild(verbLabel);
-    verbInfo.appendChild(verbValue);
+  // Conjugation breakdown
+  const breakdownSection = el("div", "bg-slate-50 rounded-xl p-6");
+  const breakdownTitle = el("h4", "font-semibold text-slate-800 mb-4");
+  breakdownTitle.textContent = "Análisis";
 
-    const subjectInfo = el("div", "text-center");
-    const subjectLabel = el("div", "text-xs font-semibold text-slate-500 mb-1");
-    subjectLabel.textContent = "SUJETO";
-    const subjectValue = el("div", "font-bold text-slate-800");
-    subjectValue.textContent = example.subject.pronoun;
-    subjectInfo.appendChild(subjectLabel);
-    subjectInfo.appendChild(subjectValue);
+  const breakdownGrid = el("div", "grid grid-cols-1 md:grid-cols-3 gap-4");
 
-    const conjugationInfo = el("div", "text-center");
-    const conjugationLabel = el("div", "text-xs font-semibold text-slate-500 mb-1");
-    conjugationLabel.textContent = "CONJUGACIÓN";
-    const conjugationValue = el("div", "font-bold text-purple-600 text-lg");
-    conjugationValue.textContent = example.conjugation;
-    conjugationInfo.appendChild(conjugationLabel);
-    conjugationInfo.appendChild(conjugationValue);
+  const verbInfo = el("div", "text-center");
+  const verbLabel = el("div", "text-xs font-semibold text-slate-500 mb-1");
+  verbLabel.textContent = "VERBO";
+  const verbValue = el("div", "font-bold text-slate-800");
+  verbValue.textContent = currentExample.verb.verb;
+  verbInfo.appendChild(verbLabel);
+  verbInfo.appendChild(verbValue);
 
-    breakdownGrid.appendChild(verbInfo);
-    breakdownGrid.appendChild(subjectInfo);
-    breakdownGrid.appendChild(conjugationInfo);
+  const subjectInfo = el("div", "text-center");
+  const subjectLabel = el("div", "text-xs font-semibold text-slate-500 mb-1");
+  subjectLabel.textContent = "SUJETO";
+  const subjectValue = el("div", "font-bold text-slate-800");
+  subjectValue.textContent = currentExample.subject.pronoun;
+  subjectInfo.appendChild(subjectLabel);
+  subjectInfo.appendChild(subjectValue);
 
-    breakdownSection.appendChild(breakdownTitle);
-    breakdownSection.appendChild(breakdownGrid);
-    exampleCard.appendChild(breakdownSection);
+  const conjugationInfo = el("div", "text-center");
+  const conjugationLabel = el("div", "text-xs font-semibold text-slate-500 mb-1");
+  conjugationLabel.textContent = "CONJUGACIÓN";
+  const conjugationValue = el("div", "font-bold text-purple-600 text-lg");
+  conjugationValue.textContent = currentExample.conjugation;
+  conjugationInfo.appendChild(conjugationLabel);
+  conjugationInfo.appendChild(conjugationValue);
 
-    container.appendChild(exampleCard);
-  });
+  breakdownGrid.appendChild(verbInfo);
+  breakdownGrid.appendChild(subjectInfo);
+  breakdownGrid.appendChild(conjugationInfo);
+
+  breakdownSection.appendChild(breakdownTitle);
+  breakdownSection.appendChild(breakdownGrid);
+  exampleCard.appendChild(breakdownSection);
+
+  container.appendChild(exampleCard);
 
   // Navigation
   const navSection = el("div", "flex justify-center");
   const nextBtn = el("button", "btn-primary text-lg px-8 py-4");
+
+  // Check if this is the last example in the block
+  const isLastExample = gameState.currentItemIndex >= block.content.length - 1;
+
   nextBtn.innerHTML = `
     <span class="flex items-center gap-2">
-      ¡Ahora practica!
+      ${isLastExample ? '¡Ahora practica!' : 'Siguiente ejemplo'}
       <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M5 12h14"></path>
         <path d="M12 5l7 7-7 7"></path>
       </svg>
     </span>
   `;
+
   nextBtn.onclick = () => {
-    gameState.currentBlockIndex++;
-    gameState.currentItemIndex = 0;
+    gameState.currentItemIndex++;
     renderCurrentTab();
   };
 
@@ -1021,8 +1064,8 @@ function renderPracticeBlock(block) {
     // Finished this practice block
     gameState.currentBlockIndex++;
     gameState.currentItemIndex = 0;
-    renderCurrentTab();
-    return container;
+    // Return the next block content instead of empty container
+    return GameLearning();
   }
 
   const currentQuestion = block.content[gameState.currentItemIndex];
@@ -1107,9 +1150,16 @@ function renderPracticeBlock(block) {
   sentenceSection.appendChild(sentence);
 
   // Translation
-  const translation = el("div", "text-slate-600 text-center text-lg mt-4");
+  const translation = el("div", "text-slate-600 text-center text-lg mt-4 mb-4");
   translation.textContent = currentQuestion.translation;
   sentenceSection.appendChild(translation);
+
+  // Add TTS button for the question sentence (with correct answer filled in)
+  const completeSentence = currentQuestion.question.replace('___', currentQuestion.correctAnswer);
+  const ttsButton = createTTSButton(completeSentence, "btn-secondary text-sm mx-auto");
+  const ttsContainer = el("div", "text-center");
+  ttsContainer.appendChild(ttsButton);
+  sentenceSection.appendChild(ttsContainer);
 
   questionCard.appendChild(sentenceSection);
 
@@ -1175,6 +1225,12 @@ function checkFillInAnswer() {
     correctSpan.textContent = `(${correctAnswer})`;
     input.parentElement.appendChild(correctSpan);
   }
+
+  // Play TTS with the correct sentence after a short delay
+  setTimeout(() => {
+    const completeSentence = currentQuestion.question.replace('___', correctAnswer);
+    speakText(completeSentence);
+  }, 1000);
 
   // Move to next question after delay
   setTimeout(() => {

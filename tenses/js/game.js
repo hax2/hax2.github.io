@@ -211,7 +211,8 @@ function updateVerbGrid(container, difficulty) {
   const filteredVerbs = GAME_VERBS.filter(v => v.difficulty === difficulty);
   
   filteredVerbs.forEach(verb => {
-    const btn = el("button", `p-3 text-left rounded-xl border-2 transition-all duration-300 ${gameState.selectedVerb?.verb === verb.verb ? 'border-purple-500 bg-purple-50' : 'border-slate-200 hover:border-purple-300 hover:bg-purple-50'}`);
+    const isSelected = gameState.selectedVerbs.some(v => v.verb === verb.verb);
+    const btn = el("button", `p-3 text-left rounded-xl border-2 transition-all duration-300 ${isSelected ? 'border-purple-500 bg-purple-50' : 'border-slate-200 hover:border-purple-300 hover:bg-purple-50'}`);
     
     const verbEl = el("div", "font-bold text-slate-800 mb-1");
     verbEl.textContent = verb.verb;
@@ -222,17 +223,28 @@ function updateVerbGrid(container, difficulty) {
     btn.appendChild(verbEl);
     btn.appendChild(meaningEl);
     
-    btn.onclick = () => selectVerb(verb);
+    btn.onclick = () => toggleVerb(verb);
     container.appendChild(btn);
   });
 }
 
-function selectVerb(verb) {
-  gameState.selectedVerb = verb;
+function toggleVerb(verb) {
+  const index = gameState.selectedVerbs.findIndex(v => v.verb === verb.verb);
+  
+  if (index === -1) {
+    // Add verb to selection
+    gameState.selectedVerbs.push(verb);
+  } else {
+    // Remove verb from selection
+    gameState.selectedVerbs.splice(index, 1);
+  }
   
   // Update button appearances
   document.querySelectorAll('#verb-grid button').forEach(btn => {
-    if (btn.querySelector('div').textContent === verb.verb) {
+    const verbText = btn.querySelector('div').textContent;
+    const isSelected = gameState.selectedVerbs.some(v => v.verb === verbText);
+    
+    if (isSelected) {
       btn.className = 'p-3 text-left rounded-xl border-2 transition-all duration-300 border-purple-500 bg-purple-50';
     } else {
       btn.className = 'p-3 text-left rounded-xl border-2 transition-all duration-300 border-slate-200 hover:border-purple-300 hover:bg-purple-50';
@@ -304,7 +316,7 @@ function selectTenseCollection(key) {
 }
 
 function canStartGame() {
-  return gameState.selectedVerb && 
+  return gameState.selectedVerbs.length > 0 && 
          gameState.selectedSubjects.length > 0 && 
          gameState.selectedTenseCollection;
 }
@@ -334,83 +346,89 @@ function startGame() {
 
 function generateGameContent() {
   const collection = GAME_TENSE_COLLECTIONS[gameState.selectedTenseCollection];
-  const verb = gameState.selectedVerb;
+  const verbs = gameState.selectedVerbs;
   const subjects = gameState.selectedSubjects;
   
   gameState.examples = [];
   gameState.questions = [];
   gameState.learningBlocks = [];
   
-  // Generate examples and questions for each tense and subject combination
-  collection.tenses.forEach(tenseId => {
-    const tense = TENSES.find(t => t.id === tenseId);
-    if (!tense) return;
-    
-    const tenseExamples = [];
-    const tenseQuestions = [];
-    
-    subjects.forEach(subject => {
-      const conjugation = conjugateVerb(verb.verb, tenseId);
-      if (conjugation && conjugation[subject.index]) {
-        const conjugatedForm = conjugation[subject.index];
-        
-        // Get real example sentences for this verb and tense
-        const verbSentences = GAME_EXAMPLE_SENTENCES[verb.verb];
-        const tenseSentences = verbSentences && verbSentences[tenseId] 
-          ? verbSentences[tenseId].filter(s => s.subject === subject.index)
-          : [];
-        
-        // Create 2-3 examples per conjugation
-        if (tenseSentences.length > 0) {
-          tenseSentences.slice(0, 3).forEach(sentenceData => {
+  // Generate examples and questions for each verb, tense and subject combination
+  verbs.forEach(verb => {
+    collection.tenses.forEach(tenseId => {
+      const tense = TENSES.find(t => t.id === tenseId);
+      if (!tense) return;
+      
+      const tenseExamples = [];
+      const tenseQuestions = [];
+      
+      subjects.forEach(subject => {
+        const conjugation = conjugateVerb(verb.verb, tenseId);
+        if (conjugation && conjugation[subject.index]) {
+          const conjugatedForm = conjugation[subject.index];
+          
+          // Get real example sentences for this verb and tense
+          const verbSentences = GAME_EXAMPLE_SENTENCES[verb.verb];
+          const tenseSentences = verbSentences && verbSentences[tenseId] 
+            ? verbSentences[tenseId].filter(s => s.subject === subject.index)
+            : [];
+          
+          // Create 2-3 examples per conjugation
+          if (tenseSentences.length > 0) {
+            tenseSentences.slice(0, 3).forEach(sentenceData => {
+              tenseExamples.push({
+                tense: tense,
+                subject: subject,
+                verb: verb,
+                conjugation: conjugatedForm,
+                sentence: sentenceData.es.replace('___', conjugatedForm),
+                translation: sentenceData.en,
+                originalSentence: sentenceData.es
+              });
+              
+              // Create corresponding question
+              tenseQuestions.push({
+                tense: tense,
+                subject: subject,
+                verb: verb,
+                question: sentenceData.es,
+                correctAnswer: conjugatedForm,
+                translation: sentenceData.en,
+                hint: `${verb.meaning} (${tense.name.toLowerCase()})`
+              });
+            });
+          } else {
+            // Fallback to simple sentences if no specific examples exist
+            const fallbackSentence = `${subject.pronoun} ___ ${getVerbContext(verb.verb)}.`;
+            const fallbackTranslation = `${subject.meaning} ${verb.meaning} ${getVerbContext(verb.verb)}.`;
+            
             tenseExamples.push({
               tense: tense,
               subject: subject,
+              verb: verb,
               conjugation: conjugatedForm,
-              sentence: sentenceData.es.replace('___', conjugatedForm),
-              translation: sentenceData.en,
-              originalSentence: sentenceData.es
+              sentence: fallbackSentence.replace('___', conjugatedForm),
+              translation: fallbackTranslation,
+              originalSentence: fallbackSentence
             });
             
-            // Create corresponding question
             tenseQuestions.push({
               tense: tense,
               subject: subject,
-              question: sentenceData.es,
+              verb: verb,
+              question: fallbackSentence,
               correctAnswer: conjugatedForm,
-              translation: sentenceData.en,
+              translation: fallbackTranslation,
               hint: `${verb.meaning} (${tense.name.toLowerCase()})`
             });
-          });
-        } else {
-          // Fallback to simple sentences if no specific examples exist
-          const fallbackSentence = `${subject.pronoun} ___ ${getVerbContext(verb.verb)}.`;
-          const fallbackTranslation = `${subject.meaning} ${verb.meaning} ${getVerbContext(verb.verb)}.`;
-          
-          tenseExamples.push({
-            tense: tense,
-            subject: subject,
-            conjugation: conjugatedForm,
-            sentence: fallbackSentence.replace('___', conjugatedForm),
-            translation: fallbackTranslation,
-            originalSentence: fallbackSentence
-          });
-          
-          tenseQuestions.push({
-            tense: tense,
-            subject: subject,
-            question: fallbackSentence,
-            correctAnswer: conjugatedForm,
-            translation: fallbackTranslation,
-            hint: `${verb.meaning} (${tense.name.toLowerCase()})`
-          });
+          }
         }
-      }
+      });
+      
+      // Add examples and questions for this tense
+      gameState.examples.push(...tenseExamples);
+      gameState.questions.push(...tenseQuestions);
     });
-    
-    // Add examples and questions for this tense
-    gameState.examples.push(...tenseExamples);
-    gameState.questions.push(...tenseQuestions);
   });
   
   // Create learning blocks: alternating examples and practice
@@ -431,37 +449,52 @@ function generateGameContent() {
     }
   });
   
-  // Create alternating learning blocks
+  // Create paired learning blocks - each example followed by its corresponding question
   Object.entries(tenseGroups).forEach(([tenseId, group]) => {
-    const examples = shuffleArray(group.examples);
-    const questions = shuffleArray(group.questions);
+    const examples = group.examples;
+    const questions = group.questions;
     
-    // Show 1-2 examples, then 2-3 questions, then more examples, etc.
-    let exampleIndex = 0;
-    let questionIndex = 0;
-    
-    while (exampleIndex < examples.length || questionIndex < questions.length) {
-      // Add 1-2 examples
-      const exampleBatch = examples.slice(exampleIndex, exampleIndex + 2);
-      if (exampleBatch.length > 0) {
-        gameState.learningBlocks.push({
-          type: 'examples',
-          content: exampleBatch,
-          tense: TENSES.find(t => t.id === tenseId)
-        });
-        exampleIndex += 2;
-      }
+    // Create pairs of examples and their corresponding questions
+    const pairs = [];
+    examples.forEach(example => {
+      // Find the corresponding question for this example
+      const correspondingQuestion = questions.find(q => 
+        q.subject.index === example.subject.index && 
+        q.question === example.originalSentence
+      );
       
-      // Add 2-3 questions
-      const questionBatch = questions.slice(questionIndex, questionIndex + 3);
-      if (questionBatch.length > 0) {
-        gameState.learningBlocks.push({
-          type: 'practice',
-          content: questionBatch,
-          tense: TENSES.find(t => t.id === tenseId)
+      if (correspondingQuestion) {
+        pairs.push({
+          example: example,
+          question: correspondingQuestion
         });
-        questionIndex += 3;
       }
+    });
+    
+    // Shuffle the pairs to randomize the order
+    const shuffledPairs = shuffleArray(pairs);
+    
+    // Create learning blocks: show 1-2 examples, then their corresponding questions
+    let pairIndex = 0;
+    while (pairIndex < shuffledPairs.length) {
+      // Take 1-2 pairs for this learning cycle
+      const currentPairs = shuffledPairs.slice(pairIndex, pairIndex + 2);
+      
+      // Add examples block
+      gameState.learningBlocks.push({
+        type: 'examples',
+        content: currentPairs.map(pair => pair.example),
+        tense: TENSES.find(t => t.id === tenseId)
+      });
+      
+      // Add corresponding practice block
+      gameState.learningBlocks.push({
+        type: 'practice',
+        content: currentPairs.map(pair => pair.question),
+        tense: TENSES.find(t => t.id === tenseId)
+      });
+      
+      pairIndex += 2;
     }
   });
   
@@ -573,9 +606,9 @@ function resetGame() {
 function startNewGame() {
   // Reset everything
   gameState = {
-    selectedVerb: null,
+    selectedVerbs: [],
     selectedSubjects: [],
-    selectedTenseCollection: 'essential',
+    selectedTenseCollection: null,
     currentPhase: 'setup',
     currentExampleIndex: 0,
     currentQuestionIndex: 0,

@@ -9,9 +9,9 @@ let currentWalkthroughStep = 0;
 
 // Game state
 let gameState = {
-  selectedVerb: null,
+  selectedVerbs: [],
   selectedSubjects: [],
-  selectedTenseCollection: 'essential',
+  selectedTenseCollection: null,
   currentPhase: 'setup', // setup, learning, practice, results
   currentExampleIndex: 0,
   currentQuestionIndex: 0,
