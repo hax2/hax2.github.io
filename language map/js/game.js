@@ -72,7 +72,6 @@ class LanguageGame {
     this.xp = loadFromStorage('languageGame_xp', 0);
     this.learnedByRegion = loadFromStorage('languageGame_learnedByRegion', {});
     this.learnedMap = new Map(loadFromStorage('languageGame_learnedMap', []));
-    this.currentRegionKey = loadFromStorage('languageGame_currentRegion', null);
   }
 
   /**
@@ -82,7 +81,6 @@ class LanguageGame {
     saveToStorage('languageGame_xp', this.xp);
     saveToStorage('languageGame_learnedByRegion', this.learnedByRegion);
     saveToStorage('languageGame_learnedMap', Array.from(this.learnedMap.entries()));
-    saveToStorage('languageGame_currentRegion', this.currentRegionKey);
   }
 
   /**
@@ -169,7 +167,6 @@ class LanguageGame {
    */
   setCurrentRegion(regionKey) {
     this.currentRegionKey = regionKey;
-    this.saveGameState();
   }
 
   /**

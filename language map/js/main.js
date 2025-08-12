@@ -4,7 +4,11 @@
  * Initialize the application when DOM is loaded
  */
 document.addEventListener('DOMContentLoaded', () => {
-  // UI is initialized by instantiating LanguageGameUI in ui.js
+  // Initialize UI
+  ui.initialize();
+  
+  // Apply settings on startup
+  ui.applySettings();
   
   // Initialize theme
   initializeTheme();
