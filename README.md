@@ -1,6 +1,6 @@
 # Language Games Portfolio
 
-Welcome! This is a collection of interactive Spanish language games created by [Your Name].
+Welcome! This is a collection of interactive Spanish language games
 
 ## Games Included
 - **Juego de Frutas y Verduras** ([fruits.html](fruits.html))
