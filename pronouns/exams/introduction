@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Manufacturing & Production Systems — Study Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a; /* slate-900 */
+      --panel: #111827ee; /* gray-900 */
+      --muted: #94a3b8; /* slate-400 */
+      --text: #e5e7eb; /* gray-200 */
+      --accent: #22d3ee; /* cyan-400 */
+      --accent-2: #a78bfa; /* violet-400 */
+      --good: #34d399; /* green-400 */
+      --bad: #f87171; /* red-400 */
+    }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial;
+      background: radial-gradient(1200px 800px at 10% 0%, #0b1023, var(--bg));
+      color: var(--text);
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; }
+    header { display:flex; gap:18px; align-items:center; flex-wrap: wrap; }
+    h1 { font-size: clamp(24px, 3.2vw, 40px); margin: 0; letter-spacing: .3px; }
+    .chip { font-size: 12px; padding: 6px 10px; border: 1px solid #334155; border-radius: 999px; color: var(--muted); }
+    .panel { background: var(--panel); border: 1px solid #1f2937; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.3); }
+
+    .controls { display:flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+    select, button, input[type="search"] {
+      background: #0b1220; color: var(--text); border: 1px solid #334155; border-radius: 12px; padding: 10px 12px; font-size: 14px; outline: none;
+    }
+    button { cursor: pointer; transition: transform .04s ease; }
+    button:active { transform: translateY(1px); }
+    .btn-primary { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+    .btn-secondary { border-color: var(--accent-2); box-shadow: inset 0 0 0 1px var(--accent-2); }
+
+    .grid { display:grid; grid-template-columns: 1fr; gap: 14px; margin-top: 18px; }
+    @media (min-width: 840px) { .grid { grid-template-columns: 1fr 1fr; } }
+
+    .card { background:#0b1220; border:1px solid #1f2937; border-radius: 16px; padding:16px; position: relative; overflow: clip; }
+    .card h3 { margin: 0 0 6px; font-size: 18px; }
+    .meta { color: var(--muted); font-size: 12px; letter-spacing: .2px; margin-bottom: 10px; }
+    .qtext { font-size: 15px; line-height: 1.4; }
+
+    .options { display:flex; flex-direction: column; gap:8px; margin-top: 10px; }
+    .option { border: 1px dashed #384457; border-radius: 12px; padding: 10px 12px; cursor: pointer; background:#0c1527; }
+    .option[aria-checked="true"] { border-style: solid; border-color: var(--accent); }
+
+    .reveal { margin-top: 12px; display:flex; gap:10px; align-items:center; }
+    .answer { margin-top:10px; padding: 12px; border-radius: 12px; border:1px solid #20314b; background: #0b1b2f; }
+    .answer.correct { border-color: rgba(52, 211, 153, .3); background: rgba(17, 94, 50,.2); }
+    .answer.incorrect { border-color: rgba(248, 113, 113, .35); background: rgba(127, 29, 29,.2); }
+
+    .tag { padding: 2px 8px; border-radius: 999px; border: 1px solid #334155; color: #a3b2c7; font-size: 11px; }
+
+    .footer { margin-top: 26px; display:flex; align-items:center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .score { font-size: 14px; color: var(--muted); }
+
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Manufacturing & Production Systems — Study Quiz</h1>
+      <span class="chip">Open-ended & Multiple Choice</span>
+      <span class="chip">Answer‑obscured until reveal</span>
+    </header>
+
+    <div class="panel">
+      <div class="controls">
+        <select id="typeFilter" title="Filter by question type">
+          <option value="all">All types</option>
+          <option value="mc">Multiple Choice</option>
+          <option value="open">Open‑ended</option>
+        </select>
+        <select id="topicFilter" title="Filter by topic"></select>
+        <input id="searchBox" type="search" placeholder="Search questions…" />
+        <button id="shuffleBtn" class="btn-secondary">Shuffle</button>
+        <button id="resetBtn" class="btn-primary">Reset Session</button>
+      </div>
+      <div class="footer">
+        <div class="score" id="score">Score: 0 correct / 0 attempts</div>
+        <div class="score" id="progress">0 / 0 shown</div>
+      </div>
+    </div>
+
+    <div class="grid" id="quizGrid"></div>
+  </div>
+
+  <script>
+    // === Data: Questions derived from "Introduction — General Concepts of Production Systems and Manufacturing" ===
+    // Each item: { id, type: 'mc'|'open', topic, question, options?, correct, explanation }
+    const DATA = [
+      {
+        id: 1,
+        type: 'open',
+        topic: 'Production — Basics',
+        question: 'Define production in the context of industrial systems. What activities might it include aside from the core transformation step?',
+        correct: 'Production is the creation of goods or services with economic value using resources; beyond transformation it can include raw material handling, manufacturing, storage, distribution, etc.',
+        explanation: 'Captures both value creation and the broader chain such as handling, storage, and distribution.'
+      },
+      {
+        id: 2,
+        type: 'mc',
+        topic: 'Production — Basics',
+        question: 'Which statement best describes production factors in classical economics?',
+        options: [
+          'They are consumed and become part of the final product, like paint and steel.',
+          'They facilitate production but are not part of the final product; typically natural resources, manpower, and capital goods.',
+          'They are only financial assets like cash and equity.',
+          'They always refer to intermediate products only.'
+        ],
+        correct: 1,
+        explanation: 'Classical factors are natural resources, labor, and capital goods; they enable production without becoming the product.'
+      },
+      {
+        id: 3,
+        type: 'mc',
+        topic: 'Inputs & Outputs',
+        question: 'Intermediate products are…',
+        options: [
+          'Final goods sold to consumers.',
+          'Inputs used to produce other products, e.g., steel, engines, paints.',
+          'Always intangible services.',
+          'Synonymous with raw materials only.'
+        ],
+        correct: 1,
+        explanation: 'Intermediates are outputs from one unit used as inputs in another.'
+      },
+      {
+        id: 4,
+        type: 'open',
+        topic: 'Systems',
+        question: 'Sketch in words a production system and name its key elements and flows.',
+        correct: 'A set of interrelated elements aimed at obtaining goods/services; flows include raw materials (RM), intermediate products (IP), final products (FP) across production units (PU).',
+        explanation: 'Mentions RM, IP, FP and PUs as in the schematic.'
+      },
+      {
+        id: 5,
+        type: 'mc',
+        topic: 'Economic Sectors',
+        question: 'Which activity belongs to the primary sector as defined here?',
+        options: [
+          'Automobile assembly',
+          'Textile dyeing',
+          'Apiculture',
+          'Retail logistics'
+        ],
+        correct: 2,
+        explanation: 'Primary sector extracts from nature; apiculture (beekeeping) qualifies.'
+      },
+      {
+        id: 6,
+        type: 'open',
+        topic: 'Economic Sectors',
+        question: 'Differentiate the primary, secondary, and tertiary sectors in one sentence each.',
+        correct: 'Primary: extraction of resources from nature; Secondary: conversion of resources into finished goods; Tertiary: services that support the economy without tangible goods.',
+        explanation: 'Matches slide definitions.'
+      },
+      {
+        id: 7,
+        type: 'mc',
+        topic: 'Manufacturing — Concept',
+        question: 'Manufacturing, in this course, most closely means…',
+        options: [
+          'Any artisanal one-off craft work only.',
+          'Production of objects in series, at mass volumes, via industrial means.',
+          'Only software production.',
+          'Only extraction activities.'
+        ],
+        correct: 1,
+        explanation: 'Manufacturing is associated with serial, mass production of goods by industrial means.'
+      },
+      {
+        id: 8,
+        type: 'mc',
+        topic: 'Manufacturing — Classification',
+        question: 'Which pairing is correct for discrete vs. continuous manufacturing?',
+        options: [
+          'Continuous: toys; Discrete: gasoline',
+          'Continuous: cement; Discrete: cars',
+          'Continuous: appliances; Discrete: steel',
+          'Continuous: mobile phones; Discrete: crude oil'
+        ],
+        correct: 1,
+        explanation: 'Continuous (process) yields indistinct units like cement; discrete produces countable items like cars.'
+      },
+      {
+        id: 9,
+        type: 'open',
+        topic: 'Industrial Processes',
+        question: 'Give two examples of processes from two different industries and the type of products they help produce.',
+        correct: 'Textiles: dyeing or knitting → garments; Car: machining, welding, assembly, painting → vehicles; Petroleum: cracking or fractional distillation → fuels/lubricants.',
+        explanation: 'Any two industries with valid processes and outputs earns full credit.'
+      },
+      {
+        id: 10,
+        type: 'mc',
+        topic: 'Automation — Hierarchy',
+        question: 'Which sequence goes from lower to higher in a typical manufacturing automation hierarchy?',
+        options: [
+          'ERP → SCADA → PLC → Sensors/Actuators',
+          'Sensors/Actuators → PLC → SCADA/MES → ERP',
+          'MES → ERP → PLC → Sensors/Actuators',
+          'SCADA → Sensors → ERP → PLC'
+        ],
+        correct: 1,
+        explanation: 'Field (sensors/actuators) → control (PLC) → supervision/operations (SCADA/MES) → enterprise (ERP).'
+      },
+      {
+        id: 11,
+        type: 'open',
+        topic: 'Automation — Software',
+        question: 'Name two categories of software commonly used in manufacturing and give an example task for each.',
+        correct: 'Examples: CAD/CAM for design & toolpaths; MES for operations tracking; SCADA for supervision/control; ERP for enterprise planning; WMS for warehouse management.',
+        explanation: 'Any two correct categories + tasks.'
+      },
+      {
+        id: 12,
+        type: 'mc',
+        topic: 'Manufacturing — Classification',
+        question: 'Discrete manufacturing is BEST characterized by…',
+        options: [
+          'Undistinguishable output stream like gasoline',
+          'Clearly countable units like toys or appliances',
+          'Operations that occur only in batch chemical plants',
+          'Production that occurs only in labs'
+        ],
+        correct: 1,
+        explanation: 'Discrete → distinct countable units.'
+      },
+      {
+        id: 13,
+        type: 'open',
+        topic: 'Production — Scope',
+        question: 'List three non-production (in the narrow sense) activities that are still part of the production function as taught here.',
+        correct: 'E.g., raw materials handling, storage, and distribution (logistics). Others like packaging and internal transport also acceptable.',
+        explanation: 'Drawn directly from the production definition slide.'
+      },
+      {
+        id: 14,
+        type: 'mc',
+        topic: 'Inputs & Outputs',
+        question: 'Which is TRUE of factors of production vs. intermediate products?',
+        options: [
+          'Both are consumed into and become the final product.',
+          'Factors are not part of the final product; intermediates usually do become part of downstream outputs.',
+          'Intermediates are never transformed further.',
+          'Factors always refer only to finance capital.'
+        ],
+        correct: 1,
+        explanation: 'Factors enable production without being part of the product; intermediates are transformed further.'
+      },
+      {
+        id: 15,
+        type: 'open',
+        topic: 'Industry 4.0',
+        question: 'What does “bringing the real and virtual world together” imply for manufacturing, in one or two sentences?',
+        correct: 'Digitally integrating design, production, and monitoring (e.g., sensors + data + simulation) to drive a smart, connected enterprise characteristic of Industry 4.0.',
+        explanation: 'Synthesis encouraged; phrasing can vary.'
+      }
+    ];
+
+    // === State ===
+    let attempts = 0, correct = 0;
+    const $grid = document.getElementById('quizGrid');
+    const $type = document.getElementById('typeFilter');
+    const $topic = document.getElementById('topicFilter');
+    const $search = document.getElementById('searchBox');
+    const $shuffle = document.getElementById('shuffleBtn');
+    const $reset = document.getElementById('resetBtn');
+    const $score = document.getElementById('score');
+    const $progress = document.getElementById('progress');
+
+    // Populate topic filter
+    const topics = Array.from(new Set(DATA.map(q => q.topic))).sort();
+    $topic.innerHTML = `<option value="all">All topics</option>` + topics.map(t => `<option value="${t}">${t}</option>`).join('');
+
+    function matchFilters(q) {
+      const typeOk = $type.value === 'all' || q.type === $type.value;
+      const topicOk = $topic.value === 'all' || q.topic === $topic.value;
+      const s = $search.value.trim().toLowerCase();
+      const searchOk = !s || q.question.toLowerCase().includes(s) || (q.options||[]).some(o => o.toLowerCase().includes(s));
+      return typeOk && topicOk && searchOk;
+    }
+
+    function updateProgress(shown){
+      $progress.textContent = `${shown} / ${DATA.length} shown`;
+      $score.textContent = `Score: ${correct} correct / ${attempts} attempts`;
+    }
+
+    function render() {
+      $grid.innerHTML = '';
+      const shown = DATA.filter(matchFilters);
+      shown.forEach(q => $grid.appendChild(renderCard(q)));
+      updateProgress(shown.length);
+    }
+
+    function renderCard(q) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      const meta = `<div class="meta"><span class="tag">${q.type === 'mc' ? 'Multiple Choice' : 'Open‑ended'}</span> · <span class="tag">${q.topic}</span></div>`;
+      const title = `<h3>Q${q.id}. ${q.question}</h3>`;
+
+      const container = document.createElement('div');
+      container.innerHTML = meta + title + `<div class="qtext"></div>`;
+
+      if (q.type === 'mc') {
+        const list = document.createElement('div');
+        list.className = 'options';
+        q.options.forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'option';
+          btn.type = 'button';
+          btn.setAttribute('aria-checked', 'false');
+          btn.textContent = opt;
+          btn.addEventListener('click', () => {
+            attempts++;
+            const correctPick = idx === q.correct;
+            if (correctPick) correct++;
+            [...list.children].forEach((c, i) => {
+              c.disabled = true;
+              c.setAttribute('aria-checked', String(i === idx));
+              if (i === q.correct) c.style.borderColor = 'var(--good)';
+              if (i === idx && !correctPick) c.style.borderColor = 'var(--bad)';
+            });
+            ans.classList.remove('hidden');
+            ans.classList.add(correctPick ? 'correct' : 'incorrect');
+            updateProgress(document.querySelectorAll('#quizGrid .card').length);
+          });
+          list.appendChild(btn);
+        });
+        container.appendChild(list);
+      } else {
+        const reveal = document.createElement('div');
+        reveal.className = 'reveal';
+        const showBtn = document.createElement('button');
+        showBtn.className = 'btn-secondary';
+        showBtn.textContent = 'Reveal ideal answer';
+        showBtn.addEventListener('click', () => {
+          ans.classList.toggle('hidden');
+        });
+        reveal.appendChild(showBtn);
+        container.appendChild(reveal);
+      }
+
+      const ans = document.createElement('div');
+      ans.className = 'answer hidden';
+      ans.innerHTML = `<strong>Answer:</strong> ${q.type === 'mc' ? q.options[q.correct] : q.correct}` + (q.explanation ? `<br><em>Why:</em> ${q.explanation}` : '');
+      container.appendChild(ans);
+
+      card.appendChild(container);
+      return card;
+    }
+
+    $type.addEventListener('change', render);
+    $topic.addEventListener('change', render);
+    $search.addEventListener('input', render);
+    $shuffle.addEventListener('click', () => {
+      // Fisher–Yates
+      for (let i = DATA.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [DATA[i], DATA[j]] = [DATA[j], DATA[i]];
+      }
+      render();
+    });
+    $reset.addEventListener('click', () => {
+      attempts = 0; correct = 0;
+      document.querySelectorAll('.option').forEach(b => { b.disabled = false; b.setAttribute('aria-checked','false'); b.style.borderColor = '#384457'; });
+      document.querySelectorAll('.answer').forEach(a => { a.className = 'answer hidden'; });
+      updateProgress(document.querySelectorAll('#quizGrid .card').length);
+    });
+
+    render();
+  </script>
+</body>
+</html>
