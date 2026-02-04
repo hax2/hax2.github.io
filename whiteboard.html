@@ -1,12 +1,22 @@
-<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<div id="root"></div>
-<script type="text/babel">
-import React, { useState, useRef, useEffect } from 'react';
-import { Plus, X, ArrowLeft, GripVertical, Check, Download, Upload, Undo, Redo, Search, Palette, HelpCircle, Trash2, CheckSquare } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sticky Organizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div id="root"></div>
 
-// Help dialog component
+    <script type="text/babel">
+        const { Plus, X, ArrowLeft, GripVertical, Check, Download, Upload, Undo, Redo, Search, Palette, HelpCircle, Trash2, CheckSquare } = lucide;
+
+        
 function HelpDialog({ onClose }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
@@ -320,7 +330,7 @@ function TaskSticky({ task, onMouseDown, onDelete, onToggleDone, onUpdateTitle, 
 }
 
 // Main component
-export default function StickyOrganizer() {
+function StickyOrganizer() {
   const [projects, setProjects] = useState([]);
   const [currentProject, setCurrentProject] = useState(null);
   const [dragging, setDragging] = useState(null);
@@ -1027,6 +1037,9 @@ export default function StickyOrganizer() {
     </div>
   );
 }
-   const root = ReactDOM.createRoot(document.getElementById('root'));
-   root.render(<YourComponentName />); 
-</script>
+        // --- AT THE VERY END OF YOUR CLAUDE CODE, ADD THESE LINES: ---
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<StickyOrganizer />);
+    </script>
+</body>
+</html>
