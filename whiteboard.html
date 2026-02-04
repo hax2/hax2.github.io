@@ -1,0 +1,1032 @@
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<div id="root"></div>
+<script type="text/babel">
+import React, { useState, useRef, useEffect } from 'react';
+import { Plus, X, ArrowLeft, GripVertical, Check, Download, Upload, Undo, Redo, Search, Palette, HelpCircle, Trash2, CheckSquare } from 'lucide-react';
+
+// Help dialog component
+function HelpDialog({ onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-gray-800">Keyboard Shortcuts</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X size={24} />
+          </button>
+        </div>
+        <div className="space-y-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-600">New project/task</span>
+            <kbd className="px-2 py-1 bg-gray-100 rounded">N</kbd>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Undo</span>
+            <kbd className="px-2 py-1 bg-gray-100 rounded">Ctrl+Z</kbd>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Redo</span>
+            <kbd className="px-2 py-1 bg-gray-100 rounded">Ctrl+Shift+Z</kbd>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Search</span>
+            <kbd className="px-2 py-1 bg-gray-100 rounded">Ctrl+F</kbd>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Export data</span>
+            <kbd className="px-2 py-1 bg-gray-100 rounded">Ctrl+S</kbd>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Go back</span>
+            <kbd className="px-2 py-1 bg-gray-100 rounded">Esc</kbd>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Help</span>
+            <kbd className="px-2 py-1 bg-gray-100 rounded">?</kbd>
+          </div>
+        </div>
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <h3 className="font-semibold text-gray-800 mb-2">Tips</h3>
+          <ul className="text-sm text-gray-600 space-y-1">
+            <li>• Drag sticky notes to organize them</li>
+            <li>• Click a project to see its tasks</li>
+            <li>• Use the palette icon to change colors</li>
+            <li>• Completed items move to the archive</li>
+            <li>• Your work auto-saves continuously</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Color picker component
+function ColorPicker({ currentColor, onColorChange, onClose }) {
+  const colors = ['#fef3c7', '#fce7f3', '#dbeafe', '#d1fae5', '#e0e7ff', '#fecaca', '#fed7aa', '#fef08a'];
+  
+  return (
+    <div className="absolute z-50 bg-white rounded-lg shadow-xl p-3 border border-gray-200" style={{ top: '100%', right: 0, marginTop: '4px' }}>
+      <div className="grid grid-cols-4 gap-2">
+        {colors.map(color => (
+          <button
+            key={color}
+            className="w-8 h-8 rounded-md border-2 hover:scale-110 transition-transform"
+            style={{ 
+              backgroundColor: color,
+              borderColor: currentColor === color ? '#374151' : '#d1d5db'
+            }}
+            onClick={() => {
+              onColorChange(color);
+              onClose();
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Project sticky note component
+function ProjectSticky({ project, onMouseDown, onDelete, onToggleDone, onUpdateTitle, onChangeColor, onClick, isDragging, isNewItem, onClearNewItem }) {
+  const inputRef = useRef(null);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+
+  useEffect(() => {
+    if (isNewItem && inputRef.current) {
+      inputRef.current.select();
+      onClearNewItem();
+    }
+  }, [isNewItem, onClearNewItem]);
+
+  // Close color picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showColorPicker && !e.target.closest('.color-picker-container')) {
+        setShowColorPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showColorPicker]);
+
+  const handleToggleDone = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onToggleDone(project.id, e);
+  };
+
+  const handleDelete = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (confirm('Delete this project and all its tasks?')) {
+      onDelete(project.id, e);
+    }
+  };
+
+  const handleColorClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowColorPicker(!showColorPicker);
+  };
+
+  const completedCount = project.tasks.filter(t => t.done).length;
+  const totalCount = project.tasks.length;
+
+  return (
+    <div
+      className="absolute w-56 h-56 shadow-lg rounded-sm cursor-move select-none hover:shadow-xl transition-shadow"
+      style={{
+        left: project.x,
+        top: project.y,
+        backgroundColor: project.color,
+        transform: isDragging ? 'rotate(3deg) scale(1.05)' : 'rotate(-2deg)',
+        transition: isDragging ? 'none' : 'transform 0.2s'
+      }}
+      onMouseDown={(e) => onMouseDown(project, e)}
+      onClick={onClick}
+    >
+      <div className="p-5 h-full flex flex-col">
+        <div className="flex items-start justify-between mb-3">
+          <GripVertical size={16} className="text-gray-400 mt-1 flex-shrink-0" />
+          <div className="flex gap-1 relative color-picker-container">
+            <button
+              onMouseDown={handleColorClick}
+              className="text-gray-400 hover:text-purple-600 flex-shrink-0 transition-colors"
+              title="Change color"
+            >
+              <Palette size={16} />
+            </button>
+            {showColorPicker && (
+              <ColorPicker
+                currentColor={project.color}
+                onColorChange={(color) => onChangeColor(project.id, color)}
+                onClose={() => setShowColorPicker(false)}
+              />
+            )}
+            <button
+              onMouseDown={handleToggleDone}
+              className="text-gray-400 hover:text-green-600 flex-shrink-0 transition-colors"
+              title="Mark as done"
+            >
+              <Check size={16} />
+            </button>
+            <button
+              onMouseDown={handleDelete}
+              className="text-gray-400 hover:text-red-600 flex-shrink-0"
+              title="Delete"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+        <input
+          ref={inputRef}
+          type="text"
+          value={project.title}
+          onChange={(e) => onUpdateTitle(project.id, e.target.value)}
+          className="font-bold text-xl mb-2 bg-transparent border-none outline-none w-full"
+          placeholder="Project name"
+          onClick={(e) => e.stopPropagation()}
+          maxLength={50}
+        />
+        <div className="mt-auto space-y-1">
+          {totalCount > 0 && (
+            <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+              <div 
+                className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(completedCount / totalCount) * 100}%` }}
+              />
+            </div>
+          )}
+          <p className="text-sm text-gray-600">
+            {totalCount === 0 ? 'No tasks yet' : `${completedCount}/${totalCount} tasks done`}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Task sticky note component
+function TaskSticky({ task, onMouseDown, onDelete, onToggleDone, onUpdateTitle, onUpdateNotes, onChangeColor, isDragging, isNewItem, onClearNewItem }) {
+  const inputRef = useRef(null);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+
+  useEffect(() => {
+    if (isNewItem && inputRef.current) {
+      inputRef.current.select();
+      onClearNewItem();
+    }
+  }, [isNewItem, onClearNewItem]);
+
+  // Close color picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showColorPicker && !e.target.closest('.color-picker-container')) {
+        setShowColorPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showColorPicker]);
+
+  const handleToggleDone = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onToggleDone(task.id, e);
+  };
+
+  const handleDelete = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (confirm('Delete this task?')) {
+      onDelete(task.id, e);
+    }
+  };
+
+  const handleColorClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowColorPicker(!showColorPicker);
+  };
+
+  return (
+    <div
+      className="absolute w-64 bg-white shadow-lg rounded-sm cursor-move select-none"
+      style={{
+        left: task.x,
+        top: task.y,
+        backgroundColor: task.color,
+        transform: isDragging ? 'rotate(2deg) scale(1.05)' : 'rotate(-1deg)',
+        transition: isDragging ? 'none' : 'transform 0.2s'
+      }}
+      onMouseDown={(e) => onMouseDown(task, e, true)}
+    >
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-3">
+          <GripVertical size={16} className="text-gray-400 mt-1 flex-shrink-0" />
+          <input
+            ref={inputRef}
+            type="text"
+            value={task.title}
+            onChange={(e) => onUpdateTitle(task.id, e.target.value)}
+            className="flex-1 mx-2 font-semibold text-lg bg-transparent border-none outline-none"
+            placeholder="Task name"
+            maxLength={100}
+          />
+          <div className="flex gap-1 relative color-picker-container">
+            <button
+              onMouseDown={handleColorClick}
+              className="text-gray-400 hover:text-purple-600 flex-shrink-0 transition-colors"
+              title="Change color"
+            >
+              <Palette size={16} />
+            </button>
+            {showColorPicker && (
+              <ColorPicker
+                currentColor={task.color}
+                onColorChange={(color) => onChangeColor(task.id, color)}
+                onClose={() => setShowColorPicker(false)}
+              />
+            )}
+            <button
+              onMouseDown={handleToggleDone}
+              className="text-gray-400 hover:text-green-600 flex-shrink-0 transition-colors"
+              title="Mark as done"
+            >
+              <Check size={16} />
+            </button>
+            <button
+              onMouseDown={handleDelete}
+              className="text-gray-400 hover:text-red-600 flex-shrink-0"
+              title="Delete"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+        <textarea
+          value={task.notes}
+          onChange={(e) => onUpdateNotes(task.id, e.target.value)}
+          placeholder="Add notes..."
+          className="w-full h-32 bg-transparent border-none outline-none resize-none text-sm text-gray-700"
+          maxLength={1000}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Main component
+export default function StickyOrganizer() {
+  const [projects, setProjects] = useState([]);
+  const [currentProject, setCurrentProject] = useState(null);
+  const [dragging, setDragging] = useState(null);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [newItemId, setNewItemId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [showHelp, setShowHelp] = useState(false);
+  const dragStartPos = useRef({ x: 0, y: 0 });
+  const wasDragging = useRef(false);
+  const fileInputRef = useRef(null);
+  const searchInputRef = useRef(null);
+
+  const colors = ['#fef3c7', '#fce7f3', '#dbeafe', '#d1fae5', '#e0e7ff', '#fecaca', '#fed7aa', '#fef08a'];
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('stickyOrganizer');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        setProjects(data.projects || []);
+        addToHistory(data.projects || []);
+      } catch (e) {
+        console.error('Failed to load data:', e);
+        initializeWelcomeProject();
+      }
+    } else {
+      initializeWelcomeProject();
+    }
+  }, []);
+
+  const initializeWelcomeProject = () => {
+    const welcomeProject = {
+      id: Date.now(),
+      title: 'Welcome! 👋',
+      x: 100,
+      y: 100,
+      color: '#fef3c7',
+      tasks: [
+        {
+          id: Date.now() + 1,
+          title: 'Try dragging me around!',
+          x: 100,
+          y: 150,
+          notes: 'You can move sticky notes by clicking and dragging them.\n\nTip: Press ? to see all keyboard shortcuts!',
+          color: '#dbeafe',
+          done: false
+        }
+      ],
+      done: false
+    };
+    setProjects([welcomeProject]);
+    addToHistory([welcomeProject]);
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ignore if typing in an input/textarea
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      // Help dialog
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        setShowHelp(true);
+      }
+
+      // Escape key
+      if (e.key === 'Escape') {
+        if (showHelp) {
+          setShowHelp(false);
+        } else if (searchQuery) {
+          setSearchQuery('');
+        } else if (currentProject) {
+          setCurrentProject(null);
+        }
+      }
+
+      // New item (N key)
+      if (e.key === 'n' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        if (currentProject) {
+          addTask();
+        } else {
+          addProject();
+        }
+      }
+
+      // Search (Ctrl+F)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+
+      // Export (Ctrl+S)
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        exportData();
+      }
+
+      // Undo (Ctrl+Z)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      }
+
+      // Redo (Ctrl+Shift+Z)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'z') {
+        e.preventDefault();
+        redo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentProject, showHelp, searchQuery, historyIndex, history]);
+
+  // Save to localStorage whenever projects change
+  useEffect(() => {
+    if (projects.length > 0) {
+      localStorage.setItem('stickyOrganizer', JSON.stringify({ projects }));
+    }
+  }, [projects]);
+
+  // Add to history for undo/redo
+  const addToHistory = (newProjects) => {
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(JSON.parse(JSON.stringify(newProjects)));
+    // Keep history limited to last 50 states
+    if (newHistory.length > 50) {
+      newHistory.shift();
+    } else {
+      setHistoryIndex(newHistory.length - 1);
+    }
+    setHistory(newHistory);
+  };
+
+  const undo = () => {
+    if (historyIndex > 0) {
+      setHistoryIndex(historyIndex - 1);
+      setProjects(JSON.parse(JSON.stringify(history[historyIndex - 1])));
+      // Update current project if viewing one
+      if (currentProject) {
+        const updatedProject = history[historyIndex - 1].find(p => p.id === currentProject.id);
+        setCurrentProject(updatedProject || null);
+      }
+    }
+  };
+
+  const redo = () => {
+    if (historyIndex < history.length - 1) {
+      setHistoryIndex(historyIndex + 1);
+      setProjects(JSON.parse(JSON.stringify(history[historyIndex + 1])));
+      // Update current project if viewing one
+      if (currentProject) {
+        const updatedProject = history[historyIndex + 1].find(p => p.id === currentProject.id);
+        setCurrentProject(updatedProject || null);
+      }
+    }
+  };
+
+  // Export data
+  const exportData = () => {
+    const dataStr = JSON.stringify({ projects, version: 1, exportDate: new Date().toISOString() }, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `sticky-notes-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Import data
+  const importData = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target.result);
+        if (data.projects) {
+          if (confirm('Import this data? This will replace your current workspace.')) {
+            setProjects(data.projects);
+            addToHistory(data.projects);
+            setCurrentProject(null);
+            setSearchQuery('');
+          }
+        }
+      } catch (error) {
+        alert('Failed to import data. Please check the file format.');
+      }
+    };
+    reader.readAsText(file);
+    // Reset file input
+    e.target.value = '';
+  };
+
+  // Bulk actions
+  const deleteAllCompleted = () => {
+    if (confirm('Delete all completed projects and tasks?')) {
+      const newProjects = projects
+        .filter(p => !p.done)
+        .map(p => ({
+          ...p,
+          tasks: p.tasks.filter(t => !t.done)
+        }));
+      setProjects(newProjects);
+      addToHistory(newProjects);
+    }
+  };
+
+  const completeAllTasks = () => {
+    if (currentProject) {
+      const updatedProject = {
+        ...currentProject,
+        tasks: currentProject.tasks.map(t => ({ ...t, done: true }))
+      };
+      const newProjects = projects.map(p => p.id === currentProject.id ? updatedProject : p);
+      setProjects(newProjects);
+      setCurrentProject(updatedProject);
+      addToHistory(newProjects);
+    }
+  };
+
+  const addProject = () => {
+    const newProject = {
+      id: Date.now(),
+      title: 'New Project',
+      x: Math.random() * 300 + 50,
+      y: Math.random() * 300 + 50,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      tasks: [],
+      done: false
+    };
+    const newProjects = [...projects, newProject];
+    setProjects(newProjects);
+    addToHistory(newProjects);
+    setNewItemId(newProject.id);
+  };
+
+  const addTask = () => {
+    const newTask = {
+      id: Date.now(),
+      title: 'New Task',
+      x: Math.random() * 300 + 50,
+      y: Math.random() * 300 + 50,
+      notes: '',
+      color: colors[Math.floor(Math.random() * colors.length)],
+      done: false
+    };
+    const newProjects = projects.map(p => 
+      p.id === currentProject.id 
+        ? { ...p, tasks: [...p.tasks, newTask] }
+        : p
+    );
+    setProjects(newProjects);
+    setCurrentProject({ ...currentProject, tasks: [...currentProject.tasks, newTask] });
+    addToHistory(newProjects);
+    setNewItemId(newTask.id);
+  };
+
+  const deleteProject = (id, e) => {
+    e.stopPropagation();
+    const newProjects = projects.filter(p => p.id !== id);
+    setProjects(newProjects);
+    addToHistory(newProjects);
+  };
+
+  const deleteTask = (id, e) => {
+    e.stopPropagation();
+    const updatedProject = {
+      ...currentProject,
+      tasks: currentProject.tasks.filter(t => t.id !== id)
+    };
+    const newProjects = projects.map(p => p.id === currentProject.id ? updatedProject : p);
+    setProjects(newProjects);
+    setCurrentProject(updatedProject);
+    addToHistory(newProjects);
+  };
+
+  const toggleProjectDone = (id, e) => {
+    e.stopPropagation();
+    const newProjects = projects.map(p => p.id === id ? { ...p, done: !p.done } : p);
+    setProjects(newProjects);
+    addToHistory(newProjects);
+  };
+
+  const toggleTaskDone = (id, e) => {
+    e.stopPropagation();
+    const updatedProject = {
+      ...currentProject,
+      tasks: currentProject.tasks.map(t => t.id === id ? { ...t, done: !t.done } : t)
+    };
+    const newProjects = projects.map(p => p.id === currentProject.id ? updatedProject : p);
+    setProjects(newProjects);
+    setCurrentProject(updatedProject);
+    addToHistory(newProjects);
+  };
+
+  const updateProjectTitle = (id, title) => {
+    const newProjects = projects.map(p => p.id === id ? { ...p, title } : p);
+    setProjects(newProjects);
+  };
+
+  const updateProjectColor = (id, color) => {
+    const newProjects = projects.map(p => p.id === id ? { ...p, color } : p);
+    setProjects(newProjects);
+    addToHistory(newProjects);
+  };
+
+  const updateTaskTitle = (id, title) => {
+    const updatedProject = {
+      ...currentProject,
+      tasks: currentProject.tasks.map(t => t.id === id ? { ...t, title } : t)
+    };
+    const newProjects = projects.map(p => p.id === currentProject.id ? updatedProject : p);
+    setProjects(newProjects);
+    setCurrentProject(updatedProject);
+  };
+
+  const updateTaskColor = (id, color) => {
+    const updatedProject = {
+      ...currentProject,
+      tasks: currentProject.tasks.map(t => t.id === id ? { ...t, color } : t)
+    };
+    const newProjects = projects.map(p => p.id === currentProject.id ? updatedProject : p);
+    setProjects(newProjects);
+    setCurrentProject(updatedProject);
+    addToHistory(newProjects);
+  };
+
+  const updateTaskNotes = (id, notes) => {
+    const updatedProject = {
+      ...currentProject,
+      tasks: currentProject.tasks.map(t => t.id === id ? { ...t, notes } : t)
+    };
+    const newProjects = projects.map(p => p.id === currentProject.id ? updatedProject : p);
+    setProjects(newProjects);
+    setCurrentProject(updatedProject);
+  };
+
+  const handleMouseDown = (item, e, isTask = false) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON') return;
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
+    wasDragging.current = false;
+    setDragging({ item, isTask });
+    setIsDragging(false);
+    setOffset({
+      x: e.clientX - item.x,
+      y: e.clientY - item.y
+    });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!dragging) return;
+    
+    const dx = e.clientX - dragStartPos.current.x;
+    const dy = e.clientY - dragStartPos.current.y;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      setIsDragging(true);
+      wasDragging.current = true;
+    }
+
+    const newX = Math.max(0, e.clientX - offset.x);
+    const newY = Math.max(0, e.clientY - offset.y);
+
+    if (dragging.isTask) {
+      const updatedProject = {
+        ...currentProject,
+        tasks: currentProject.tasks.map(t => 
+          t.id === dragging.item.id ? { ...t, x: newX, y: newY } : t
+        )
+      };
+      setProjects(projects.map(p => p.id === currentProject.id ? updatedProject : p));
+      setCurrentProject(updatedProject);
+    } else {
+      setProjects(projects.map(p => 
+        p.id === dragging.item.id ? { ...p, x: newX, y: newY } : p
+      ));
+    }
+  };
+
+  const handleMouseUp = () => {
+    if (dragging && wasDragging.current) {
+      addToHistory(projects);
+    }
+    setDragging(null);
+    setIsDragging(false);
+  };
+
+  // Filter projects based on search
+  const filteredProjects = searchQuery
+    ? projects.filter(p => 
+        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.tasks.some(t => 
+          t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          t.notes.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      )
+    : projects;
+
+  // Task view
+  if (currentProject) {
+    const activeTasks = currentProject.tasks.filter(t => !t.done);
+    const doneTasks = currentProject.tasks.filter(t => t.done);
+
+    return (
+      <div 
+        className="w-full h-screen bg-gradient-to-br from-amber-50 to-orange-50 overflow-hidden relative"
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+      >
+        {showHelp && <HelpDialog onClose={() => setShowHelp(false)} />}
+
+        <div className="absolute top-6 left-6 flex items-center gap-4 z-10">
+          <button
+            onClick={() => setCurrentProject(null)}
+            className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+          >
+            <ArrowLeft size={18} />
+            <span className="font-medium">Back</span>
+          </button>
+          <h1 className="text-2xl font-bold text-gray-800">{currentProject.title}</h1>
+          <span className="text-sm text-gray-500">
+            {activeTasks.length} active • {doneTasks.length} done
+          </span>
+        </div>
+
+        <div className="absolute top-6 right-6 flex gap-2 z-10">
+          {activeTasks.length > 0 && (
+            <button
+              onClick={completeAllTasks}
+              className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              title="Complete all tasks"
+            >
+              <CheckSquare size={18} />
+            </button>
+          )}
+          {doneTasks.length > 0 && (
+            <button
+              onClick={deleteAllCompleted}
+              className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              title="Delete completed tasks"
+            >
+              <Trash2 size={18} />
+            </button>
+          )}
+          <button
+            onClick={() => setShowHelp(true)}
+            className="p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+            title="Help (press ?)"
+          >
+            <HelpCircle size={18} />
+          </button>
+          <button
+            onClick={undo}
+            disabled={historyIndex <= 0}
+            className="p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Undo (Ctrl+Z)"
+          >
+            <Undo size={18} />
+          </button>
+          <button
+            onClick={redo}
+            disabled={historyIndex >= history.length - 1}
+            className="p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Redo (Ctrl+Shift+Z)"
+          >
+            <Redo size={18} />
+          </button>
+          <button
+            onClick={addTask}
+            className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+          >
+            <Plus size={18} />
+            <span className="font-medium">Add Task</span>
+          </button>
+        </div>
+
+        {activeTasks.map(task => (
+          <TaskSticky
+            key={task.id}
+            task={task}
+            onMouseDown={handleMouseDown}
+            onDelete={deleteTask}
+            onToggleDone={toggleTaskDone}
+            onUpdateTitle={updateTaskTitle}
+            onUpdateNotes={updateTaskNotes}
+            onChangeColor={updateTaskColor}
+            isDragging={dragging?.item.id === task.id}
+            isNewItem={newItemId === task.id}
+            onClearNewItem={() => setNewItemId(null)}
+          />
+        ))}
+
+        {doneTasks.length > 0 && (
+          <div className="absolute bottom-6 right-6 w-72 max-h-96 overflow-y-auto bg-white/80 backdrop-blur rounded-lg shadow-lg p-4">
+            <h3 className="text-sm font-semibold text-gray-600 mb-3 flex items-center gap-2">
+              <Check size={16} className="text-green-600" />
+              Completed ({doneTasks.length})
+            </h3>
+            <div className="space-y-2">
+              {doneTasks.map(task => (
+                <div
+                  key={task.id}
+                  className="p-3 rounded text-sm bg-white shadow-sm"
+                  style={{ backgroundColor: task.color, opacity: 0.7 }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="line-through text-gray-600 flex-1 truncate">{task.title}</span>
+                    <button
+                      onClick={(e) => toggleTaskDone(task.id, e)}
+                      className="text-gray-400 hover:text-gray-600 ml-2"
+                      title="Restore"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTasks.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <p className="text-gray-400 text-lg">
+              {doneTasks.length > 0 
+                ? "All tasks completed! 🎉" 
+                : 'Press N or click "Add Task" to create your first sticky note'}
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Main project view
+  const activeProjects = filteredProjects.filter(p => !p.done);
+  const doneProjects = filteredProjects.filter(p => p.done);
+
+  return (
+    <div 
+      className="w-full h-screen bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden relative"
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+    >
+      {showHelp && <HelpDialog onClose={() => setShowHelp(false)} />}
+
+      <div className="absolute top-6 left-6 z-10">
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Projects</h1>
+        <p className="text-gray-600">
+          {projects.length === 0 ? 'Get started by creating a project' : `${activeProjects.length} active • ${doneProjects.length} done`}
+        </p>
+      </div>
+
+      <div className="absolute top-6 right-6 flex gap-2 z-10 flex-wrap justify-end">
+        <div className="relative">
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder="Search... (Ctrl+F)"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
+          />
+        </div>
+        {doneProjects.length > 0 && (
+          <button
+            onClick={deleteAllCompleted}
+            className="p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+            title="Delete all completed"
+          >
+            <Trash2 size={18} />
+          </button>
+        )}
+        <button
+          onClick={() => setShowHelp(true)}
+          className="p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+          title="Help (press ?)"
+        >
+          <HelpCircle size={18} />
+        </button>
+        <button
+          onClick={undo}
+          disabled={historyIndex <= 0}
+          className="p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Undo (Ctrl+Z)"
+        >
+          <Undo size={18} />
+        </button>
+        <button
+          onClick={redo}
+          disabled={historyIndex >= history.length - 1}
+          className="p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Redo (Ctrl+Shift+Z)"
+        >
+          <Redo size={18} />
+        </button>
+        <button
+          onClick={exportData}
+          className="p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+          title="Export (Ctrl+S)"
+        >
+          <Download size={18} />
+        </button>
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+          title="Import"
+        >
+          <Upload size={18} />
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          onChange={importData}
+          className="hidden"
+        />
+        <button
+          onClick={addProject}
+          className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+        >
+          <Plus size={18} />
+          <span className="font-medium">New Project</span>
+        </button>
+      </div>
+
+      {activeProjects.map(project => (
+        <ProjectSticky
+          key={project.id}
+          project={project}
+          onMouseDown={handleMouseDown}
+          onDelete={deleteProject}
+          onToggleDone={toggleProjectDone}
+          onUpdateTitle={updateProjectTitle}
+          onChangeColor={updateProjectColor}
+          onClick={() => {
+            if (!wasDragging.current) {
+              setCurrentProject(project);
+            }
+          }}
+          isDragging={dragging?.item.id === project.id}
+          isNewItem={newItemId === project.id}
+          onClearNewItem={() => setNewItemId(null)}
+        />
+      ))}
+
+      {doneProjects.length > 0 && (
+        <div className="absolute bottom-6 right-6 w-72 max-h-96 overflow-y-auto bg-white/80 backdrop-blur rounded-lg shadow-lg p-4">
+          <h3 className="text-sm font-semibold text-gray-600 mb-3 flex items-center gap-2">
+            <Check size={16} className="text-green-600" />
+            Completed ({doneProjects.length})
+          </h3>
+          <div className="space-y-2">
+            {doneProjects.map(project => (
+              <div
+                key={project.id}
+                className="p-3 rounded text-sm bg-white shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                style={{ backgroundColor: project.color, opacity: 0.7 }}
+                onClick={() => setCurrentProject(project)}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="line-through text-gray-600 flex-1 truncate">{project.title}</span>
+                  <button
+                    onClick={(e) => toggleProjectDone(project.id, e)}
+                    className="text-gray-400 hover:text-gray-600 ml-2"
+                    title="Restore"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeProjects.length === 0 && !searchQuery && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-center">
+            <p className="text-gray-400 text-lg mb-2">
+              {doneProjects.length > 0 
+                ? "All projects completed! 🎉" 
+                : 'Press N or click "New Project" to get started'}
+            </p>
+            <p className="text-gray-400 text-sm">Press ? for help</p>
+          </div>
+        </div>
+      )}
+
+      {activeProjects.length === 0 && searchQuery && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <p className="text-gray-400 text-lg">No projects found matching "{searchQuery}"</p>
+        </div>
+      )}
+    </div>
+  );
+}
+   const root = ReactDOM.createRoot(document.getElementById('root'));
+   root.render(<YourComponentName />); 
+</script>
