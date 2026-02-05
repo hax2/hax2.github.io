@@ -1,0 +1,17 @@
+export const PHRASES = [
+  { es: "¿Qué tal?", en: "How’s it going?" },
+  { es: "¿Qué pasa?", en: "What’s up?" },
+  { es: "Venga, vale.", en: "Alright then / okay." },
+  { es: "Ya te digo.", en: "Exactly." },
+  { es: "Ni de coña.", en: "No way (informal/strong)." },
+  { es: "Ahora mismo.", en: "Right now." },
+  { es: "Estoy a cinco minutos.", en: "I’m five minutes away." },
+  { es: "¿Te apetece una caña?", en: "Fancy a beer?" },
+  { es: "La cuenta, por favor.", en: "The bill, please." },
+  { es: "No pasa nada.", en: "No worries / it’s fine." },
+  { es: "Qué pereza…", en: "Ugh, can’t be bothered…" },
+  { es: "Me viene bien.", en: "That works for me." },
+  { es: "Estoy hasta arriba.", en: "I’m swamped." },
+  { es: "O sea…", en: "I mean…" },
+  { es: "En plan…", en: "Like…" },
+];

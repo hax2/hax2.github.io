@@ -1,0 +1,17 @@
+export const PHRASES = [
+  { es: "¿Cuánto cuesta esto?", en: "How much does this cost?" },
+  { es: "¿Tiene otra talla?", en: "Do you have another size?" },
+  { es: "¿Puedo probármelo?", en: "Can I try it on?" },
+  { es: "¿Dónde están los probadores?", en: "Where are the fitting rooms?" },
+  { es: "Busco algo más barato.", en: "I’m looking for something cheaper." },
+  { es: "¿Hay descuento?", en: "Is there a discount?" },
+  { es: "¿Aceptan devoluciones?", en: "Do you accept returns?" },
+  { es: "Solo estoy mirando, gracias.", en: "I’m just looking, thanks." },
+  { es: "¿Tienen esto en otro color?", en: "Do you have this in another color?" },
+  { es: "Lo llevo.", en: "I’ll take it." },
+  { es: "¿Puedo pagar con tarjeta?", en: "Can I pay by card?" },
+  { es: "¿Me puede dar una bolsa?", en: "Can you give me a bag?" },
+  { es: "¿Dónde está la caja?", en: "Where is the checkout?" },
+  { es: "¿Me puede dar el ticket?", en: "Can you give me the receipt?" },
+  { es: "¿Está abierto el mercado hoy?", en: "Is the market open today?" },
+];

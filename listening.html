@@ -1,0 +1,991 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spanish Phrase Trainer (Spain) — TTS</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      max-width: 920px;
+      margin-inline: auto;
+      line-height: 1.35;
+    }
+    h1 { font-size: 22px; margin: 0 0 14px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .card {
+      border: 1px solid rgba(127,127,127,.35);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 6px 22px rgba(0,0,0,.08);
+      background: rgba(127,127,127,.06);
+    }
+    .controls { margin-top: 14px; }
+    button {
+      border: 1px solid rgba(127,127,127,.45);
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(127,127,127,.10);
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover { filter: brightness(1.05); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .pill {
+      border: 1px solid rgba(127,127,127,.45);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      background: rgba(127,127,127,.08);
+    }
+    .big {
+      font-size: 26px;
+      margin: 8px 0;
+      font-weight: 800;
+      letter-spacing: .2px;
+    }
+    .muted { opacity: .8; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 720px) {
+      .grid { grid-template-columns: 2fr 1fr; }
+    }
+    @media (max-width: 520px) {
+      body { padding: 14px; }
+      h1 { font-size: 18px; }
+      .card { padding: 14px; border-radius: 14px; }
+      .pill { font-size: 12px; padding: 6px 8px; }
+      .big { font-size: 22px; }
+      .controls { margin-top: 10px; }
+      .controls button { flex: 1 1 140px; }
+      .row button { flex: 1 1 120px; }
+      .hiddenBox { flex-direction: column; align-items: flex-start; }
+      .hiddenBox .text { font-size: 17px; }
+      .inline { gap: 8px; }
+    }
+    label { font-size: 12px; opacity: .85; display: block; margin-bottom: 6px; }
+    select, input[type="range"], input[type="checkbox"] {
+      width: 100%;
+    }
+    select {
+      padding: 10px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(127,127,127,.45);
+      background: rgba(127,127,127,.08);
+    }
+    .inline {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .kpi { font-size: 12px; opacity: .85; }
+    .hr { height: 1px; background: rgba(127,127,127,.25); margin: 12px 0; }
+    .hiddenBox {
+      border: 1px dashed rgba(127,127,127,.45);
+      border-radius: 14px;
+      padding: 12px;
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: rgba(127,127,127,.05);
+    }
+    .hiddenBox .text { font-size: 18px; font-weight: 700; }
+    .hiddenBox .placeholder { font-size: 14px; opacity: .75; }
+    .tiny { font-size: 12px; opacity: .75; }
+  </style>
+</head>
+<body>
+  <h1>Spanish Phrase Trainer (Spain) — Listen → Reveal Spanish → Reveal Translation</h1>
+
+  <div class="grid">
+    <div class="card" id="mainCard">
+      <div class="row" style="justify-content: space-between;">
+        <div class="inline">
+          <span class="pill" id="counter">1 / 1</span>
+          <span class="pill" id="modulePill">Module: (loading…)</span>
+          <span class="pill" id="deckPill">Deck: Ordered</span>
+          <span class="pill" id="duePill">Trouble due: 0</span>
+          <span class="pill" id="voicePill">Voice: (loading…)</span>
+        </div>
+        <div class="inline">
+          <button id="btnPrev" title="Previous">◀</button>
+          <button id="btnNext" title="Next">▶</button>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="big" id="prompt">Press “Listen” to hear the phrase.</div>
+      <div class="kpi muted" id="hint">Tip: try to repeat what you hear before revealing.</div>
+      <div class="kpi muted" id="moduleHint"></div>
+      <div class="kpi muted" id="phraseStats"></div>
+
+      <div class="controls row">
+        <button id="btnListen">🔊 Listen</button>
+        <button id="btnRevealEs">👁 Reveal Spanish</button>
+        <button id="btnRevealEn">🌍 Reveal Translation</button>
+        <button id="btnReplay" title="Replay same phrase">↻ Replay</button>
+        <button id="btnShuffle" title="Toggle shuffle">🔀 Shuffle</button>
+        <button id="btnMarkTrouble" title="Mark this as difficult">⚠ Mark Trouble</button>
+        <button id="btnGotIt" title="Mark this as correct">✔ Got it</button>
+        <button id="btnReviewTrouble" title="Review your trouble list">🕒 Review Trouble</button>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="hiddenBox" id="boxEs">
+        <div>
+          <div class="tiny">Spanish</div>
+          <div class="text" id="spanishText"><span class="placeholder">Hidden — reveal after listening</span></div>
+        </div>
+        <button id="btnSpeakEs" title="Speak Spanish (once revealed)" disabled>Speak</button>
+      </div>
+
+      <div class="hiddenBox" id="boxEn">
+        <div>
+          <div class="tiny">English</div>
+          <div class="text" id="englishText"><span class="placeholder">Hidden — reveal last</span></div>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="row" style="justify-content: space-between;">
+        <div class="inline">
+          <button id="btnResetReveal">🙈 Hide again</button>
+          <button id="btnRandom">🎲 Random</button>
+        </div>
+        <div class="inline">
+          <span class="kpi" id="status">Ready.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content: space-between;">
+        <strong>Speech Settings</strong>
+        <button id="btnStop" title="Stop speaking">⏹ Stop</button>
+      </div>
+
+      <div style="margin-top: 12px;">
+        <label for="voiceSelect">Voice (choose Spanish / Spain if available)</label>
+        <select id="voiceSelect"></select>
+      </div>
+
+      <div style="margin-top: 12px;">
+        <label for="rateRange">Speed</label>
+        <input id="rateRange" type="range" min="0.6" max="1.3" step="0.05" value="1.0" />
+        <div class="kpi" id="rateLabel">1.00×</div>
+      </div>
+
+      <div style="margin-top: 12px;">
+        <label for="pitchRange">Pitch</label>
+        <input id="pitchRange" type="range" min="0.7" max="1.3" step="0.05" value="1.0" />
+        <div class="kpi" id="pitchLabel">1.00</div>
+      </div>
+
+      <div style="margin-top: 12px;">
+        <label for="moduleSelect">Phrase Module</label>
+        <select id="moduleSelect"></select>
+      </div>
+
+      <div style="margin-top: 12px;" class="inline">
+        <input id="autoCycleModules" type="checkbox" />
+        <label for="autoCycleModules" style="margin: 0;">Auto-cycle modules</label>
+      </div>
+
+      <div style="margin-top: 12px;" class="inline">
+        <input id="autoAdvance" type="checkbox" />
+        <label for="autoAdvance" style="margin: 0;">Auto-advance after listening</label>
+      </div>
+
+      <div style="margin-top: 12px;" class="tiny muted">
+        Works best in Chrome/Edge/Safari. Some browsers may have limited Spanish (Spain) voices.
+      </div>
+
+      <div class="hr"></div>
+
+      <strong>Phrase List</strong>
+      <div class="tiny muted" style="margin-top: 8px;">Edit the list inside the <code>PHRASES</code> array in the code.</div>
+        <div class="hr"></div>
+        <strong>Progress</strong>
+        <div class="tiny muted" style="margin-top: 6px;">Trouble tracker spans all modules.</div>
+        <div class="hr"></div>
+        <div class="tiny">
+          <div><b>Tracked</b>: <span id="statsTracked">0</span></div>
+          <div><b>Due now</b>: <span id="statsDue">0</span></div>
+          <div><b>Total drills</b>: <span id="statsTotalDrills">0</span></div>
+          <div class="hr"></div>
+          <div><b>Most drilled</b></div>
+          <div id="statsTopDrilled"></div>
+          <div class="hr"></div>
+          <div><b>Most trouble</b></div>
+          <div id="statsTopTrouble"></div>
+        </div>
+        <div class="hr"></div>
+        <div class="tiny muted">
+        Keyboard:
+        <ul>
+          <li><b>L</b> = Listen</li>
+          <li><b>S</b> = Reveal Spanish</li>
+          <li><b>T</b> = Reveal Translation</li>
+          <li><b>←/→</b> = Prev/Next</li>
+            <li><b>R</b> = Replay</li>
+            <li><b>M</b> = Mark Trouble</li>
+            <li><b>G</b> = Got it</li>
+            <li><b>P</b> = Review Trouble</li>
+          </ul>
+        </div>
+    </div>
+  </div>
+
+<script type="module">
+  // Placeholder for dynamically loaded PHRASES
+  let currentPhrases = null;
+  let troubleDeck = { phrases: [], order: [] };
+  let troubleDB = {};
+  let allPhraseIndex = null;
+
+  // Define available phrase modules
+  const PHRASE_MODULES = [
+    { key: "default", name: "Common Phrases (Spain)", path: "./phrases.js" },
+    { key: "phrases2", name: "Basic Phrases", path: "./phrases2.js" },
+    { key: "greetings", name: "Greetings & Social", path: "./greetings_social.js" },
+    { key: "restaurant", name: "Restaurant & Ordering", path: "./restaurant_ordering.js" },
+    { key: "travel", name: "Travel & Directions", path: "./travel_directions.js" },
+    { key: "general", name: "General Conversation", path: "./general_conversation.js" },
+    { key: "subjunctive", name: "Present Subjunctive", path: "./present_subjunctive.js" },
+    { key: "hotel", name: "Hotel Check-in", path: "./hotel_checkin.js" },
+    { key: "shopping", name: "Shopping & Market", path: "./shopping_market.js" },
+    { key: "medical", name: "Medical & Pharmacy", path: "./medical_pharmacy.js" },
+    { key: "transport", name: "Transport & City", path: "./transportation_urban.js" },
+  ];
+
+  // === 1) Your phrase deck (Spain-focused) ===
+
+
+  // === 2) State ===
+  const $ = (id) => document.getElementById(id);
+  const state = {
+    index: 0,
+    order: [],
+    shuffled: false,
+    revealedEs: false,
+    revealedEn: false,
+    voices: [],
+    voiceURI: null,
+    rate: 1.0,
+    pitch: 1.0,
+    autoAdvance: false,
+    autoCycleModules: true,
+    currentModuleKey: "default", // default module
+    mode: "module", // module | trouble
+    savedOrder: null,
+    savedIndex: null,
+    moduleIndex: 0,
+  };
+
+  const storageKey = "spain-tts-trainer-v1";
+  const troubleStorageKey = "spain-tts-trainer-trouble-v1";
+
+  function saveState() {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({
+        index: state.index,
+        order: state.order,
+        shuffled: state.shuffled,
+        voiceURI: state.voiceURI,
+        rate: state.rate,
+        pitch: state.pitch,
+        autoAdvance: state.autoAdvance,
+        autoCycleModules: state.autoCycleModules,
+        currentModuleKey: state.currentModuleKey,
+        mode: state.mode,
+      }));
+    } catch (_) {}
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (Array.isArray(s.order)) state.savedOrder = s.order;
+      if (Number.isInteger(s.index)) state.savedIndex = s.index;
+      if (typeof s.shuffled === "boolean") state.shuffled = s.shuffled;
+      if (typeof s.voiceURI === "string") state.voiceURI = s.voiceURI;
+      if (typeof s.rate === "number") state.rate = s.rate;
+      if (typeof s.pitch === "number") state.pitch = s.pitch;
+      if (typeof s.autoAdvance === "boolean") state.autoAdvance = s.autoAdvance;
+      if (typeof s.autoCycleModules === "boolean") state.autoCycleModules = s.autoCycleModules;
+      if (typeof s.currentModuleKey === "string") state.currentModuleKey = s.currentModuleKey;
+      if (typeof s.mode === "string") state.mode = s.mode === "trouble" ? "trouble" : "module";
+    } catch (_) {}
+  }
+
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const TROUBLE_SNOOZE_MIN = 10;
+
+  function loadTroubleDB() {
+    try {
+      const raw = localStorage.getItem(troubleStorageKey);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function saveTroubleDB() {
+    try {
+      localStorage.setItem(troubleStorageKey, JSON.stringify(troubleDB));
+    } catch (_) {}
+  }
+
+  function phraseId(phrase, moduleKey) {
+    return `${moduleKey}::${phrase.es}||${phrase.en}`;
+  }
+
+  function ensureTroubleEntry(phrase, moduleKey, moduleName) {
+    const id = phraseId(phrase, moduleKey);
+    if (!troubleDB[id]) {
+      troubleDB[id] = {
+        id,
+        moduleKey,
+        moduleName,
+        es: phrase.es,
+        en: phrase.en,
+        reps: 0,
+        interval: 0,
+        ease: 2.3,
+        due: 0,
+        lastReviewed: 0,
+        totalReviews: 0,
+        troubleCount: 0,
+        gotItCount: 0,
+      };
+    }
+    return troubleDB[id];
+  }
+
+  function recordReview(phraseInfo, quality) {
+    const entry = ensureTroubleEntry(phraseInfo, phraseInfo.moduleKey, phraseInfo.moduleName);
+    const now = Date.now();
+
+    if (quality < 3) {
+      entry.reps = 0;
+      entry.interval = 0;
+      entry.ease = Math.max(1.3, (entry.ease || 2.3) - 0.2);
+      entry.due = now + TROUBLE_SNOOZE_MIN * 60 * 1000;
+      entry.troubleCount = (entry.troubleCount || 0) + 1;
+    } else {
+      const reps = entry.reps || 0;
+      let interval = entry.interval || 0;
+
+      if (reps === 0) interval = 1;
+      else if (reps === 1) interval = 3;
+      else interval = Math.round(interval * (entry.ease || 2.3));
+
+      const easeAdjust = 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02);
+      entry.ease = Math.max(1.3, (entry.ease || 2.3) + easeAdjust);
+      entry.reps = reps + 1;
+      entry.interval = interval;
+      entry.due = now + interval * DAY_MS;
+      entry.gotItCount = (entry.gotItCount || 0) + 1;
+    }
+
+    entry.totalReviews = (entry.totalReviews || 0) + 1;
+    entry.lastReviewed = now;
+    saveTroubleDB();
+  }
+
+  function countTroubleDue(now = Date.now()) {
+    return Object.values(troubleDB).filter(e => e && typeof e.due === "number" && e.due <= now).length;
+  }
+
+  function getTroubleEntries() {
+    return Object.values(troubleDB).filter(Boolean);
+  }
+
+  function formatEntryLine(entry, metricLabel, metricValue, rank) {
+    const moduleName = entry.moduleName || entry.moduleKey || "module";
+    const rankText = typeof rank === "number" ? `${rank}. ` : "";
+    return `<div>${rankText}${entry.es} <span class="muted">(${moduleName})</span> — ${metricLabel}: ${metricValue}</div>`;
+  }
+
+  function renderStats() {
+    const entries = getTroubleEntries();
+    const totalTracked = entries.length;
+    const totalReviews = entries.reduce((sum, e) => sum + (e.totalReviews || 0), 0);
+    const dueNow = countTroubleDue();
+
+    $("statsTracked").textContent = String(totalTracked);
+    $("statsDue").textContent = String(dueNow);
+    $("statsTotalDrills").textContent = String(totalReviews);
+
+    const topDrilled = entries
+      .slice()
+      .sort((a, b) => (b.totalReviews || 0) - (a.totalReviews || 0))
+      .slice(0, 5);
+    const topTrouble = entries
+      .slice()
+      .sort((a, b) => {
+        const troubleDiff = (b.troubleCount || 0) - (a.troubleCount || 0);
+        if (troubleDiff !== 0) return troubleDiff;
+        return (a.ease || 2.3) - (b.ease || 2.3);
+      })
+      .slice(0, 5);
+
+    $("statsTopDrilled").innerHTML = topDrilled.length
+      ? topDrilled.map((e, i) => formatEntryLine(e, "drills", e.totalReviews || 0, i + 1)).join("")
+      : "<div class=\"muted\">None yet.</div>";
+    $("statsTopTrouble").innerHTML = topTrouble.length
+      ? topTrouble.map((e, i) => formatEntryLine(e, "trouble", e.troubleCount || 0, i + 1)).join("")
+      : "<div class=\"muted\">None yet.</div>";
+  }
+
+  function renderPhraseStats() {
+    const phraseInfo = getActivePhraseInfo();
+    if (!phraseInfo) {
+      $("phraseStats").textContent = "";
+      return;
+    }
+    const id = phraseId(phraseInfo, phraseInfo.moduleKey);
+    const entry = troubleDB[id];
+    if (!entry) {
+      $("phraseStats").textContent = "Drills: 0 | Trouble: 0 | Ease: 2.30";
+      return;
+    }
+    const drills = entry.totalReviews || 0;
+    const trouble = entry.troubleCount || 0;
+    const ease = (entry.ease || 2.3).toFixed(2);
+    const entries = getTroubleEntries();
+    const troubleRank = entries
+      .slice()
+      .sort((a, b) => (b.troubleCount || 0) - (a.troubleCount || 0))
+      .findIndex(e => e.id === entry.id) + 1;
+    const drillRank = entries
+      .slice()
+      .sort((a, b) => (b.totalReviews || 0) - (a.totalReviews || 0))
+      .findIndex(e => e.id === entry.id) + 1;
+    const troubleRankText = troubleRank > 0 ? ` | Trouble rank: ${troubleRank}` : "";
+    const drillRankText = drillRank > 0 ? ` | Drill rank: ${drillRank}` : "";
+    $("phraseStats").textContent = `Drills: ${drills} | Trouble: ${trouble} | Ease: ${ease}${troubleRankText}${drillRankText}`;
+  }
+
+  async function loadAllPhraseModules() {
+    if (allPhraseIndex) return allPhraseIndex;
+    allPhraseIndex = {};
+
+    for (const mod of PHRASE_MODULES) {
+      try {
+        const module = await import(mod.path);
+        const list = Array.isArray(module.PHRASES) ? module.PHRASES : [];
+        list.forEach(p => {
+          if (!p || !p.es) return;
+          const id = phraseId(p, mod.key);
+          allPhraseIndex[id] = {
+            es: p.es,
+            en: p.en,
+            moduleKey: mod.key,
+            moduleName: mod.name,
+          };
+        });
+      } catch (error) {
+        console.error("Failed to load module for trouble deck:", mod.key, error);
+      }
+    }
+
+    return allPhraseIndex;
+  }
+
+  async function rebuildTroubleDeck() {
+    await loadAllPhraseModules();
+    const now = Date.now();
+    const dueEntries = Object.values(troubleDB)
+      .filter(e => e && typeof e.due === "number" && e.due <= now)
+      .map(e => allPhraseIndex[e.id])
+      .filter(Boolean);
+
+    troubleDeck.phrases = dueEntries;
+    troubleDeck.order = dueEntries.map((_, i) => i);
+    state.index = 0;
+  }
+
+  function getActiveDeck() {
+    if (state.mode === "trouble") return troubleDeck;
+    return { phrases: currentPhrases || [], order: state.order };
+  }
+
+  function getActivePhraseInfo() {
+    const deck = getActiveDeck();
+    if (!deck.phrases || deck.phrases.length === 0) return null;
+    const realIndex = deck.order[state.index];
+    const phrase = deck.phrases[realIndex];
+    if (state.mode === "trouble") return phrase;
+
+    const moduleInfo = PHRASE_MODULES.find(m => m.key === state.currentModuleKey);
+    return {
+      es: phrase.es,
+      en: phrase.en,
+      moduleKey: state.currentModuleKey,
+      moduleName: moduleInfo ? moduleInfo.name : state.currentModuleKey,
+    };
+  }
+
+  function moduleIndexByKey(key) {
+    return PHRASE_MODULES.findIndex(m => m.key === key);
+  }
+
+  async function goToModuleByKey(key) {
+    const moduleSelect = $("moduleSelect");
+    if (moduleSelect) moduleSelect.value = key;
+    state.mode = "module";
+    await loadPhraseModule(key);
+    updateUI();
+  }
+
+  // === 3) Speech ===
+  function stopSpeech() {
+    try { speechSynthesis.cancel(); } catch (_) {}
+  }
+
+  function pickDefaultVoice(voices) {
+    // Prefer Spanish (Spain) if available, then any Spanish.
+    const esES = voices.find(v => (v.lang || "").toLowerCase().startsWith("es-es"));
+    if (esES) return esES;
+    const anyEs = voices.find(v => (v.lang || "").toLowerCase().startsWith("es"));
+    if (anyEs) return anyEs;
+    return voices[0] || null;
+  }
+
+  function getSelectedVoice() {
+    const voices = state.voices;
+    if (!voices.length) return null;
+    if (state.voiceURI) {
+      const match = voices.find(v => v.voiceURI === state.voiceURI);
+      if (match) return match;
+    }
+    return pickDefaultVoice(voices);
+  }
+
+  function speak(text, { langHint = "es-ES" } = {}) {
+    if (!("speechSynthesis" in window)) {
+      setStatus("SpeechSynthesis not supported in this browser.");
+      return;
+    }
+    stopSpeech();
+
+    const u = new SpeechSynthesisUtterance(text);
+    const voice = getSelectedVoice();
+    if (voice) {
+      u.voice = voice;
+      u.lang = voice.lang || langHint;
+    } else {
+      u.lang = langHint;
+    }
+    u.rate = state.rate;
+    u.pitch = state.pitch;
+
+    u.onstart = () => setStatus("Speaking…");
+    u.onend = () => {
+      setStatus("Done.");
+      if (state.autoAdvance) {
+        // small delay so it feels natural
+        setTimeout(() => next(), 250);
+      }
+    };
+    u.onerror = () => setStatus("TTS error (try a different voice).");
+
+    speechSynthesis.speak(u);
+  }
+
+  function refreshVoiceList() {
+    if (!("speechSynthesis" in window)) return;
+    const voices = speechSynthesis.getVoices() || [];
+    state.voices = voices;
+
+    const sel = $("voiceSelect");
+    sel.innerHTML = "";
+
+    voices
+      .slice()
+      .sort((a,b) => (a.lang || "").localeCompare(b.lang || "") || (a.name || "").localeCompare(b.name || ""))
+      .forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v.voiceURI;
+        opt.textContent = `${v.lang || ""} — ${v.name || "(unnamed)"}`;
+        sel.appendChild(opt);
+      });
+
+    const chosen = getSelectedVoice();
+    if (chosen) {
+      sel.value = chosen.voiceURI;
+      state.voiceURI = chosen.voiceURI;
+      $("voicePill").textContent = `Voice: ${chosen.lang || ""}`;
+    } else {
+      $("voicePill").textContent = "Voice: (none)";
+    }
+
+    saveState();
+  }
+
+  // === 4) Deck navigation ===
+
+  async function loadPhraseModule(moduleKey) {
+    const moduleInfo = PHRASE_MODULES.find(m => m.key === moduleKey);
+    if (!moduleInfo) {
+      console.error("Unknown module key:", moduleKey);
+      setStatus("Error: Unknown module.");
+      return;
+    }
+
+    try {
+      const module = await import(moduleInfo.path);
+      currentPhrases = module.PHRASES;
+
+      // Reset state for new module
+      state.currentModuleKey = moduleKey;
+      state.shuffled = false;
+      state.revealedEs = false;
+      state.revealedEn = false;
+
+      const savedOrderOk = Array.isArray(state.savedOrder) && state.savedOrder.length === currentPhrases.length;
+      state.order = savedOrderOk ? state.savedOrder : [...Array(currentPhrases.length).keys()];
+      const savedIndex = Number.isInteger(state.savedIndex) ? state.savedIndex : 0;
+      state.index = Math.max(0, Math.min(currentPhrases.length - 1, savedIndex));
+
+      updateUI();
+      setStatus(`Module "${moduleInfo.name}" loaded.`);
+    } catch (error) {
+      console.error("Failed to load phrase module:", error);
+      setStatus("Error loading module.");
+      currentPhrases = null; // Clear phrases on error
+      updateUI();
+    }
+  }
+
+  function currentPhrase() {
+    const deck = getActiveDeck();
+    if (!deck.phrases || deck.phrases.length === 0) {
+      return { es: "No phrases loaded.", en: "No phrases loaded." };
+    }
+    const realIndex = deck.order[state.index];
+    return deck.phrases[realIndex];
+  }
+
+  function updateUI() {
+    const p = currentPhrase();
+    const deck = getActiveDeck();
+    const phraseCount = deck.phrases ? deck.phrases.length : 0;
+    const phraseInfo = getActivePhraseInfo();
+
+    const displayIndex = phraseCount === 0 ? 0 : state.index + 1;
+    $("counter").textContent = `${displayIndex} / ${phraseCount}`;
+    if (state.mode === "module") {
+      state.moduleIndex = state.index;
+    }
+    const currentModule = PHRASE_MODULES.find(m => m.key === state.currentModuleKey);
+    $("modulePill").textContent = `Module: ${currentModule ? currentModule.name : state.currentModuleKey}`;
+    $("deckPill").textContent = state.mode === "trouble"
+      ? "Deck: Trouble"
+      : `Deck: ${state.shuffled ? "Shuffle" : "Ordered"}`;
+    $("duePill").textContent = `Trouble due: ${countTroubleDue()}`;
+    $("btnReviewTrouble").textContent = state.mode === "trouble"
+      ? "⬅ Back to Module"
+      : "🕒 Review Trouble";
+
+    $("prompt").textContent = phraseCount === 0
+      ? (state.mode === "trouble" ? "No trouble phrases due yet." : "No phrases loaded.")
+      : "Press “Listen” to hear the phrase.";
+    $("moduleHint").textContent = state.mode === "trouble" && phraseInfo
+      ? `From: ${phraseInfo.moduleName}`
+      : "";
+
+    // reveal boxes
+    if (state.revealedEs) {
+      $("spanishText").textContent = p.es;
+      $("btnSpeakEs").disabled = false;
+    } else {
+      $("spanishText").innerHTML = '<span class="placeholder">Hidden — reveal after listening</span>';
+      $("btnSpeakEs").disabled = true;
+    }
+
+    if (state.revealedEn) {
+      $("englishText").textContent = p.en;
+    } else {
+      $("englishText").innerHTML = '<span class="placeholder">Hidden — reveal last</span>';
+    }
+
+    // buttons
+    const hasPhrases = phraseCount > 0;
+    $("btnPrev").disabled = phraseCount <= 1;
+    $("btnNext").disabled = phraseCount <= 1;
+    $("btnShuffle").disabled = state.mode === "trouble" || phraseCount <= 1;
+    $("btnMarkTrouble").disabled = !hasPhrases;
+    $("btnGotIt").disabled = !hasPhrases;
+
+    // sliders
+    $("rateRange").value = String(state.rate);
+    $("pitchRange").value = String(state.pitch);
+    $("rateLabel").textContent = `${state.rate.toFixed(2)}×`;
+    $("pitchLabel").textContent = `${state.pitch.toFixed(2)}`;
+
+    $("autoAdvance").checked = state.autoAdvance;
+    $("autoCycleModules").checked = state.autoCycleModules;
+
+    renderPhraseStats();
+    renderStats();
+
+    saveState();
+  }
+
+  function resetReveal() {
+    state.revealedEs = false;
+    state.revealedEn = false;
+    updateUI();
+  }
+
+  async function next() {
+    const deck = getActiveDeck();
+    if (!deck.phrases || deck.phrases.length === 0) return;
+    if (state.mode === "module" && state.autoCycleModules && !state.shuffled && currentPhrases) {
+      const atEnd = state.index >= deck.phrases.length - 1;
+      if (atEnd) {
+        const currentIdx = moduleIndexByKey(state.currentModuleKey);
+        const nextIdx = (currentIdx + 1) % PHRASE_MODULES.length;
+        await goToModuleByKey(PHRASE_MODULES[nextIdx].key);
+        return;
+      }
+    }
+    state.index = (state.index + 1) % deck.phrases.length;
+    resetReveal();
+  }
+
+  function prev() {
+    const deck = getActiveDeck();
+    if (!deck.phrases || deck.phrases.length === 0) return;
+    state.index = (state.index - 1 + deck.phrases.length) % deck.phrases.length;
+    resetReveal();
+  }
+
+  function randomPick() {
+    const deck = getActiveDeck();
+    if (!deck.phrases || deck.phrases.length <= 1) return;
+    let n = state.index;
+    while (n === state.index) {
+      n = Math.floor(Math.random() * deck.phrases.length);
+    }
+    state.index = n;
+    resetReveal();
+  }
+
+  function toggleShuffle() {
+    if (state.mode === "trouble") return;
+    if (!currentPhrases || currentPhrases.length === 0) return;
+    state.shuffled = !state.shuffled;
+    if (state.shuffled) {
+      // Fisher-Yates shuffle
+      const arr = [...Array(currentPhrases.length).keys()];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      state.order = arr;
+      state.index = 0;
+    } else {
+      state.order = [...Array(currentPhrases.length).keys()];
+      state.index = 0;
+    }
+    resetReveal();
+  }
+
+  async function enterTroubleMode() {
+    state.mode = "trouble";
+    state.moduleIndex = state.index;
+    state.revealedEs = false;
+    state.revealedEn = false;
+    await rebuildTroubleDeck();
+    updateUI();
+    setStatus("Trouble review ready.");
+  }
+
+  function exitTroubleMode() {
+    state.mode = "module";
+    const maxIndex = currentPhrases && currentPhrases.length ? currentPhrases.length - 1 : 0;
+    state.index = Math.max(0, Math.min(maxIndex, state.moduleIndex || 0));
+    state.revealedEs = false;
+    state.revealedEn = false;
+    updateUI();
+    setStatus("Back to module deck.");
+  }
+
+  async function toggleTroubleMode() {
+    if (state.mode === "trouble") {
+      exitTroubleMode();
+    } else {
+      await enterTroubleMode();
+    }
+  }
+
+  async function reviewQuality(quality) {
+    const phraseInfo = getActivePhraseInfo();
+    if (!phraseInfo) {
+      setStatus("No phrase to review.");
+      return;
+    }
+    recordReview(phraseInfo, quality);
+    setStatus(quality < 3 ? "Marked as trouble." : "Marked as got it.");
+    if (state.mode === "trouble") {
+      await rebuildTroubleDeck();
+    }
+    updateUI();
+  }
+
+  // === 5) Status ===
+  let statusTimer = null;
+  function setStatus(msg) {
+    $("status").textContent = msg;
+    if (statusTimer) clearTimeout(statusTimer);
+    statusTimer = setTimeout(() => { $("status").textContent = "Ready."; }, 2000);
+  }
+
+  // === 6) Wire up UI ===
+  function init() {
+    loadState();
+    troubleDB = loadTroubleDB();
+
+    // Populate module select dropdown
+    const moduleSelect = $("moduleSelect");
+    PHRASE_MODULES.forEach(mod => {
+      const opt = document.createElement("option");
+      opt.value = mod.key;
+      opt.textContent = mod.name;
+      moduleSelect.appendChild(opt);
+    });
+    moduleSelect.value = state.currentModuleKey;
+
+    // Load initial phrase module
+    loadPhraseModule(state.currentModuleKey).then(async () => {
+      if (state.mode === "trouble") {
+        await enterTroubleMode();
+      } else {
+        updateUI();
+      }
+    });
+
+    // Voices can load asynchronously in many browsers
+    refreshVoiceList();
+    if ("speechSynthesis" in window) {
+      speechSynthesis.onvoiceschanged = () => refreshVoiceList();
+      // Nudge: sometimes getVoices returns empty until called after a tick
+      setTimeout(refreshVoiceList, 250);
+    }
+
+    $("btnListen").addEventListener("click", () => {
+      const p = currentPhrase();
+      speak(p.es, { langHint: "es-ES" });
+    });
+
+    $("btnRevealEs").addEventListener("click", () => {
+      state.revealedEs = true;
+      updateUI();
+    });
+
+    $("btnRevealEn").addEventListener("click", () => {
+      state.revealedEn = true;
+      updateUI();
+    });
+
+    $("btnSpeakEs").addEventListener("click", () => {
+      if (!state.revealedEs) return;
+      const p = currentPhrase();
+      speak(p.es, { langHint: "es-ES" });
+    });
+
+    $("btnReplay").addEventListener("click", () => {
+      const p = currentPhrase();
+      speak(p.es, { langHint: "es-ES" });
+    });
+
+    $("btnStop").addEventListener("click", () => {
+      stopSpeech();
+      setStatus("Stopped.");
+    });
+
+    $("btnNext").addEventListener("click", next);
+    $("btnPrev").addEventListener("click", prev);
+
+    $("btnResetReveal").addEventListener("click", resetReveal);
+    $("btnRandom").addEventListener("click", randomPick);
+
+    $("btnShuffle").addEventListener("click", toggleShuffle);
+    $("btnMarkTrouble").addEventListener("click", () => reviewQuality(2));
+    $("btnGotIt").addEventListener("click", () => reviewQuality(4));
+    $("btnReviewTrouble").addEventListener("click", () => toggleTroubleMode());
+
+    $("voiceSelect").addEventListener("change", (e) => {
+      state.voiceURI = e.target.value;
+      const v = getSelectedVoice();
+      $("voicePill").textContent = v ? `Voice: ${v.lang || ""}` : "Voice: (none)";
+      saveState();
+      setStatus("Voice set.");
+    });
+
+    $("moduleSelect").addEventListener("change", async (e) => {
+      stopSpeech();
+      state.mode = "module";
+      await loadPhraseModule(e.target.value);
+      updateUI();
+    });
+
+    $("rateRange").addEventListener("input", (e) => {
+      state.rate = Number(e.target.value);
+      $("rateLabel").textContent = `${state.rate.toFixed(2)}×`;
+      saveState();
+    });
+
+    $("pitchRange").addEventListener("input", (e) => {
+      state.pitch = Number(e.target.value);
+      $("pitchLabel").textContent = `${state.pitch.toFixed(2)}`;
+      saveState();
+    });
+
+    $("autoAdvance").addEventListener("change", (e) => {
+      state.autoAdvance = !!e.target.checked;
+      saveState();
+    });
+
+    $("autoCycleModules").addEventListener("change", (e) => {
+      state.autoCycleModules = !!e.target.checked;
+      saveState();
+      setStatus(state.autoCycleModules ? "Auto-cycle enabled." : "Auto-cycle disabled.");
+    });
+
+    // Keyboard shortcuts
+    window.addEventListener("keydown", (e) => {
+      const key = e.key.toLowerCase();
+      if (key === "l") { e.preventDefault(); $("btnListen").click(); }
+      if (key === "s") { e.preventDefault(); $("btnRevealEs").click(); }
+      if (key === "t") { e.preventDefault(); $("btnRevealEn").click(); }
+      if (key === "r") { e.preventDefault(); $("btnReplay").click(); }
+      if (key === "m") { e.preventDefault(); $("btnMarkTrouble").click(); }
+      if (key === "g") { e.preventDefault(); $("btnGotIt").click(); }
+      if (key === "p") { e.preventDefault(); $("btnReviewTrouble").click(); }
+      if (e.key === "ArrowRight") { e.preventDefault(); next(); }
+      if (e.key === "ArrowLeft") { e.preventDefault(); prev(); }
+    });
+
+    updateUI();
+  }
+
+  init();
+</script>
+</body>
+</html>

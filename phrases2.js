@@ -1,0 +1,17 @@
+export const PHRASES = [
+  { es: "Hola, ¿cómo estás?", en: "Hello, how are you?" },
+  { es: "Gracias", en: "Thank you" },
+  { es: "De nada", en: "You're welcome" },
+  { es: "Por favor", en: "Please" },
+  { es: "Lo siento", en: "I'm sorry" },
+  { es: "Permiso", en: "Excuse me (to pass through)" },
+  { es: "¿Cuánto cuesta?", en: "How much does it cost?" },
+  { es: "No entiendo", en: "I don't understand" },
+  { es: "Habla más despacio, por favor", en: "Speak slower, please" },
+  { es: "¿Puedes repetir?", en: "Can you repeat?" },
+  { es: "Necesito ayuda", en: "I need help" },
+  { es: "Me gustaría...", en: "I would like..." },
+  { es: "¿Dónde está el baño?", en: "Where is the bathroom?" },
+  { es: "Sí", en: "Yes" },
+  { es: "No", en: "No" },
+];

@@ -1,0 +1,17 @@
+export const PHRASES = [
+  { es: "Espero que estés bien.", en: "I hope you are well." },
+  { es: "Quiero que vengas a la fiesta.", en: "I want you to come to the party." },
+  { es: "Me alegro de que te guste.", en: "I'm glad you like it." },
+  { es: "Dudo que ella sepa la respuesta.", en: "I doubt she knows the answer." },
+  { es: "Es posible que llueva mañana.", en: "It's possible that it will rain tomorrow." },
+  { es: "Cuando termines, avísame.", en: "When you finish, let me know." },
+  { es: "Aunque no tenga tiempo, lo haré.", en: "Even though I don't have time, I will do it." },
+  { es: "Para que entiendas, te lo explico.", en: "So that you understand, I'll explain it to you." },
+  { es: "No creo que sea verdad.", en: "I don't believe it's true." },
+  { es: "Busco un libro que sea interesante.", en: "I'm looking for a book that is interesting." },
+  { es: "Ojalá que todo salga bien.", en: "Hopefully everything goes well." },
+  { es: "Quizás vaya al cine esta noche.", en: "Perhaps I'll go to the cinema tonight." },
+  { es: "Te recomiendo que leas este libro.", en: "I recommend that you read this book." },
+  { es: "No es necesario que vengas.", en: "It's not necessary for you to come." },
+  { es: "Es importante que estudiemos.", en: "It's important that we study." },
+];

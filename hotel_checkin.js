@@ -1,0 +1,17 @@
+export const PHRASES = [
+  { es: "Tengo una reserva a nombre de…", en: "I have a reservation under the name…" },
+  { es: "¿Podría hacer el check-in, por favor?", en: "Could I check in, please?" },
+  { es: "¿A qué hora es el check-out?", en: "What time is check-out?" },
+  { es: "¿Incluye el desayuno?", en: "Does it include breakfast?" },
+  { es: "¿Hay wifi gratuito?", en: "Is there free Wi‑Fi?" },
+  { es: "¿Me puede dar otra llave?", en: "Can you give me another key?" },
+  { es: "La habitación está fría/caliente.", en: "The room is cold/hot." },
+  { es: "No funciona el aire acondicionado.", en: "The air conditioning doesn’t work." },
+  { es: "¿Podrían subir una toalla extra?", en: "Could you bring an extra towel?" },
+  { es: "Hay mucho ruido en la habitación.", en: "There’s a lot of noise in the room." },
+  { es: "¿Me pueden cambiar de habitación?", en: "Can you change my room?" },
+  { es: "¿Dónde está el ascensor?", en: "Where is the elevator?" },
+  { es: "Necesito una factura, por favor.", en: "I need an invoice, please." },
+  { es: "¿Puedo dejar el equipaje aquí?", en: "Can I leave my luggage here?" },
+  { es: "¿A qué hora abre la recepción?", en: "What time does reception open?" },
+];

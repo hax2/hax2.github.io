@@ -1,0 +1,17 @@
+﻿export const PHRASES = [
+  { es: "¿Dónde está la parada de autobús?", en: "Where is the bus stop?" },
+  { es: "¿A qué hora pasa el próximo autobús?", en: "What time is the next bus?" },
+  { es: "¿Este metro va al centro?", en: "Does this metro go downtown?" },
+  { es: "Quisiera un billete sencillo.", en: "I’d like a single ticket." },
+  { es: "Quisiera un abono de 10 viajes.", en: "I’d like a 10-trip pass." },
+  { es: "¿Cuál es la última parada?", en: "What is the last stop?" },
+  { es: "¿Tengo que hacer transbordo?", en: "Do I need to transfer?" },
+  { es: "¿Dónde compro el billete?", en: "Where do I buy the ticket?" },
+  { es: "¿Se puede pagar con tarjeta?", en: "Can I pay by card?" },
+  { es: "Me he pasado de parada.", en: "I missed my stop." },
+  { es: "¿Cuánto tarda en llegar?", en: "How long does it take to get there?" },
+  { es: "¿Esta línea está en servicio?", en: "Is this line in service?" },
+  { es: "¿Hay ascensor en esta estación?", en: "Is there an elevator in this station?" },
+  { es: "¿Dónde está la salida?", en: "Where is the exit?" },
+  { es: "¿Puedo llevar una bicicleta?", en: "Can I bring a bike?" },
+];

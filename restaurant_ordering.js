@@ -1,0 +1,17 @@
+export const PHRASES = [
+  { es: "Quisiera reservar una mesa para dos personas.", en: "I would like to book a table for two people." },
+  { es: "¿Tienen una mesa libre?", en: "Do you have a free table?" },
+  { es: "La carta, por favor.", en: "The menu, please." },
+  { es: "¿Qué me recomienda?", en: "What do you recommend?" },
+  { es: "Soy vegetariano/a.", en: "I am vegetarian." },
+  { es: "Tengo alergia a...", en: "I am allergic to..." },
+  { es: "Para beber, una cerveza, por favor.", en: "To drink, a beer, please." },
+  { es: "Un vaso de agua, por favor.", en: "A glass of water, please." },
+  { es: "Esto está delicioso.", en: "This is delicious." },
+  { es: "La cuenta, por favor.", en: "The bill, please." },
+  { es: "¿Se puede pagar con tarjeta?", en: "Can I pay by card?" },
+  { es: "Propina incluida?", en: "Tip included?" },
+  { es: "¡Camarero/a!", en: "Waiter/Waitress!" },
+  { es: "Me trae otra, por favor?", en: "Could you bring me another one, please?" },
+  { es: "Estaba todo muy rico.", en: "Everything was very good." },
+];

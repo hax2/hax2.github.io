@@ -1,0 +1,17 @@
+export const PHRASES = [
+  { es: "No me encuentro bien.", en: "I don’t feel well." },
+  { es: "Me duele la cabeza/el estómago.", en: "My head/stomach hurts." },
+  { es: "Tengo fiebre.", en: "I have a fever." },
+  { es: "Tengo tos.", en: "I have a cough." },
+  { es: "¿Puede recomendarme algo?", en: "Can you recommend something?" },
+  { es: "Soy alérgico/a a…", en: "I’m allergic to…" },
+  { es: "¿Necesito receta?", en: "Do I need a prescription?" },
+  { es: "¿Cada cuánto debo tomarlo?", en: "How often should I take it?" },
+  { es: "¿Con comida o en ayunas?", en: "With food or on an empty stomach?" },
+  { es: "¿Tiene efectos secundarios?", en: "Does it have side effects?" },
+  { es: "¿Dónde está la farmacia más cercana?", en: "Where is the nearest pharmacy?" },
+  { es: "Necesito un médico.", en: "I need a doctor." },
+  { es: "¿Puedo pedir una cita?", en: "Can I book an appointment?" },
+  { es: "Me duele aquí.", en: "It hurts here." },
+  { es: "Estoy embarazada.", en: "I’m pregnant." },
+];

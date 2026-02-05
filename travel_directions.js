@@ -1,0 +1,17 @@
+export const PHRASES = [
+  { es: "¿Dónde está la estación de tren?", en: "Where is the train station?" },
+  { es: "¿Cómo llego a...?", en: "How do I get to...?" },
+  { es: "Está lejos/cerca?", en: "Is it far/near?" },
+  { es: "A la derecha", en: "To the right" },
+  { es: "A la izquierda", en: "To the left" },
+  { es: "Todo recto", en: "Straight ahead" },
+  { es: "En la esquina", en: "On the corner" },
+  { es: "Aquí", en: "Here" },
+  { es: "Allí", en: "There" },
+  { es: "¿Tiene un mapa?", en: "Do you have a map?" },
+  { es: "Necesito un taxi", en: "I need a taxi" },
+  { es: "¿Cuánto cuesta ir a...?", en: "How much does it cost to go to...?" },
+  { es: "¿Hay algún hotel por aquí?", en: "Is there a hotel around here?" },
+  { es: "Quisiera alquilar un coche.", en: "I would like to rent a car." },
+  { es: "Una billete de ida y vuelta a Madrid, por favor.", en: "A return ticket to Madrid, please." },
+];
