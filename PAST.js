@@ -1,4 +1,4 @@
-export const PAST = [
+export const PHRASES = [
   { es: "Ayer tuve que trabajar hasta muy tarde en la oficina.", en: "Yesterday I had to work until very late at the office." },
   { es: "Ayer tuve que estudiar hasta muy tarde en la biblioteca.", en: "Yesterday I had to study until very late at the library." },
   { es: "Ayer tuve que esperar dos horas en el aeropuerto.", en: "Yesterday I had to wait two hours at the airport." },
