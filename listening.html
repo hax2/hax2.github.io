@@ -3,311 +3,794 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Spanish Phrase Trainer (Spain) — TTS</title>
+  <title>Spanish Listening Practice</title>
   <style>
-    :root { color-scheme: light dark; }
+    :root {
+      --bg: #f3f4f6;
+      --surface: #ffffff;
+      --text: #111827;
+      --muted: #4b5563;
+      --line: #d1d5db;
+      --primary: #0f766e;
+      --primary-dark: #115e59;
+      --primary-soft: #dff6f3;
+      --danger: #b45309;
+      --radius: 14px;
+      --shadow: 0 8px 22px rgba(17, 24, 39, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
-      padding: 24px;
-      max-width: 920px;
-      margin-inline: auto;
-      line-height: 1.35;
+      background: linear-gradient(160deg, #f8fafc, var(--bg));
+      color: var(--text);
+      font-family: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
+      line-height: 1.45;
     }
-    h1 { font-size: 22px; margin: 0 0 14px; }
-    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 18px 14px 94px;
+      display: grid;
+      gap: 12px;
+    }
+
     .card {
-      border: 1px solid rgba(127,127,127,.35);
-      border-radius: 16px;
-      padding: 18px;
-      box-shadow: 0 6px 22px rgba(0,0,0,.08);
-      background: rgba(127,127,127,.06);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
     }
-    .controls { margin-top: 14px; }
-    button {
-      border: 1px solid rgba(127,127,127,.45);
-      padding: 10px 12px;
-      border-radius: 12px;
-      background: rgba(127,127,127,.10);
-      cursor: pointer;
-      font-weight: 600;
+
+    .top {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1fr;
     }
-    button:hover { filter: brightness(1.05); }
-    button:disabled { opacity: .5; cursor: not-allowed; }
-    .pill {
-      border: 1px solid rgba(127,127,127,.45);
-      padding: 8px 10px;
-      border-radius: 999px;
-      font-size: 13px;
-      background: rgba(127,127,127,.08);
+
+    .title {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.12;
+      letter-spacing: -0.01em;
     }
-    .big {
-      font-size: 26px;
-      margin: 8px 0;
-      font-weight: 800;
-      letter-spacing: .2px;
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
     }
-    .muted { opacity: .8; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-    @media (min-width: 720px) {
-      .grid { grid-template-columns: 2fr 1fr; }
+
+    .quick-steps {
+      margin: 8px 0 0;
+      padding-left: 20px;
+      color: var(--muted);
+      font-size: 14px;
+      display: grid;
+      gap: 3px;
     }
-    @media (max-width: 520px) {
-      body { padding: 14px; }
-      h1 { font-size: 18px; }
-      .card { padding: 14px; border-radius: 14px; }
-      .pill { font-size: 12px; padding: 6px 8px; }
-      .big { font-size: 22px; }
-      .controls { margin-top: 10px; }
-      .controls button { flex: 1 1 140px; }
-      .row button { flex: 1 1 120px; }
-      .hiddenBox { flex-direction: column; align-items: flex-start; }
-      .hiddenBox .text { font-size: 17px; }
-      .inline { gap: 8px; }
+
+    .top-right {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      align-content: start;
     }
-    label { font-size: 12px; opacity: .85; display: block; margin-bottom: 6px; }
-    select, input[type="range"], input[type="checkbox"] {
-      width: 100%;
-    }
-    select {
-      padding: 10px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(127,127,127,.45);
-      background: rgba(127,127,127,.08);
-    }
-    .inline {
+
+    .row {
       display: flex;
-      gap: 10px;
       align-items: center;
+      gap: 8px;
       flex-wrap: wrap;
     }
-    .kpi { font-size: 12px; opacity: .85; }
-    .hr { height: 1px; background: rgba(127,127,127,.25); margin: 12px 0; }
-    .hiddenBox {
-      border: 1px dashed rgba(127,127,127,.45);
-      border-radius: 14px;
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #f8fafc;
+      color: #334155;
+    }
+
+    .layout {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1fr;
+    }
+
+    .practice {
+      display: grid;
+      gap: 14px;
+    }
+
+    .coach {
+      display: grid;
+      gap: 4px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f8fafc;
       padding: 12px;
-      min-height: 56px;
+    }
+
+    .coach-title {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.16;
+      font-weight: 800;
+    }
+
+    .coach-hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .primary-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    button,
+    select,
+    input[type="range"] {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #ffffff;
+      color: inherit;
+      cursor: pointer;
+      padding: 10px 14px;
+      font-weight: 700;
+      transition: 140ms border-color ease, 140ms transform ease, 140ms background ease;
+    }
+
+    button:hover,
+    button:focus-visible {
+      border-color: var(--primary);
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-listen {
+      font-size: 18px;
+      padding: 14px;
+      background: var(--primary-soft);
+      border-color: #a7e5de;
+    }
+
+    .btn-next {
+      font-size: 18px;
+      padding: 14px;
+      background: var(--primary);
+      border-color: var(--primary-dark);
+      color: #ffffff;
+    }
+
+    .fallback-actions {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .small-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .transcript {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #ffffff;
+      min-height: 62px;
+    }
+
+    .transcript-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin: 0 0 5px;
+      font-weight: 700;
+    }
+
+    .transcript-text {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .placeholder {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .feedback {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+    }
+
+    .btn-miss {
+      border-color: #fbbf24;
+      background: #fffbeb;
+      color: #92400e;
+    }
+
+    .btn-got {
+      border-color: #86efac;
+      background: #f0fdf4;
+      color: #166534;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 13px;
+      margin-left: auto;
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .field {
+      display: grid;
+      gap: 5px;
+    }
+
+    label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px;
+      background: #ffffff;
+    }
+
+    .kpi {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    details > summary {
+      cursor: pointer;
+      font-weight: 800;
+      list-style: none;
+      margin-bottom: 10px;
+    }
+
+    details > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .stack {
+      display: grid;
+      gap: 9px;
+    }
+
+    .inline-check {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      background: rgba(127,127,127,.05);
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
     }
-    .hiddenBox .text { font-size: 18px; font-weight: 700; }
-    .hiddenBox .placeholder { font-size: 14px; opacity: .75; }
-    .tiny { font-size: 12px; opacity: .75; }
+
+    .inline-check input {
+      margin: 0;
+    }
+
+    .hr {
+      height: 1px;
+      background: var(--line);
+      margin: 8px 0;
+    }
+
+    .tiny {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .list {
+      display: grid;
+      gap: 4px;
+    }
+
+    .list div {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      background: rgba(17, 24, 39, 0.52);
+      padding: 14px;
+    }
+
+    .modal.hidden {
+      display: none;
+    }
+
+    .modal-card {
+      width: min(640px, 100%);
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 24px 60px rgba(17, 24, 39, 0.25);
+      padding: 18px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .modal-card h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .modal-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .level-grid {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .level-btn {
+      text-align: left;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #ffffff;
+      padding: 12px;
+      display: grid;
+      gap: 5px;
+    }
+
+    .level-btn strong {
+      font-size: 15px;
+    }
+
+    .level-btn span {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mobile-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 20;
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(255, 255, 255, 0.95);
+      border-top: 1px solid var(--line);
+      backdrop-filter: blur(6px);
+    }
+
+    .mobile-bar button {
+      padding: 13px;
+      font-size: 17px;
+    }
+
+    @media (min-width: 980px) {
+      .top {
+        grid-template-columns: minmax(0, 1fr) 360px;
+        align-items: start;
+      }
+
+      .layout {
+        grid-template-columns: minmax(0, 1fr) 340px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        padding: 12px 10px 96px;
+      }
+
+      .title {
+        font-size: 24px;
+      }
+
+      .coach-title {
+        font-size: 20px;
+      }
+
+      .primary-actions {
+        display: none;
+      }
+
+      .level-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .fallback-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .mobile-bar {
+        display: grid;
+      }
+
+      .status {
+        margin-left: 0;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>Spanish Phrase Trainer (Spain) — Listen → Reveal Spanish → Reveal Translation</h1>
+  <main class="page">
+    <header class="card top">
+      <section>
+        <h1 class="title">Spanish Listening Practice</h1>
+        <p class="subtitle">Keep it simple. Listen first. Reveal only when needed.</p>
+        <ol class="quick-steps">
+          <li>Press <b>Listen</b>.</li>
+          <li>If you understood it, repeat aloud and press <b>Next sentence</b>.</li>
+          <li>If not, reveal Spanish, then English.</li>
+        </ol>
+      </section>
+      <section class="top-right">
+        <div class="field">
+          <label for="moduleSelect">Module</label>
+          <select id="moduleSelect"></select>
+        </div>
+        <div class="row">
+          <button id="btnOpenOnboarding">Choose level</button>
+          <button id="btnStartRecommended">Use recommended module</button>
+        </div>
+        <div class="row">
+          <span class="pill" id="recommendedPill">Recommended: not set</span>
+          <span class="pill" id="modulePill">Module: loading...</span>
+        </div>
+        <p class="kpi" id="moduleDescription"></p>
+      </section>
+    </header>
 
-  <div class="grid">
-    <div class="card" id="mainCard">
-      <div class="row" style="justify-content: space-between;">
-        <div class="inline">
-          <span class="pill" id="counter">1 / 1</span>
-          <span class="pill" id="modulePill">Module: (loading…)</span>
+    <div class="layout">
+      <section class="card practice">
+        <div class="row">
+          <span class="pill" id="counter">0 / 0</span>
           <span class="pill" id="deckPill">Deck: Ordered</span>
           <span class="pill" id="duePill">Trouble due: 0</span>
-          <span class="pill" id="voicePill">Voice: (loading…)</span>
+          <span class="pill" id="voicePill">Voice: loading...</span>
         </div>
-        <div class="inline">
-          <button id="btnPrev" title="Previous">◀</button>
-          <button id="btnNext" title="Next">▶</button>
-        </div>
-      </div>
 
-      <div class="hr"></div>
+        <section class="coach">
+          <h2 class="coach-title" id="prompt">Step 1: Listen.</h2>
+          <p class="coach-hint" id="hint">Then repeat out loud.</p>
+          <p class="kpi" id="moduleHint"></p>
+          <p class="kpi" id="phraseStats"></p>
+        </section>
 
-      <div class="big" id="prompt">Press “Listen” to hear the phrase.</div>
-      <div class="kpi muted" id="hint">Tip: try to repeat what you hear before revealing.</div>
-      <div class="kpi muted" id="moduleHint"></div>
-      <div class="kpi muted" id="phraseStats"></div>
+        <section class="primary-actions">
+          <button id="btnListen" class="btn-listen">Listen</button>
+          <button id="btnNext" class="btn-next">Next sentence</button>
+        </section>
 
-      <div class="controls row">
-        <button id="btnListen">🔊 Listen</button>
-        <button id="btnRevealEs">👁 Reveal Spanish</button>
-        <button id="btnRevealEn">🌍 Reveal Translation</button>
-        <button id="btnReplay" title="Replay same phrase">↻ Replay</button>
-        <button id="btnShuffle" title="Toggle shuffle">🔀 Shuffle</button>
-        <button id="btnMarkTrouble" title="Mark this as difficult">⚠ Mark Trouble</button>
-        <button id="btnGotIt" title="Mark this as correct">✔ Got it</button>
-        <button id="btnReviewTrouble" title="Review your trouble list">🕒 Review Trouble</button>
-      </div>
+        <section class="fallback-actions">
+          <button id="btnRevealEs">Show Spanish</button>
+          <button id="btnRevealEn">Show English</button>
+        </section>
 
-      <div class="hr"></div>
+        <section class="small-actions">
+          <button id="btnReplay">Replay</button>
+          <button id="btnHide">Hide text</button>
+          <button id="btnPrev">Previous</button>
+          <button id="btnRandom">Random</button>
+        </section>
 
-      <div class="hiddenBox" id="boxEs">
-        <div>
-          <div class="tiny">Spanish</div>
-          <div class="text" id="spanishText"><span class="placeholder">Hidden — reveal after listening</span></div>
-        </div>
-        <button id="btnSpeakEs" title="Speak Spanish (once revealed)" disabled>Speak</button>
-      </div>
+        <section class="transcript">
+          <p class="transcript-title">Spanish transcription</p>
+          <p class="transcript-text" id="spanishText"><span class="placeholder">Hidden until you reveal.</span></p>
+        </section>
 
-      <div class="hiddenBox" id="boxEn">
-        <div>
-          <div class="tiny">English</div>
-          <div class="text" id="englishText"><span class="placeholder">Hidden — reveal last</span></div>
-        </div>
-      </div>
+        <section class="transcript">
+          <p class="transcript-title">English translation</p>
+          <p class="transcript-text" id="englishText"><span class="placeholder">Hidden until you reveal.</span></p>
+        </section>
 
-      <div class="hr"></div>
+        <section class="feedback">
+          <button id="btnMarkTrouble" class="btn-miss">I missed this</button>
+          <button id="btnGotIt" class="btn-got">I got this</button>
+          <span class="status" id="status">Ready.</span>
+        </section>
+      </section>
 
-      <div class="row" style="justify-content: space-between;">
-        <div class="inline">
-          <button id="btnResetReveal">🙈 Hide again</button>
-          <button id="btnRandom">🎲 Random</button>
-        </div>
-        <div class="inline">
-          <span class="kpi" id="status">Ready.</span>
-        </div>
-      </div>
+      <aside class="sidebar">
+        <section class="card">
+          <details open>
+            <summary>Audio</summary>
+            <div class="stack">
+              <div class="field">
+                <label for="voiceSelect">Voice</label>
+                <select id="voiceSelect"></select>
+              </div>
+              <div class="field">
+                <label for="rateRange">Speed</label>
+                <input id="rateRange" type="range" min="0.6" max="1.3" step="0.05" value="1.0" />
+                <p class="kpi" id="rateLabel">1.00x</p>
+              </div>
+              <div class="field">
+                <label for="pitchRange">Pitch</label>
+                <input id="pitchRange" type="range" min="0.7" max="1.3" step="0.05" value="1.0" />
+                <p class="kpi" id="pitchLabel">1.00</p>
+              </div>
+              <div class="inline-check">
+                <input id="autoAdvance" type="checkbox" />
+                <label for="autoAdvance" style="margin: 0;">Auto-advance after listen</label>
+              </div>
+              <div class="inline-check">
+                <input id="autoCycleModules" type="checkbox" />
+                <label for="autoCycleModules" style="margin: 0;">Auto-cycle modules at end</label>
+              </div>
+              <button id="btnStop">Stop speech</button>
+            </div>
+          </details>
+        </section>
+
+        <section class="card">
+          <details>
+            <summary>Advanced</summary>
+            <div class="stack">
+              <button id="btnShuffle">Shuffle current module</button>
+              <button id="btnReviewTrouble">Review trouble deck</button>
+            </div>
+            <div class="hr"></div>
+            <div class="tiny">
+              <div><b>Tracked</b>: <span id="statsTracked">0</span></div>
+              <div><b>Due now</b>: <span id="statsDue">0</span></div>
+              <div><b>Total drills</b>: <span id="statsTotalDrills">0</span></div>
+            </div>
+            <div class="hr"></div>
+            <div class="tiny"><b>Most drilled</b></div>
+            <div class="list" id="statsTopDrilled"></div>
+            <div class="hr"></div>
+            <div class="tiny"><b>Most trouble</b></div>
+            <div class="list" id="statsTopTrouble"></div>
+            <div class="hr"></div>
+            <p class="tiny">Keyboard: <b>L</b> Listen, <b>S</b> Spanish, <b>T</b> English, <b>→</b> Next, <b>←</b> Previous</p>
+          </details>
+        </section>
+      </aside>
     </div>
+  </main>
 
-    <div class="card">
-      <div class="row" style="justify-content: space-between;">
-        <strong>Speech Settings</strong>
-        <button id="btnStop" title="Stop speaking">⏹ Stop</button>
+  <div class="mobile-bar">
+    <button id="btnListenMobile" class="btn-listen">Listen</button>
+    <button id="btnNextMobile" class="btn-next">Next sentence</button>
+  </div>
+
+  <div class="modal hidden" id="onboardingModal" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
+    <div class="modal-card">
+      <h2 id="onboardingTitle">Choose your starting level</h2>
+      <p>This picks a module automatically. You can always change it later.</p>
+      <div class="level-grid">
+        <button class="level-btn" data-level="starter">
+          <strong>Starter</strong>
+          <span>I miss most full sentences.</span>
+        </button>
+        <button class="level-btn" data-level="guided">
+          <strong>Guided</strong>
+          <span>I catch the main idea, miss details.</span>
+        </button>
+        <button class="level-btn" data-level="independent">
+          <strong>Independent</strong>
+          <span>I understand most audio and want harder drills.</span>
+        </button>
       </div>
-
-      <div style="margin-top: 12px;">
-        <label for="voiceSelect">Voice (choose Spanish / Spain if available)</label>
-        <select id="voiceSelect"></select>
+      <div class="modal-footer">
+        <p class="kpi" id="onboardingStatus">Choose one level.</p>
+        <button id="btnSkipOnboarding">Skip for now</button>
       </div>
-
-      <div style="margin-top: 12px;">
-        <label for="rateRange">Speed</label>
-        <input id="rateRange" type="range" min="0.6" max="1.3" step="0.05" value="1.0" />
-        <div class="kpi" id="rateLabel">1.00×</div>
-      </div>
-
-      <div style="margin-top: 12px;">
-        <label for="pitchRange">Pitch</label>
-        <input id="pitchRange" type="range" min="0.7" max="1.3" step="0.05" value="1.0" />
-        <div class="kpi" id="pitchLabel">1.00</div>
-      </div>
-
-      <div style="margin-top: 12px;">
-        <label for="moduleSelect">Phrase Module</label>
-        <select id="moduleSelect"></select>
-      </div>
-
-      <div style="margin-top: 12px;" class="inline">
-        <input id="autoCycleModules" type="checkbox" />
-        <label for="autoCycleModules" style="margin: 0;">Auto-cycle modules</label>
-      </div>
-
-      <div style="margin-top: 12px;" class="inline">
-        <input id="autoAdvance" type="checkbox" />
-        <label for="autoAdvance" style="margin: 0;">Auto-advance after listening</label>
-      </div>
-
-      <div style="margin-top: 12px;" class="tiny muted">
-        Works best in Chrome/Edge/Safari. Some browsers may have limited Spanish (Spain) voices.
-      </div>
-
-      <div class="hr"></div>
-
-      <strong>Phrase List</strong>
-      <div class="tiny muted" style="margin-top: 8px;">Edit the list inside the <code>PHRASES</code> array in the code.</div>
-        <div class="hr"></div>
-        <strong>Progress</strong>
-        <div class="tiny muted" style="margin-top: 6px;">Trouble tracker spans all modules.</div>
-        <div class="hr"></div>
-        <div class="tiny">
-          <div><b>Tracked</b>: <span id="statsTracked">0</span></div>
-          <div><b>Due now</b>: <span id="statsDue">0</span></div>
-          <div><b>Total drills</b>: <span id="statsTotalDrills">0</span></div>
-          <div class="hr"></div>
-          <div><b>Most drilled</b></div>
-          <div id="statsTopDrilled"></div>
-          <div class="hr"></div>
-          <div><b>Most trouble</b></div>
-          <div id="statsTopTrouble"></div>
-        </div>
-        <div class="hr"></div>
-        <div class="tiny muted">
-        Keyboard:
-        <ul>
-          <li><b>L</b> = Listen</li>
-          <li><b>S</b> = Reveal Spanish</li>
-          <li><b>T</b> = Reveal Translation</li>
-          <li><b>←/→</b> = Prev/Next</li>
-            <li><b>R</b> = Replay</li>
-            <li><b>M</b> = Mark Trouble</li>
-            <li><b>G</b> = Got it</li>
-            <li><b>P</b> = Review Trouble</li>
-          </ul>
-        </div>
     </div>
   </div>
 
 <script type="module">
-  // Placeholder for dynamically loaded PHRASES
-  let currentPhrases = null;
-  let troubleDeck = { phrases: [], order: [] };
-  let troubleDB = {};
-  let allPhraseIndex = null;
-
-  // Define available phrase modules
   const PHRASE_MODULES = [
-    { key: "default", name: "Common Phrases (Spain)", path: "./phrases.js" },
-    { key: "phrases2", name: "Basic Phrases", path: "./phrases2.js" },
-    { key: "greetings", name: "Greetings & Social", path: "./greetings_social.js" },
-    { key: "restaurant", name: "Restaurant & Ordering", path: "./restaurant_ordering.js" },
-    { key: "travel", name: "Travel & Directions", path: "./travel_directions.js" },
-    { key: "general", name: "General Conversation", path: "./general_conversation.js" },
-    { key: "subjunctive", name: "Present Subjunctive", path: "./present_subjunctive.js" },
-    { key: "hotel", name: "Hotel Check-in", path: "./hotel_checkin.js" },
-    { key: "shopping", name: "Shopping & Market", path: "./shopping_market.js" },
-    { key: "medical", name: "Medical & Pharmacy", path: "./medical_pharmacy.js" },
-    { key: "transport", name: "Transport & City", path: "./transportation_urban.js" },
-    { key: "PAST", name: "PAST", path: "./PAST.js" },
+    {
+      key: "tener_que",
+      name: "Tener Que (Obligation)",
+      path: "./tener_que_present.js",
+      level: "starter",
+      focus: "High-repetition tener que with every person.",
+    },
+    {
+      key: "ir_a",
+      name: "Ir A + Infinitive (Near Future)",
+      path: "./ir_a_infinitive.js",
+      level: "starter",
+      focus: "High-repetition near-future forms with real plans.",
+    },
+    {
+      key: "poder",
+      name: "Poder + Infinitive (Ability)",
+      path: "./poder_infinitive.js",
+      level: "starter",
+      focus: "Can/cannot patterns across persons.",
+    },
+    {
+      key: "gustar",
+      name: "Gustar + Pronouns",
+      path: "./gustar_pronouns.js",
+      level: "starter",
+      focus: "Me/te/le/nos/os/les gusta(n) in daily contexts.",
+    },
+    {
+      key: "ser_estar",
+      name: "Ser vs Estar",
+      path: "./ser_estar_contrast.js",
+      level: "guided",
+      focus: "Contrast identity/description vs state/location.",
+    },
+    {
+      key: "preterite",
+      name: "Preterite Core Verbs",
+      path: "./preterite_core.js",
+      level: "guided",
+      focus: "Fui, tuve, hice, pude, dije with realistic events.",
+    },
+    {
+      key: "imperfect",
+      name: "Imperfect Habits",
+      path: "./imperfect_habits.js",
+      level: "guided",
+      focus: "Iba, tenía, hacía, estaba para rutinas y contexto en el pasado.",
+    },
+    {
+      key: "pronouns",
+      name: "Object Pronouns in Action",
+      path: "./object_pronouns.js",
+      level: "independent",
+      focus: "Lo/la/los/las, le/les, se lo in useful speech.",
+    },
+    {
+      key: "subjunctive_triggers",
+      name: "Subjunctive Triggers",
+      path: "./subjunctive_triggers.js",
+      level: "independent",
+      focus: "Quiero que, es importante que, ojalá, para que.",
+    },
+    {
+      key: "PAST",
+      name: "Past Tense Stories (Legacy)",
+      path: "./PAST.js",
+      level: "independent",
+      focus: "Mixed past-tense review.",
+    },
   ];
 
-  // === 1) Your phrase deck (Spain-focused) ===
+  const ONBOARDING_LEVELS = {
+    starter: {
+      label: "Starter",
+      hint: "Start with one structure at a time and high repetition.",
+      moduleOrder: ["tener_que", "ir_a", "poder", "gustar", "ser_estar", "preterite"],
+    },
+    guided: {
+      label: "Guided",
+      hint: "Mix high-frequency structures with past narration.",
+      moduleOrder: ["ser_estar", "preterite", "imperfect", "gustar", "pronouns", "subjunctive_triggers", "PAST"],
+    },
+    independent: {
+      label: "Independent",
+      hint: "Focus on dense grammar patterns in realistic sentences.",
+      moduleOrder: ["pronouns", "subjunctive_triggers", "imperfect", "preterite", "PAST"],
+    },
+  };
 
-
-  // === 2) State ===
   const $ = (id) => document.getElementById(id);
+
   const state = {
     index: 0,
     order: [],
     shuffled: false,
     revealedEs: false,
     revealedEn: false,
-    voices: [],
-    voiceURI: null,
-    rate: 1.0,
-    pitch: 1.0,
+    listened: false,
+    mode: "module",
+    moduleIndex: 0,
+    currentModuleKey: null,
     autoAdvance: false,
     autoCycleModules: true,
-    currentModuleKey: "default", // default module
-    mode: "module", // module | trouble
-    savedOrder: null,
-    savedIndex: null,
-    moduleIndex: 0,
+    rate: 1.0,
+    pitch: 1.0,
+    voiceURI: null,
+    voices: [],
+    onboardingLevel: null,
+    onboardingComplete: false,
+    recommendedModuleKey: null,
   };
 
-  const storageKey = "spain-tts-trainer-v1";
+  let currentPhrases = [];
+  let availableModules = [];
+  let allPhraseIndex = null;
+  const moduleCache = new Map();
+
+  let troubleDB = {};
+  let troubleDeck = { phrases: [], order: [] };
+
+  const storageKey = "spain-tts-trainer-v3";
   const troubleStorageKey = "spain-tts-trainer-trouble-v1";
+
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const TROUBLE_SNOOZE_MIN = 10;
 
   function saveState() {
     try {
-      localStorage.setItem(storageKey, JSON.stringify({
-        index: state.index,
-        order: state.order,
-        shuffled: state.shuffled,
-        voiceURI: state.voiceURI,
-        rate: state.rate,
-        pitch: state.pitch,
-        autoAdvance: state.autoAdvance,
-        autoCycleModules: state.autoCycleModules,
-        currentModuleKey: state.currentModuleKey,
-        mode: state.mode,
-      }));
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({
+          index: state.index,
+          order: state.order,
+          shuffled: state.shuffled,
+          revealedEs: state.revealedEs,
+          revealedEn: state.revealedEn,
+          listened: state.listened,
+          mode: state.mode,
+          moduleIndex: state.moduleIndex,
+          currentModuleKey: state.currentModuleKey,
+          autoAdvance: state.autoAdvance,
+          autoCycleModules: state.autoCycleModules,
+          rate: state.rate,
+          pitch: state.pitch,
+          voiceURI: state.voiceURI,
+          onboardingLevel: state.onboardingLevel,
+          onboardingComplete: state.onboardingComplete,
+          recommendedModuleKey: state.recommendedModuleKey,
+        })
+      );
     } catch (_) {}
   }
 
@@ -315,22 +798,27 @@
     try {
       const raw = localStorage.getItem(storageKey);
       if (!raw) return;
-      const s = JSON.parse(raw);
-      if (Array.isArray(s.order)) state.savedOrder = s.order;
-      if (Number.isInteger(s.index)) state.savedIndex = s.index;
-      if (typeof s.shuffled === "boolean") state.shuffled = s.shuffled;
-      if (typeof s.voiceURI === "string") state.voiceURI = s.voiceURI;
-      if (typeof s.rate === "number") state.rate = s.rate;
-      if (typeof s.pitch === "number") state.pitch = s.pitch;
-      if (typeof s.autoAdvance === "boolean") state.autoAdvance = s.autoAdvance;
-      if (typeof s.autoCycleModules === "boolean") state.autoCycleModules = s.autoCycleModules;
-      if (typeof s.currentModuleKey === "string") state.currentModuleKey = s.currentModuleKey;
-      if (typeof s.mode === "string") state.mode = s.mode === "trouble" ? "trouble" : "module";
+      const saved = JSON.parse(raw);
+
+      if (Number.isInteger(saved.index)) state.index = saved.index;
+      if (Array.isArray(saved.order)) state.order = saved.order;
+      if (typeof saved.shuffled === "boolean") state.shuffled = saved.shuffled;
+      if (typeof saved.revealedEs === "boolean") state.revealedEs = saved.revealedEs;
+      if (typeof saved.revealedEn === "boolean") state.revealedEn = saved.revealedEn;
+      if (typeof saved.listened === "boolean") state.listened = saved.listened;
+      if (typeof saved.mode === "string") state.mode = saved.mode === "trouble" ? "trouble" : "module";
+      if (Number.isInteger(saved.moduleIndex)) state.moduleIndex = saved.moduleIndex;
+      if (typeof saved.currentModuleKey === "string") state.currentModuleKey = saved.currentModuleKey;
+      if (typeof saved.autoAdvance === "boolean") state.autoAdvance = saved.autoAdvance;
+      if (typeof saved.autoCycleModules === "boolean") state.autoCycleModules = saved.autoCycleModules;
+      if (typeof saved.rate === "number") state.rate = saved.rate;
+      if (typeof saved.pitch === "number") state.pitch = saved.pitch;
+      if (typeof saved.voiceURI === "string") state.voiceURI = saved.voiceURI;
+      if (typeof saved.onboardingLevel === "string") state.onboardingLevel = saved.onboardingLevel;
+      if (typeof saved.onboardingComplete === "boolean") state.onboardingComplete = saved.onboardingComplete;
+      if (typeof saved.recommendedModuleKey === "string") state.recommendedModuleKey = saved.recommendedModuleKey;
     } catch (_) {}
   }
-
-  const DAY_MS = 24 * 60 * 60 * 1000;
-  const TROUBLE_SNOOZE_MIN = 10;
 
   function loadTroubleDB() {
     try {
@@ -347,6 +835,55 @@
     try {
       localStorage.setItem(troubleStorageKey, JSON.stringify(troubleDB));
     } catch (_) {}
+  }
+
+  function getModuleByKey(key) {
+    return availableModules.find((m) => m.key === key) || null;
+  }
+
+  function moduleIndexByKey(key) {
+    return availableModules.findIndex((m) => m.key === key);
+  }
+
+  async function loadModulePhrases(moduleInfo) {
+    if (moduleCache.has(moduleInfo.key)) {
+      return moduleCache.get(moduleInfo.key);
+    }
+
+    const module = await import(moduleInfo.path);
+    const list = Array.isArray(module.PHRASES)
+      ? module.PHRASES.filter((p) => p && typeof p.es === "string" && typeof p.en === "string")
+      : [];
+
+    if (!list.length) {
+      throw new Error(`No PHRASES in ${moduleInfo.path}`);
+    }
+
+    moduleCache.set(moduleInfo.key, list);
+    return list;
+  }
+
+  async function discoverAvailableModules() {
+    const loaded = await Promise.all(
+      PHRASE_MODULES.map(async (mod) => {
+        try {
+          const phrases = await loadModulePhrases(mod);
+          return { ...mod, phraseCount: phrases.length };
+        } catch (_) {
+          return null;
+        }
+      })
+    );
+
+    availableModules = loaded.filter(Boolean);
+  }
+
+  function pickRecommendedModuleKey(level) {
+    const cfg = ONBOARDING_LEVELS[level] || ONBOARDING_LEVELS.guided;
+    for (const key of cfg.moduleOrder) {
+      if (getModuleByKey(key)) return key;
+    }
+    return availableModules[0] ? availableModules[0].key : null;
   }
 
   function phraseId(phrase, moduleKey) {
@@ -407,7 +944,9 @@
   }
 
   function countTroubleDue(now = Date.now()) {
-    return Object.values(troubleDB).filter(e => e && typeof e.due === "number" && e.due <= now).length;
+    return Object.values(troubleDB).filter(
+      (e) => e && typeof e.due === "number" && e.due <= now
+    ).length;
   }
 
   function getTroubleEntries() {
@@ -417,7 +956,7 @@
   function formatEntryLine(entry, metricLabel, metricValue, rank) {
     const moduleName = entry.moduleName || entry.moduleKey || "module";
     const rankText = typeof rank === "number" ? `${rank}. ` : "";
-    return `<div>${rankText}${entry.es} <span class="muted">(${moduleName})</span> — ${metricLabel}: ${metricValue}</div>`;
+    return `<div>${rankText}${entry.es} <span>(${moduleName})</span> - ${metricLabel}: ${metricValue}</div>`;
   }
 
   function renderStats() {
@@ -434,21 +973,57 @@
       .slice()
       .sort((a, b) => (b.totalReviews || 0) - (a.totalReviews || 0))
       .slice(0, 5);
+
     const topTrouble = entries
       .slice()
       .sort((a, b) => {
-        const troubleDiff = (b.troubleCount || 0) - (a.troubleCount || 0);
-        if (troubleDiff !== 0) return troubleDiff;
+        const diff = (b.troubleCount || 0) - (a.troubleCount || 0);
+        if (diff !== 0) return diff;
         return (a.ease || 2.3) - (b.ease || 2.3);
       })
       .slice(0, 5);
 
     $("statsTopDrilled").innerHTML = topDrilled.length
       ? topDrilled.map((e, i) => formatEntryLine(e, "drills", e.totalReviews || 0, i + 1)).join("")
-      : "<div class=\"muted\">None yet.</div>";
+      : "<div>None yet.</div>";
+
     $("statsTopTrouble").innerHTML = topTrouble.length
       ? topTrouble.map((e, i) => formatEntryLine(e, "trouble", e.troubleCount || 0, i + 1)).join("")
-      : "<div class=\"muted\">None yet.</div>";
+      : "<div>None yet.</div>";
+  }
+
+  function getActiveDeck() {
+    if (state.mode === "trouble") return troubleDeck;
+    return { phrases: currentPhrases || [], order: state.order };
+  }
+
+  function currentPhrase() {
+    const deck = getActiveDeck();
+    if (!deck.phrases || deck.phrases.length === 0 || !deck.order.length) {
+      return { es: "", en: "" };
+    }
+
+    const realIndex = deck.order[state.index];
+    return deck.phrases[realIndex] || { es: "", en: "" };
+  }
+
+  function getActivePhraseInfo() {
+    const deck = getActiveDeck();
+    if (!deck.phrases || deck.phrases.length === 0 || !deck.order.length) return null;
+
+    const realIndex = deck.order[state.index];
+    const phrase = deck.phrases[realIndex];
+    if (!phrase) return null;
+
+    if (state.mode === "trouble") return phrase;
+
+    const mod = getModuleByKey(state.currentModuleKey);
+    return {
+      es: phrase.es,
+      en: phrase.en,
+      moduleKey: state.currentModuleKey,
+      moduleName: mod ? mod.name : state.currentModuleKey,
+    };
   }
 
   function renderPhraseStats() {
@@ -457,39 +1032,27 @@
       $("phraseStats").textContent = "";
       return;
     }
+
     const id = phraseId(phraseInfo, phraseInfo.moduleKey);
     const entry = troubleDB[id];
     if (!entry) {
-      $("phraseStats").textContent = "Drills: 0 | Trouble: 0 | Ease: 2.30";
+      $("phraseStats").textContent = "Drills: 0 | Trouble: 0";
       return;
     }
+
     const drills = entry.totalReviews || 0;
     const trouble = entry.troubleCount || 0;
-    const ease = (entry.ease || 2.3).toFixed(2);
-    const entries = getTroubleEntries();
-    const troubleRank = entries
-      .slice()
-      .sort((a, b) => (b.troubleCount || 0) - (a.troubleCount || 0))
-      .findIndex(e => e.id === entry.id) + 1;
-    const drillRank = entries
-      .slice()
-      .sort((a, b) => (b.totalReviews || 0) - (a.totalReviews || 0))
-      .findIndex(e => e.id === entry.id) + 1;
-    const troubleRankText = troubleRank > 0 ? ` | Trouble rank: ${troubleRank}` : "";
-    const drillRankText = drillRank > 0 ? ` | Drill rank: ${drillRank}` : "";
-    $("phraseStats").textContent = `Drills: ${drills} | Trouble: ${trouble} | Ease: ${ease}${troubleRankText}${drillRankText}`;
+    $("phraseStats").textContent = `Drills: ${drills} | Trouble: ${trouble}`;
   }
 
   async function loadAllPhraseModules() {
     if (allPhraseIndex) return allPhraseIndex;
     allPhraseIndex = {};
 
-    for (const mod of PHRASE_MODULES) {
+    for (const mod of availableModules) {
       try {
-        const module = await import(mod.path);
-        const list = Array.isArray(module.PHRASES) ? module.PHRASES : [];
-        list.forEach(p => {
-          if (!p || !p.es) return;
+        const list = await loadModulePhrases(mod);
+        list.forEach((p) => {
           const id = phraseId(p, mod.key);
           allPhraseIndex[id] = {
             es: p.es,
@@ -498,9 +1061,7 @@
             moduleName: mod.name,
           };
         });
-      } catch (error) {
-        console.error("Failed to load module for trouble deck:", mod.key, error);
-      }
+      } catch (_) {}
     }
 
     return allPhraseIndex;
@@ -509,9 +1070,11 @@
   async function rebuildTroubleDeck() {
     await loadAllPhraseModules();
     const now = Date.now();
+
     const dueEntries = Object.values(troubleDB)
-      .filter(e => e && typeof e.due === "number" && e.due <= now)
-      .map(e => allPhraseIndex[e.id])
+      .filter((e) => e && typeof e.due === "number" && e.due <= now)
+      .sort((a, b) => (a.due || 0) - (b.due || 0))
+      .map((e) => allPhraseIndex[e.id])
       .filter(Boolean);
 
     troubleDeck.phrases = dueEntries;
@@ -519,96 +1082,73 @@
     state.index = 0;
   }
 
-  function getActiveDeck() {
-    if (state.mode === "trouble") return troubleDeck;
-    return { phrases: currentPhrases || [], order: state.order };
+  function setStatus(msg) {
+    $("status").textContent = msg;
+    if (setStatus.timer) clearTimeout(setStatus.timer);
+    setStatus.timer = setTimeout(() => {
+      $("status").textContent = "Ready.";
+    }, 2200);
   }
 
-  function getActivePhraseInfo() {
-    const deck = getActiveDeck();
-    if (!deck.phrases || deck.phrases.length === 0) return null;
-    const realIndex = deck.order[state.index];
-    const phrase = deck.phrases[realIndex];
-    if (state.mode === "trouble") return phrase;
-
-    const moduleInfo = PHRASE_MODULES.find(m => m.key === state.currentModuleKey);
-    return {
-      es: phrase.es,
-      en: phrase.en,
-      moduleKey: state.currentModuleKey,
-      moduleName: moduleInfo ? moduleInfo.name : state.currentModuleKey,
-    };
-  }
-
-  function moduleIndexByKey(key) {
-    return PHRASE_MODULES.findIndex(m => m.key === key);
-  }
-
-  async function goToModuleByKey(key) {
-    const moduleSelect = $("moduleSelect");
-    if (moduleSelect) moduleSelect.value = key;
-    state.mode = "module";
-    await loadPhraseModule(key);
-    updateUI();
-  }
-
-  // === 3) Speech ===
   function stopSpeech() {
-    try { speechSynthesis.cancel(); } catch (_) {}
+    try {
+      speechSynthesis.cancel();
+    } catch (_) {}
   }
 
   function pickDefaultVoice(voices) {
-    // Prefer Spanish (Spain) if available, then any Spanish.
-    const esES = voices.find(v => (v.lang || "").toLowerCase().startsWith("es-es"));
+    const esES = voices.find((v) => (v.lang || "").toLowerCase().startsWith("es-es"));
     if (esES) return esES;
-    const anyEs = voices.find(v => (v.lang || "").toLowerCase().startsWith("es"));
+    const anyEs = voices.find((v) => (v.lang || "").toLowerCase().startsWith("es"));
     if (anyEs) return anyEs;
     return voices[0] || null;
   }
 
   function getSelectedVoice() {
-    const voices = state.voices;
-    if (!voices.length) return null;
+    if (!state.voices.length) return null;
     if (state.voiceURI) {
-      const match = voices.find(v => v.voiceURI === state.voiceURI);
+      const match = state.voices.find((v) => v.voiceURI === state.voiceURI);
       if (match) return match;
     }
-    return pickDefaultVoice(voices);
+    return pickDefaultVoice(state.voices);
   }
 
   function speak(text, { langHint = "es-ES" } = {}) {
     if (!("speechSynthesis" in window)) {
-      setStatus("SpeechSynthesis not supported in this browser.");
+      setStatus("Speech synthesis is not supported in this browser.");
       return;
     }
+
+    if (!text) return;
     stopSpeech();
 
-    const u = new SpeechSynthesisUtterance(text);
+    const utter = new SpeechSynthesisUtterance(text);
     const voice = getSelectedVoice();
     if (voice) {
-      u.voice = voice;
-      u.lang = voice.lang || langHint;
+      utter.voice = voice;
+      utter.lang = voice.lang || langHint;
     } else {
-      u.lang = langHint;
+      utter.lang = langHint;
     }
-    u.rate = state.rate;
-    u.pitch = state.pitch;
 
-    u.onstart = () => setStatus("Speaking…");
-    u.onend = () => {
+    utter.rate = state.rate;
+    utter.pitch = state.pitch;
+
+    utter.onstart = () => setStatus("Speaking...");
+    utter.onend = () => {
       setStatus("Done.");
       if (state.autoAdvance) {
-        // small delay so it feels natural
         setTimeout(() => next(), 250);
       }
     };
-    u.onerror = () => setStatus("TTS error (try a different voice).");
+    utter.onerror = () => setStatus("Speech error. Try another voice.");
 
-    speechSynthesis.speak(u);
+    speechSynthesis.speak(utter);
   }
 
   function refreshVoiceList() {
     if (!("speechSynthesis" in window)) return;
+
     const voices = speechSynthesis.getVoices() || [];
     state.voices = voices;
 
@@ -617,163 +1157,228 @@
 
     voices
       .slice()
-      .sort((a,b) => (a.lang || "").localeCompare(b.lang || "") || (a.name || "").localeCompare(b.name || ""))
-      .forEach(v => {
+      .sort((a, b) => (a.lang || "").localeCompare(b.lang || "") || (a.name || "").localeCompare(b.name || ""))
+      .forEach((v) => {
         const opt = document.createElement("option");
         opt.value = v.voiceURI;
-        opt.textContent = `${v.lang || ""} — ${v.name || "(unnamed)"}`;
+        opt.textContent = `${v.lang || ""} - ${v.name || "(unnamed)"}`;
         sel.appendChild(opt);
       });
 
-    const chosen = getSelectedVoice();
-    if (chosen) {
-      sel.value = chosen.voiceURI;
-      state.voiceURI = chosen.voiceURI;
-      $("voicePill").textContent = `Voice: ${chosen.lang || ""}`;
+    const selected = getSelectedVoice();
+    if (selected) {
+      state.voiceURI = selected.voiceURI;
+      sel.value = selected.voiceURI;
+      $("voicePill").textContent = `Voice: ${selected.lang || "Unknown"}`;
     } else {
-      $("voicePill").textContent = "Voice: (none)";
+      $("voicePill").textContent = "Voice: none";
     }
 
     saveState();
   }
 
-  // === 4) Deck navigation ===
-
-  async function loadPhraseModule(moduleKey) {
-    const moduleInfo = PHRASE_MODULES.find(m => m.key === moduleKey);
-    if (!moduleInfo) {
-      console.error("Unknown module key:", moduleKey);
-      setStatus("Error: Unknown module.");
+  function updateCoach(hasPhrases) {
+    if (!hasPhrases) {
+      $("prompt").textContent = state.mode === "trouble"
+        ? "No trouble phrases due."
+        : "No phrases loaded.";
+      $("hint").textContent = "Pick a module to continue.";
       return;
     }
 
-    try {
-      const module = await import(moduleInfo.path);
-      currentPhrases = module.PHRASES;
-
-      // Reset state for new module
-      state.currentModuleKey = moduleKey;
-      state.shuffled = false;
-      state.revealedEs = false;
-      state.revealedEn = false;
-
-      const savedOrderOk = Array.isArray(state.savedOrder) && state.savedOrder.length === currentPhrases.length;
-      state.order = savedOrderOk ? state.savedOrder : [...Array(currentPhrases.length).keys()];
-      const savedIndex = Number.isInteger(state.savedIndex) ? state.savedIndex : 0;
-      state.index = Math.max(0, Math.min(currentPhrases.length - 1, savedIndex));
-
-      updateUI();
-      setStatus(`Module "${moduleInfo.name}" loaded.`);
-    } catch (error) {
-      console.error("Failed to load phrase module:", error);
-      setStatus("Error loading module.");
-      currentPhrases = null; // Clear phrases on error
-      updateUI();
+    if (!state.listened) {
+      $("prompt").textContent = "Step 1: Listen.";
+      $("hint").textContent = "Then repeat out loud.";
+      return;
     }
+
+    if (!state.revealedEs && !state.revealedEn) {
+      $("prompt").textContent = "Step 2: If you got it, press Next sentence.";
+      $("hint").textContent = "If not, show Spanish.";
+      return;
+    }
+
+    if (state.revealedEs && !state.revealedEn) {
+      $("prompt").textContent = "Step 3: Check Spanish.";
+      $("hint").textContent = "Still unsure? Show English.";
+      return;
+    }
+
+    $("prompt").textContent = "Step 4: Check English, then move on.";
+    $("hint").textContent = "Press Next sentence.";
   }
 
-  function currentPhrase() {
-    const deck = getActiveDeck();
-    if (!deck.phrases || deck.phrases.length === 0) {
-      return { es: "No phrases loaded.", en: "No phrases loaded." };
-    }
-    const realIndex = deck.order[state.index];
-    return deck.phrases[realIndex];
+  function updateOnboardingUI() {
+    const levelCfg = ONBOARDING_LEVELS[state.onboardingLevel] || ONBOARDING_LEVELS.guided;
+    const recommended = getModuleByKey(state.recommendedModuleKey);
+
+    $("onboardingStatus").textContent = levelCfg.hint;
+    $("recommendedPill").textContent = recommended
+      ? `Recommended: ${recommended.name}`
+      : "Recommended: not set";
+
+    const btn = $("btnStartRecommended");
+    btn.disabled = !recommended || state.currentModuleKey === recommended.key;
+  }
+
+  function updateModuleUI() {
+    const mod = getModuleByKey(state.currentModuleKey);
+    $("modulePill").textContent = `Module: ${mod ? mod.name : "Unavailable"}`;
+    $("moduleDescription").textContent = mod
+      ? `${mod.focus} ${mod.phraseCount} sentences.`
+      : "No module loaded.";
+
+    const moduleSelect = $("moduleSelect");
+    if (mod && moduleSelect.value !== mod.key) moduleSelect.value = mod.key;
   }
 
   function updateUI() {
-    const p = currentPhrase();
     const deck = getActiveDeck();
-    const phraseCount = deck.phrases ? deck.phrases.length : 0;
-    const phraseInfo = getActivePhraseInfo();
+    const count = deck.phrases ? deck.phrases.length : 0;
+    const hasPhrases = count > 0;
 
-    const displayIndex = phraseCount === 0 ? 0 : state.index + 1;
-    $("counter").textContent = `${displayIndex} / ${phraseCount}`;
-    if (state.mode === "module") {
-      state.moduleIndex = state.index;
-    }
-    const currentModule = PHRASE_MODULES.find(m => m.key === state.currentModuleKey);
-    $("modulePill").textContent = `Module: ${currentModule ? currentModule.name : state.currentModuleKey}`;
+    if (state.mode === "module") state.moduleIndex = state.index;
+
+    $("counter").textContent = `${hasPhrases ? state.index + 1 : 0} / ${count}`;
     $("deckPill").textContent = state.mode === "trouble"
       ? "Deck: Trouble"
       : `Deck: ${state.shuffled ? "Shuffle" : "Ordered"}`;
     $("duePill").textContent = `Trouble due: ${countTroubleDue()}`;
-    $("btnReviewTrouble").textContent = state.mode === "trouble"
-      ? "⬅ Back to Module"
-      : "🕒 Review Trouble";
 
-    $("prompt").textContent = phraseCount === 0
-      ? (state.mode === "trouble" ? "No trouble phrases due yet." : "No phrases loaded.")
-      : "Press “Listen” to hear the phrase.";
-    $("moduleHint").textContent = state.mode === "trouble" && phraseInfo
-      ? `From: ${phraseInfo.moduleName}`
+    updateCoach(hasPhrases);
+
+    const phrase = currentPhrase();
+    $("spanishText").innerHTML = state.revealedEs && phrase.es
+      ? phrase.es
+      : '<span class="placeholder">Hidden until you reveal.</span>';
+
+    $("englishText").innerHTML = state.revealedEn && phrase.en
+      ? phrase.en
+      : '<span class="placeholder">Hidden until you reveal.</span>';
+
+    const info = getActivePhraseInfo();
+    $("moduleHint").textContent = state.mode === "trouble" && info
+      ? `Trouble review from ${info.moduleName}`
       : "";
 
-    // reveal boxes
-    if (state.revealedEs) {
-      $("spanishText").textContent = p.es;
-      $("btnSpeakEs").disabled = false;
-    } else {
-      $("spanishText").innerHTML = '<span class="placeholder">Hidden — reveal after listening</span>';
-      $("btnSpeakEs").disabled = true;
-    }
+    $("btnListen").disabled = !hasPhrases;
+    $("btnListenMobile").disabled = !hasPhrases;
 
-    if (state.revealedEn) {
-      $("englishText").textContent = p.en;
-    } else {
-      $("englishText").innerHTML = '<span class="placeholder">Hidden — reveal last</span>';
-    }
+    $("btnNext").disabled = !hasPhrases;
+    $("btnNextMobile").disabled = !hasPhrases;
 
-    // buttons
-    const hasPhrases = phraseCount > 0;
-    $("btnPrev").disabled = phraseCount <= 1;
-    $("btnNext").disabled = phraseCount <= 1;
-    $("btnShuffle").disabled = state.mode === "trouble" || phraseCount <= 1;
+    $("btnReplay").disabled = !hasPhrases || !state.listened;
+    $("btnPrev").disabled = count <= 1;
+    $("btnRandom").disabled = count <= 1;
+
+    $("btnRevealEs").disabled = !hasPhrases || !state.listened;
+    $("btnRevealEn").disabled = !hasPhrases || !state.revealedEs;
+
+    const hasReveal = state.revealedEs || state.revealedEn;
+    $("btnHide").disabled = !hasReveal;
+
     $("btnMarkTrouble").disabled = !hasPhrases;
     $("btnGotIt").disabled = !hasPhrases;
 
-    // sliders
+    $("btnShuffle").disabled = state.mode === "trouble" || count <= 1;
+    $("btnReviewTrouble").textContent = state.mode === "trouble"
+      ? "Back to module"
+      : "Review trouble deck";
+
+    const nextLabel = state.mode === "trouble" ? "Next due" : "Next sentence";
+    $("btnNext").textContent = nextLabel;
+    $("btnNextMobile").textContent = nextLabel;
+
     $("rateRange").value = String(state.rate);
     $("pitchRange").value = String(state.pitch);
-    $("rateLabel").textContent = `${state.rate.toFixed(2)}×`;
+    $("rateLabel").textContent = `${state.rate.toFixed(2)}x`;
     $("pitchLabel").textContent = `${state.pitch.toFixed(2)}`;
 
     $("autoAdvance").checked = state.autoAdvance;
     $("autoCycleModules").checked = state.autoCycleModules;
 
+    updateModuleUI();
+    updateOnboardingUI();
     renderPhraseStats();
     renderStats();
-
     saveState();
   }
 
-  function resetReveal() {
+  function resetForNext() {
     state.revealedEs = false;
     state.revealedEn = false;
+    state.listened = false;
+    updateUI();
+  }
+
+  async function loadPhraseModule(moduleKey) {
+    const mod = getModuleByKey(moduleKey);
+    if (!mod) {
+      setStatus("That module is not available.");
+      return false;
+    }
+
+    try {
+      const phrases = await loadModulePhrases(mod);
+      const switched = moduleKey !== state.currentModuleKey;
+
+      currentPhrases = phrases;
+      state.currentModuleKey = moduleKey;
+      state.mode = "module";
+
+      const orderInvalid =
+        !Array.isArray(state.order) ||
+        state.order.length !== phrases.length ||
+        state.order.some((n) => !Number.isInteger(n) || n < 0 || n >= phrases.length);
+
+      if (switched || orderInvalid || !state.shuffled) {
+        state.order = [...Array(phrases.length).keys()];
+        state.index = 0;
+        state.shuffled = false;
+      }
+
+      state.index = Math.max(0, Math.min(phrases.length - 1, state.index));
+      state.revealedEs = false;
+      state.revealedEn = false;
+      state.listened = false;
+
+      updateUI();
+      setStatus(`Loaded module: ${mod.name}.`);
+      return true;
+    } catch (_) {
+      setStatus(`Could not load module: ${mod.name}.`);
+      return false;
+    }
+  }
+
+  async function goToModuleByKey(key) {
+    await loadPhraseModule(key);
     updateUI();
   }
 
   async function next() {
     const deck = getActiveDeck();
     if (!deck.phrases || deck.phrases.length === 0) return;
-    if (state.mode === "module" && state.autoCycleModules && !state.shuffled && currentPhrases) {
+
+    if (state.mode === "module" && state.autoCycleModules && !state.shuffled) {
       const atEnd = state.index >= deck.phrases.length - 1;
-      if (atEnd) {
+      if (atEnd && availableModules.length > 1) {
         const currentIdx = moduleIndexByKey(state.currentModuleKey);
-        const nextIdx = (currentIdx + 1) % PHRASE_MODULES.length;
-        await goToModuleByKey(PHRASE_MODULES[nextIdx].key);
+        const nextIdx = (currentIdx + 1) % availableModules.length;
+        await goToModuleByKey(availableModules[nextIdx].key);
         return;
       }
     }
+
     state.index = (state.index + 1) % deck.phrases.length;
-    resetReveal();
+    resetForNext();
   }
 
   function prev() {
     const deck = getActiveDeck();
     if (!deck.phrases || deck.phrases.length === 0) return;
     state.index = (state.index - 1 + deck.phrases.length) % deck.phrases.length;
-    resetReveal();
+    resetForNext();
   }
 
   function randomPick() {
@@ -784,15 +1389,15 @@
       n = Math.floor(Math.random() * deck.phrases.length);
     }
     state.index = n;
-    resetReveal();
+    resetForNext();
   }
 
   function toggleShuffle() {
     if (state.mode === "trouble") return;
-    if (!currentPhrases || currentPhrases.length === 0) return;
+    if (!currentPhrases || currentPhrases.length <= 1) return;
+
     state.shuffled = !state.shuffled;
     if (state.shuffled) {
-      // Fisher-Yates shuffle
       const arr = [...Array(currentPhrases.length).keys()];
       for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -804,7 +1409,8 @@
       state.order = [...Array(currentPhrases.length).keys()];
       state.index = 0;
     }
-    resetReveal();
+
+    resetForNext();
   }
 
   async function enterTroubleMode() {
@@ -812,6 +1418,7 @@
     state.moduleIndex = state.index;
     state.revealedEs = false;
     state.revealedEn = false;
+    state.listened = false;
     await rebuildTroubleDeck();
     updateUI();
     setStatus("Trouble review ready.");
@@ -823,16 +1430,14 @@
     state.index = Math.max(0, Math.min(maxIndex, state.moduleIndex || 0));
     state.revealedEs = false;
     state.revealedEn = false;
+    state.listened = false;
     updateUI();
-    setStatus("Back to module deck.");
+    setStatus("Back to module.");
   }
 
   async function toggleTroubleMode() {
-    if (state.mode === "trouble") {
-      exitTroubleMode();
-    } else {
-      await enterTroubleMode();
-    }
+    if (state.mode === "trouble") exitTroubleMode();
+    else await enterTroubleMode();
   }
 
   async function reviewQuality(quality) {
@@ -841,58 +1446,73 @@
       setStatus("No phrase to review.");
       return;
     }
+
     recordReview(phraseInfo, quality);
-    setStatus(quality < 3 ? "Marked as trouble." : "Marked as got it.");
-    if (state.mode === "trouble") {
-      await rebuildTroubleDeck();
-    }
+    if (state.mode === "trouble") await rebuildTroubleDeck();
+
     updateUI();
+    setStatus(quality < 3 ? "Marked as trouble." : "Marked as got it.");
   }
 
-  // === 5) Status ===
-  let statusTimer = null;
-  function setStatus(msg) {
-    $("status").textContent = msg;
-    if (statusTimer) clearTimeout(statusTimer);
-    statusTimer = setTimeout(() => { $("status").textContent = "Ready."; }, 2000);
+  function openOnboarding() {
+    $("onboardingModal").classList.remove("hidden");
   }
 
-  // === 6) Wire up UI ===
-  function init() {
-    loadState();
-    troubleDB = loadTroubleDB();
+  function closeOnboarding() {
+    $("onboardingModal").classList.add("hidden");
+  }
 
-    // Populate module select dropdown
-    const moduleSelect = $("moduleSelect");
-    PHRASE_MODULES.forEach(mod => {
+  async function applyOnboarding(level, { autoLoad = true, closeModal = true } = {}) {
+    state.onboardingLevel = level;
+    state.onboardingComplete = true;
+    state.recommendedModuleKey = pickRecommendedModuleKey(level);
+
+    if (autoLoad && state.recommendedModuleKey) {
+      await goToModuleByKey(state.recommendedModuleKey);
+    }
+
+    if (closeModal) closeOnboarding();
+    updateUI();
+    saveState();
+  }
+
+  function populateModuleSelect() {
+    const select = $("moduleSelect");
+    select.innerHTML = "";
+
+    if (!availableModules.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "No modules found";
+      select.appendChild(opt);
+      select.disabled = true;
+      return;
+    }
+
+    select.disabled = false;
+    availableModules.forEach((mod) => {
       const opt = document.createElement("option");
       opt.value = mod.key;
-      opt.textContent = mod.name;
-      moduleSelect.appendChild(opt);
-    });
-    moduleSelect.value = state.currentModuleKey;
-
-    // Load initial phrase module
-    loadPhraseModule(state.currentModuleKey).then(async () => {
-      if (state.mode === "trouble") {
-        await enterTroubleMode();
-      } else {
-        updateUI();
-      }
+      opt.textContent = `${mod.name} (${mod.phraseCount})`;
+      select.appendChild(opt);
     });
 
-    // Voices can load asynchronously in many browsers
-    refreshVoiceList();
-    if ("speechSynthesis" in window) {
-      speechSynthesis.onvoiceschanged = () => refreshVoiceList();
-      // Nudge: sometimes getVoices returns empty until called after a tick
-      setTimeout(refreshVoiceList, 250);
-    }
+    if (state.currentModuleKey) select.value = state.currentModuleKey;
+  }
 
+  function bindEvents() {
     $("btnListen").addEventListener("click", () => {
-      const p = currentPhrase();
-      speak(p.es, { langHint: "es-ES" });
+      const phrase = currentPhrase();
+      if (!phrase.es) return;
+      state.listened = true;
+      updateUI();
+      speak(phrase.es, { langHint: "es-ES" });
     });
+
+    $("btnListenMobile").addEventListener("click", () => $("btnListen").click());
+
+    $("btnNext").addEventListener("click", next);
+    $("btnNextMobile").addEventListener("click", next);
 
     $("btnRevealEs").addEventListener("click", () => {
       state.revealedEs = true;
@@ -904,51 +1524,51 @@
       updateUI();
     });
 
-    $("btnSpeakEs").addEventListener("click", () => {
-      if (!state.revealedEs) return;
-      const p = currentPhrase();
-      speak(p.es, { langHint: "es-ES" });
+    $("btnHide").addEventListener("click", () => {
+      state.revealedEs = false;
+      state.revealedEn = false;
+      updateUI();
     });
 
     $("btnReplay").addEventListener("click", () => {
-      const p = currentPhrase();
-      speak(p.es, { langHint: "es-ES" });
+      const phrase = currentPhrase();
+      if (!phrase.es) return;
+      state.listened = true;
+      updateUI();
+      speak(phrase.es, { langHint: "es-ES" });
     });
+
+    $("btnPrev").addEventListener("click", prev);
+    $("btnRandom").addEventListener("click", randomPick);
+
+    $("btnMarkTrouble").addEventListener("click", () => reviewQuality(2));
+    $("btnGotIt").addEventListener("click", () => reviewQuality(4));
+
+    $("btnShuffle").addEventListener("click", toggleShuffle);
+    $("btnReviewTrouble").addEventListener("click", () => toggleTroubleMode());
 
     $("btnStop").addEventListener("click", () => {
       stopSpeech();
       setStatus("Stopped.");
     });
 
-    $("btnNext").addEventListener("click", next);
-    $("btnPrev").addEventListener("click", prev);
-
-    $("btnResetReveal").addEventListener("click", resetReveal);
-    $("btnRandom").addEventListener("click", randomPick);
-
-    $("btnShuffle").addEventListener("click", toggleShuffle);
-    $("btnMarkTrouble").addEventListener("click", () => reviewQuality(2));
-    $("btnGotIt").addEventListener("click", () => reviewQuality(4));
-    $("btnReviewTrouble").addEventListener("click", () => toggleTroubleMode());
-
     $("voiceSelect").addEventListener("change", (e) => {
       state.voiceURI = e.target.value;
-      const v = getSelectedVoice();
-      $("voicePill").textContent = v ? `Voice: ${v.lang || ""}` : "Voice: (none)";
+      const selected = getSelectedVoice();
+      $("voicePill").textContent = selected ? `Voice: ${selected.lang || "Unknown"}` : "Voice: none";
       saveState();
-      setStatus("Voice set.");
+      setStatus("Voice updated.");
     });
 
     $("moduleSelect").addEventListener("change", async (e) => {
       stopSpeech();
-      state.mode = "module";
-      await loadPhraseModule(e.target.value);
+      await goToModuleByKey(e.target.value);
       updateUI();
     });
 
     $("rateRange").addEventListener("input", (e) => {
       state.rate = Number(e.target.value);
-      $("rateLabel").textContent = `${state.rate.toFixed(2)}×`;
+      $("rateLabel").textContent = `${state.rate.toFixed(2)}x`;
       saveState();
     });
 
@@ -966,10 +1586,32 @@
     $("autoCycleModules").addEventListener("change", (e) => {
       state.autoCycleModules = !!e.target.checked;
       saveState();
-      setStatus(state.autoCycleModules ? "Auto-cycle enabled." : "Auto-cycle disabled.");
     });
 
-    // Keyboard shortcuts
+    $("btnOpenOnboarding").addEventListener("click", openOnboarding);
+
+    $("btnSkipOnboarding").addEventListener("click", () => {
+      if (!state.onboardingLevel) state.onboardingLevel = "guided";
+      state.onboardingComplete = true;
+      state.recommendedModuleKey = pickRecommendedModuleKey(state.onboardingLevel);
+      closeOnboarding();
+      updateUI();
+      saveState();
+    });
+
+    $("btnStartRecommended").addEventListener("click", async () => {
+      if (!state.recommendedModuleKey) return;
+      await goToModuleByKey(state.recommendedModuleKey);
+      updateUI();
+    });
+
+    document.querySelectorAll(".level-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const level = btn.dataset.level;
+        await applyOnboarding(level, { autoLoad: true, closeModal: true });
+      });
+    });
+
     window.addEventListener("keydown", (e) => {
       const key = e.key.toLowerCase();
       if (key === "l") { e.preventDefault(); $("btnListen").click(); }
@@ -982,7 +1624,51 @@
       if (e.key === "ArrowRight") { e.preventDefault(); next(); }
       if (e.key === "ArrowLeft") { e.preventDefault(); prev(); }
     });
+  }
 
+  async function init() {
+    loadState();
+    troubleDB = loadTroubleDB();
+
+    await discoverAvailableModules();
+    populateModuleSelect();
+
+    if (!availableModules.length) {
+      updateUI();
+      bindEvents();
+      setStatus("No module files found.");
+      openOnboarding();
+      return;
+    }
+
+    if (!state.currentModuleKey || !getModuleByKey(state.currentModuleKey)) {
+      state.currentModuleKey = availableModules[0].key;
+    }
+
+    if (!state.onboardingLevel || !ONBOARDING_LEVELS[state.onboardingLevel]) {
+      state.onboardingLevel = "guided";
+    }
+
+    state.recommendedModuleKey = pickRecommendedModuleKey(state.onboardingLevel);
+
+    const resumeTrouble = state.mode === "trouble";
+    await loadPhraseModule(state.currentModuleKey);
+
+    if (resumeTrouble) {
+      await enterTroubleMode();
+    } else {
+      updateUI();
+    }
+
+    if (!state.onboardingComplete) openOnboarding();
+
+    refreshVoiceList();
+    if ("speechSynthesis" in window) {
+      speechSynthesis.onvoiceschanged = () => refreshVoiceList();
+      setTimeout(refreshVoiceList, 250);
+    }
+
+    bindEvents();
     updateUI();
   }
 
@@ -990,4 +1676,3 @@
 </script>
 </body>
 </html>
-
