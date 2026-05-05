@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misión: El Subjuntivo | Juego de Español Avanzado</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-bg: #1e293b;
+            --accent-primary: #38bdf8;
+            --accent-secondary: #818cf8;
+            --success: #4ade80;
+            --error: #f87171;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --grid-line: #334155;
+            --path-bg: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        #game-layout {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 30px;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        @media (max-width: 900px) {
+            #game-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- Panel Styles --- */
+        .glass-panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--grid-line);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        #message-box {
+            min-height: 120px;
+            margin-bottom: 24px;
+            font-size: 1.25rem;
+            line-height: 1.6;
+            border-left: 4px solid var(--accent-primary);
+            padding-left: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        #message-box strong {
+            color: var(--accent-primary);
+        }
+
+        .msg-success { color: var(--success); }
+        .msg-error { color: var(--error); }
+        .msg-instruction { color: var(--text-main); }
+
+        /* --- Map Styles --- */
+        #map-container {
+            position: relative;
+            background-color: #020617;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid var(--grid-line);
+            margin: 0 auto;
+        }
+
+        #map-grid {
+            display: grid;
+        }
+
+        .grid-cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            border: 0.5px solid rgba(51, 65, 85, 0.3);
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+
+        .cell-path { background-color: rgba(30, 41, 59, 0.5); }
+        .cell-wall { background-color: #0f172a; opacity: 0.5; }
+        .cell-wall::after { content: ' '; width: 4px; height: 4px; background: var(--grid-line); border-radius: 50%; }
+
+        #player {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            z-index: 50;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: drop-shadow(0 0 10px var(--accent-primary));
+        }
+
+        /* --- Sidebar Styles --- */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stats-card {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .stat-value {
+            color: var(--text-main);
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .grammar-card h3 {
+            font-size: 1rem;
+            color: var(--accent-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 15px;
+        }
+
+        .grammar-list {
+            list-style: none;
+        }
+
+        .grammar-item {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--grid-line);
+        }
+
+        .grammar-item:last-child { border-bottom: none; }
+
+        .grammar-term {
+            display: block;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 4px;
+        }
+
+        .grammar-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* --- Controls --- */
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: 1px solid var(--grid-line);
+            background: var(--panel-bg);
+            color: var(--text-main);
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background: #2d3748;
+            border-color: var(--accent-primary);
+        }
+
+        button.active {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        /* --- Animations --- */
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .target-pulse {
+            animation: pulse 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>AGENTE: OPERACIÓN SUBJUNTIVO</h1>
+        <p class="subtitle">Misión de infiltración avanzada. Sigue las instrucciones de control.</p>
+    </header>
+
+    <div id="game-layout">
+        <div class="main-column">
+            <div id="message-box" class="glass-panel">
+                <span class="msg-instruction">Iniciando terminal... Estableciendo conexión con Control...</span>
+            </div>
+
+            <div id="map-container">
+                <div id="map-grid"></div>
+                <div id="player">🕵️</div>
+            </div>
+
+            <div class="controls">
+                <button id="tts-toggle" class="active">
+                    <span id="tts-icon">🔊</span> TTS: Activado
+                </button>
+                <button id="reset-btn">
+                    <span>🔄</span> Reiniciar Misión
+                </button>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="glass-panel stats-card">
+                <div class="stat-row">
+                    <span>Nivel de Acceso:</span>
+                    <span class="stat-value">C1 - AVANZADO</span>
+                </div>
+                <div class="stat-row">
+                    <span>Misiones completadas:</span>
+                    <span id="missions-count" class="stat-value">0 / 4</span>
+                </div>
+                <div class="stat-row">
+                    <span>Estado:</span>
+                    <span id="game-status" class="stat-value" style="color: var(--success)">OPERATIVO</span>
+                </div>
+            </div>
+
+            <div class="glass-panel grammar-card">
+                <h3>Manual de Operaciones</h3>
+                <ul class="grammar-list">
+                    <li class="grammar-item">
+                        <span class="grammar-term">El Subjuntivo</span>
+                        <span class="grammar-desc">Usado para deseos, dudas y mandatos indirectos. Ej: "Espero que vayas..."</span>
+                    </li>
+                    <li class="grammar-item">
+                        <span class="grammar-term">Imperativo Formal</span>
+                        <span class="grammar-desc">Mandatos educados (Usted). Ej: "Diríjase", "Gire", "Camine".</span>
+                    </li>
+                    <li class="grammar-item">
+                        <span class="grammar-term">Oraciones Temporales</span>
+                        <span class="grammar-desc">"Cuando llegues...", "En cuanto veas..." (requieren subjuntivo para futuro).</span>
+                    </li>
+                    <li class="grammar-item">
+                        <span class="grammar-term">Pronombres de Objeto</span>
+                        <span class="grammar-desc">"Búscalo", "Recógela", "Dánoslo". Se unen al final del imperativo.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // --- Configuración y Datos ---
+    const CELL_SIZE = 50;
+    const mapLayout = [
+        ['🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️'],
+        ['🏙️',' ',' ',' ','🏙️','🏦','🏙️',' ',' ',' ',' ',' ','🏙️'],
+        ['🏙️',' ','🏙️',' ','🏙️',' ','🏙️',' ','🏙️','🏙️','🏙️',' ','🏙️'],
+        ['🏙️',' ','🏙️',' ',' ',' ',' ',' ',' ',' ',' ',' ','🏙️'],
+        ['🏙️',' ','🏙️',' ','🏙️','🏙️','🏙️',' ','🏙️',' ','🏙️',' ','🏙️'],
+        ['🏙️','💼','🏙️',' ',' ','🛰️',' ',' ','🚓',' ','🏙️','🏠','🏙️'],
+        ['🏙️',' ','🏙️',' ','🏙️','🏙️','🏙️',' ','🏙️',' ','🏙️',' ','🏙️'],
+        ['🏙️',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','🏙️'],
+        ['🏙️',' ','🏙️','🏙️','🏙️',' ','🏙️','🏙️','🏙️','🏙️','🗝️',' ','🏙️'],
+        ['🏙️',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','🏙️'],
+        ['🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️'],
+    ];
+
+    const missions = [
+        { 
+            target: '🗝️', 
+            intro: "Agente, es imperativo que **encuentres la llave maestra** antes de que sea interceptada.",
+            success: "Excelente trabajo. Ya tienes la llave. Guárdala bien."
+        },
+        { 
+            target: '🏦', 
+            intro: "Ahora, dudo que la policía sospeche de ti si **te diriges al banco central**. Entra con discreción.",
+            success: "Acceso confirmado. Los archivos están seguros."
+        },
+        { 
+            target: '💼', 
+            intro: "Control solicita que **recojas el maletín diplomático** en la oficina segura. No hables con nadie.",
+            success: "Maletín asegurado. Estamos cerca del final."
+        },
+        { 
+            target: '🏠', 
+            intro: "Misión final: Es fundamental que **vuelvas al refugio (casa)** para completar la extracción.",
+            success: "Extracción completada con éxito. Buen trabajo, Agente."
+        }
+    ];
+
+    // --- Estado del Juego ---
+    let playerState = { x: 5, y: 3 }; // Inicio en el centro
+    let currentMissionIndex = 0;
+    let activeMission = null;
+    let currentStepIndex = 0;
+    let progressInStep = 0;
+    let ttsEnabled = true;
+
+    // --- Elementos DOM ---
+    const mapGrid = document.getElementById('map-grid');
+    const playerElement = document.getElementById('player');
+    const messageBox = document.getElementById('message-box');
+    const ttsToggle = document.getElementById('tts-toggle');
+    const missionsCountLabel = document.getElementById('missions-count');
+    const resetBtn = document.getElementById('reset-btn');
+
+    // --- Funciones de Audio ---
+    function speakText(text) {
+        if (!ttsEnabled) return;
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'es-ES';
+        utter.rate = 0.9; // Un poco más lento para claridad avanzada
+        utter.pitch = 1.1; // Tono un poco más profesional/serio
+        window.speechSynthesis.speak(utter);
+    }
+
+    // --- Lógica de Generación de Instrucciones Avanzadas ---
+    
+    // Plantillas de frases avanzadas (Subjuntivo, Imperativo Formal, etc.)
+    const instructionTemplates = {
+        up: [
+            "Es necesario que **subas** {dist} cuadros.",
+            "Le sugiero que **se dirija** {dist} cuadros hacia arriba.",
+            "Cuando **hayan pasado** {dist} cuadros hacia el norte, deténgase.",
+            "Dudo que haya peligro si **avanza** {dist} cuadros hacia arriba.",
+            "Es fundamental que **atraviese** {dist} sectores hacia arriba."
+        ],
+        down: [
+            "Espero que **puedas bajar** {dist} cuadros ahora mismo.",
+            "Le ordeno que **descienda** {dist} cuadros por la avenida.",
+            "En cuanto **hayas bajado** {dist} cuadros, espera mi señal.",
+            "Es probable que debas **ir** {dist} cuadros hacia abajo.",
+            "**Continúe** {dist} cuadros hacia el sur, por favor."
+        ],
+        left: [
+            "Es preciso que **gires** {dist} cuadros a la izquierda.",
+            "No creo que sea buena idea ir por otro lado; **ve** {dist} a la izquierda.",
+            "Tan pronto como **avances** {dist} cuadros a la izquierda, estarás cerca.",
+            "**Diríjase** {dist} cuadros hacia el oeste (izquierda).",
+            "Quiero que **cruces** {dist} cuadros hacia la izquierda."
+        ],
+        right: [
+            "Es vital que **te muevas** {dist} cuadros a la derecha.",
+            "Si **caminas** {dist} cuadros a la derecha, llegarás al punto de control.",
+            "Le recomiendo que **avance** {dist} cuadros hacia la derecha.",
+            "Busca el objetivo tras **caminar** {dist} cuadros a la derecha.",
+            "**Doble** a la derecha y **siga** {dist} cuadros."
+        ]
+    };
+
+    function generateAdvancedInstruction(direction, distance) {
+        const templates = instructionTemplates[direction];
+        const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
+        const distText = distance > 1 ? `${distance}` : `un`;
+        return randomTemplate.replace('{dist}', `<strong>${distText}</strong>`);
+    }
+
+    // --- Pathfinding (BFS) ---
+    function findPath(start, end) {
+        const queue = [[start]];
+        const visited = new Set([`${start.y},${start.x}`]);
+        const directions = [[0, 1, 'right'], [0, -1, 'left'], [1, 0, 'down'], [-1, 0, 'up']];
+
+        while (queue.length > 0) {
+            const path = queue.shift();
+            const pos = path[path.length - 1];
+
+            if (pos.y === end.y && pos.x === end.x) return path;
+
+            for (const [dy, dx] of directions) {
+                const newY = pos.y + dy;
+                const newX = pos.x + dx;
+                const cell = mapLayout[newY]?.[newX];
+                
+                if (cell && cell !== '🏙️' && !visited.has(`${newY},${newX}`)) {
+                    visited.add(`${newY},${newX}`);
+                    queue.push([...path, { y: newY, x: newX }]);
+                }
+            }
+        }
+        return null;
+    }
+
+    function pathToSteps(path) {
+        if (!path || path.length < 2) return [];
+        const steps = [];
+        let currentDir = null;
+        let currentDist = 0;
+
+        for (let i = 1; i < path.length; i++) {
+            const prev = path[i-1];
+            const curr = path[i];
+            let dir = '';
+            if (curr.x > prev.x) dir = 'right';
+            else if (curr.x < prev.x) dir = 'left';
+            else if (curr.y > prev.y) dir = 'down';
+            else if (curr.y < prev.y) dir = 'up';
+
+            if (dir === currentDir) {
+                currentDist++;
+            } else {
+                if (currentDir) steps.push({ direction: currentDir, distance: currentDist, text: generateAdvancedInstruction(currentDir, currentDist) });
+                currentDir = dir;
+                currentDist = 1;
+            }
+        }
+        steps.push({ direction: currentDir, distance: currentDist, text: generateAdvancedInstruction(currentDir, currentDist) });
+        return steps;
+    }
+
+    function findCoords(emoji) {
+        for (let y = 0; y < mapLayout.length; y++) {
+            for (let x = 0; x < mapLayout[y].length; x++) {
+                if (mapLayout[y][x] === emoji) return { x, y };
+            }
+        }
+        return null;
+    }
+
+    // --- Flujo del Juego ---
+    function initMap() {
+        mapGrid.style.gridTemplateColumns = `repeat(${mapLayout[0].length}, ${CELL_SIZE}px)`;
+        mapLayout.forEach((row, y) => {
+            row.forEach((cell, x) => {
+                const div = document.createElement('div');
+                div.className = 'grid-cell';
+                if (cell === ' ') div.classList.add('cell-path');
+                else if (cell === '🏙️') div.classList.add('cell-wall');
+                else div.textContent = cell;
+                mapGrid.appendChild(div);
+            });
+        });
+        updatePlayer();
+    }
+
+    function updatePlayer() {
+        playerElement.style.left = `${playerState.x * CELL_SIZE}px`;
+        playerElement.style.top = `${playerState.y * CELL_SIZE}px`;
+    }
+
+    function displayMessage(html, speak = true) {
+        messageBox.innerHTML = html;
+        if (speak) {
+            const cleanText = messageBox.innerText.replace(/\*/g, '');
+            speakText(cleanText);
+        }
+    }
+
+    function startMission(index) {
+        const mission = missions[index];
+        if (!mission) {
+            displayMessage("<span class='msg-success'>¡OPERACIÓN COMPLETADA! Has salvado la ciudad.</span>");
+            document.getElementById('game-status').textContent = "MISIÓN CUMPLIDA";
+            document.getElementById('game-status').style.color = "var(--success)";
+            return;
+        }
+
+        const targetCoords = findCoords(mission.target);
+        const path = findPath(playerState, targetCoords);
+        const steps = pathToSteps(path);
+
+        activeMission = { ...mission, steps };
+        currentStepIndex = 0;
+        progressInStep = 0;
+        
+        displayMessage(`<span class="msg-instruction">${mission.intro}</span><br><br>${steps[0].text}`);
+        missionsCountLabel.textContent = `${currentMissionIndex} / ${missions.length}`;
+    }
+
+    function handleInput(e) {
+        let { x, y } = playerState;
+        let dir = null;
+
+        if (e.key === 'ArrowUp') { y--; dir = 'up'; }
+        else if (e.key === 'ArrowDown') { y++; dir = 'down'; }
+        else if (e.key === 'ArrowLeft') { x--; dir = 'left'; }
+        else if (e.key === 'ArrowRight') { x++; dir = 'right'; }
+        else return;
+
+        e.preventDefault();
+
+        if (!activeMission) {
+            // Movimiento libre hacia el centro de control para empezar
+            const cell = mapLayout[y]?.[x];
+            if (cell && cell !== '🏙️') {
+                playerState = { x, y };
+                updatePlayer();
+                if (cell === '🛰️') {
+                    startMission(currentMissionIndex);
+                }
+            }
+            return;
+        }
+
+        const step = activeMission.steps[currentStepIndex];
+        const nextCell = mapLayout[y]?.[x];
+
+        if (dir === step.direction && nextCell && nextCell !== '🏙️') {
+            playerState = { x, y };
+            updatePlayer();
+            progressInStep++;
+
+            if (progressInStep >= step.distance) {
+                currentStepIndex++;
+                progressInStep = 0;
+
+                if (currentStepIndex < activeMission.steps.length) {
+                    displayMessage(`<span class="msg-success">¡Objetivo parcial cumplido!</span><br><br>${activeMission.steps[currentStepIndex].text}`);
+                } else {
+                    // Misión terminada
+                    displayMessage(`<span class="msg-success">${activeMission.success}</span><br><br>Vuelve al punto de control (🛰️) para la siguiente fase.`);
+                    currentMissionIndex++;
+                    activeMission = null;
+                    missionsCountLabel.textContent = `${currentMissionIndex} / ${missions.length}`;
+                }
+            }
+        } else {
+            if (nextCell === '🏙️') {
+                displayMessage(`<span class="msg-error">¡Cuidado! Te has chocado contra un edificio.</span><br><br>${step.text}`);
+            } else {
+                displayMessage(`<span class="msg-error">¡Dirección incorrecta! Control dice:</span><br><br>${step.text}`);
+            }
+        }
+    }
+
+    // --- Event Listeners ---
+    document.addEventListener('keydown', handleInput);
+
+    ttsToggle.addEventListener('click', () => {
+        ttsEnabled = !ttsEnabled;
+        ttsToggle.classList.toggle('active', ttsEnabled);
+        document.getElementById('tts-icon').textContent = ttsEnabled ? '🔊' : '🔇';
+        ttsToggle.innerHTML = `<span id="tts-icon">${ttsEnabled ? '🔊' : '🔇'}</span> TTS: ${ttsEnabled ? 'Activado' : 'Desactivado'}`;
+        if (ttsEnabled) speakText("Voz activada.");
+    });
+
+    resetBtn.addEventListener('click', () => {
+        playerState = { x: 5, y: 3 };
+        currentMissionIndex = 0;
+        activeMission = null;
+        updatePlayer();
+        displayMessage("<span class='msg-instruction'>Misión reiniciada. Dirígete al centro de control (🛰️).</span>");
+        missionsCountLabel.textContent = "0 / 4";
+        document.getElementById('game-status').textContent = "OPERATIVO";
+    });
+
+    // --- Inicio ---
+    initMap();
+    displayMessage("<span class='msg-instruction'>Bienvenido, Agente. Desplázate hasta el satélite de control (🛰️) para recibir tus órdenes.</span>");
+    </script>
+</body>
+</html>
