@@ -213,7 +213,20 @@
             font-size: 0.9rem;
             color: #94a3b8;
             display: flex;
-            gap: 1rem;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .how-to-play {
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px dashed var(--primary);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #475569;
+            max-width: 300px;
         }
 
         .key {
@@ -298,7 +311,12 @@
             </div>
 
             <div class="controls-hint">
-                <span>Usa <span class="key">←</span> <span class="key">↑</span> <span class="key">→</span> <span class="key">↓</span> para moverte</span>
+                <div>Usa <span class="key">←</span> <span class="key">↑</span> <span class="key">→</span> <span class="key">↓</span> para moverte</div>
+                <div class="how-to-play">
+                    <strong>Cómo jugar / How to play:</strong><br>
+                    Mueve al zorro hasta el color u objeto indicado en la misión.<br>
+                    <em>Move the fox to the color or object mentioned in the mission.</em>
+                </div>
             </div>
         </div>
 
