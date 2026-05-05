@@ -3,67 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a1a">
     <title>Sigue las Direcciones</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #4a90e2;
+            --success-color: #7ed321;
+            --error-color: #d0021b;
+            --bg-dark: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --accent-color: #f5a623;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #333;
-            color: #fff;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
+            justify-content: flex-start;
+            min-height: 100vh;
             margin: 0;
-            overflow: hidden;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            margin-top: 0;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            text-align: center;
         }
 
         #game-wrapper {
             display: flex;
-            gap: 20px;
+            gap: 24px;
             align-items: flex-start;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 1200px;
         }
 
         #game-container {
-            background-color: #444;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
-            border: 2px solid #555;
+            background-color: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         #message-box {
-            background-color: #222;
-            border: 1px solid #666;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-            min-height: 70px;
-            font-size: 1.2em;
-            line-height: 1.4;
-            color: #e0e0e0;
-            transition: background-color 0.3s;
+            background-color: #1a1a1a;
+            border: 1px solid #444;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            min-height: 80px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 1.1em;
+            line-height: 1.5;
+            color: #ccc;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
         }
-        #message-box strong { color: #4a90e2; }
-        .success { color: #7ed321; }
-        .error { color: #d0021b; }
-        .info { color: #f5a623; }
+        #message-box strong { color: var(--primary-color); font-weight: 600; }
+        .success { color: var(--success-color); }
+        .error { color: var(--error-color); }
+        .info { color: var(--accent-color); }
 
-        #map-container { position: relative; background-color: #6b8e23; }
-        #map-grid { display: grid; border: 1px solid #555; }
+        #map-container { 
+            position: relative; 
+            background-color: #556b2f; 
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            touch-action: none; /* Prevent scrolling while playing */
+        }
+        #map-grid { display: grid; border: 1px solid #444; }
 
         .grid-cell {
             width: 40px;
             height: 40px;
             box-sizing: border-box;
-            font-size: 1.8em;
+            font-size: 1.6em;
             display: flex;
             justify-content: center;
             align-items: center;
             user-select: none;
         }
 
-        .path { background-color: #a9a9a9; }
+        .path { background-color: #888; }
         
         #player {
             position: absolute;
@@ -72,20 +113,99 @@
             font-size: 1.8em;
             line-height: 40px;
             text-align: center;
-            transition: all 0.1s linear;
+            transition: all 0.15s cubic-bezier(0.18, 0.89, 0.32, 1.28);
             z-index: 10;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
         }
         
-        #vocab-container { background-color: #444; padding: 20px; border-radius: 10px; width: 250px; }
-        #vocab-container h2 { margin-top: 0; color: #4a90e2; }
+        #vocab-container { 
+            background-color: var(--card-bg); 
+            padding: 24px; 
+            border-radius: 16px; 
+            width: 300px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+        }
+        #vocab-container h2 { margin-top: 0; color: var(--primary-color); font-size: 1.4em; }
         #vocab-container ul { list-style-type: none; padding: 0; }
-        #vocab-container li { margin-bottom: 10px; font-size: 1.1em; }
+        #vocab-container li { 
+            margin-bottom: 12px; 
+            font-size: 1.05em; 
+            padding-bottom: 8px;
+            border-bottom: 1px solid #3d3d3d;
+        }
+        #vocab-container li:last-child { border-bottom: none; }
+
+        /* Mobile Controls */
+        #controls {
+            display: none;
+            grid-template-areas: 
+                ". up ."
+                "left . right"
+                ". down .";
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .control-btn {
+            width: 65px;
+            height: 65px;
+            background: #444;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 0 #222;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .control-btn:active {
+            box-shadow: 0 2px 0 #222;
+            transform: translateY(2px);
+            background: #555;
+        }
+
+        .btn-up { grid-area: up; }
+        .btn-down { grid-area: down; }
+        .btn-left { grid-area: left; }
+        .btn-right { grid-area: right; }
+
+        #tts-toggle {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        #tts-toggle:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 600px) {
+            #controls { display: grid; }
+            #game-wrapper { gap: 15px; }
+            #vocab-container { width: 100%; box-sizing: border-box; }
+            .grid-cell, #player { width: 30px; height: 30px; font-size: 1.2em; line-height: 30px; }
+            #map-grid { grid-template-columns: repeat(13, 30px) !important; }
+            h1 { font-size: 1.5em; }
+        }
 
     </style>
 </head>
 <body>
     <h1>Sigue las Direcciones</h1>
-    <p>Usa las <strong>teclas de flecha</strong> (Arrow Keys) para seguir las instrucciones.</p>
+    <p style="text-align: center; margin-bottom: 20px; opacity: 0.8;">Sigue las instrucciones para llegar a tu destino.</p>
 
     <div id="game-wrapper">
         <div id="game-container">
@@ -94,18 +214,28 @@
                 <div id="map-grid"></div>
                 <div id="player">🚶</div>
             </div>
-            <button id="tts-toggle" style="margin-top:10px;">🔊 TTS: Activado</button>
+            
+            <div id="controls">
+                <button class="control-btn btn-up" id="btn-up">↑</button>
+                <button class="control-btn btn-left" id="btn-left">←</button>
+                <button class="control-btn btn-right" id="btn-right">→</button>
+                <button class="control-btn btn-down" id="btn-down">↓</button>
+            </div>
+
+            <button id="tts-toggle">🔊 TTS: Activado</button>
         </div>
+        
         <div id="vocab-container">
-            <h2>Vocabulario de Dirección</h2>
+            <h2>Vocabulario</h2>
             <ul>
                 <li><strong>Sigue/Avanza/Ve:</strong> Go/Advance</li>
-                <li><strong>Gira a la derecha/izquierda:</strong> Turn right/left</li>
+                <li><strong>Gira a la dcha/izq:</strong> Turn right/left</li>
                 <li><strong>Hacia arriba/abajo:</strong> Upward/Downward</li>
                 <li><strong>Cuadro(s):</strong> Block(s)</li>
             </ul>
         </div>
     </div>
+
     
     <script>
     // --- DOM Elements ---
@@ -134,7 +264,7 @@
     });
 
     // --- Game Configuration ---
-    const CELL_SIZE = 40;
+    let CELL_SIZE = window.innerWidth < 600 ? 30 : 40;
     const mapLayout = [
         ['🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳'],
         ['🌳',' ',' ',' ','🌳','🏫','🌳',' ',' ',' ',' ',' ','🌳'],
@@ -266,6 +396,18 @@
         updatePlayerPosition();
         displayMessage("Camina hacia la persona (💁) para recibir instrucciones.");
         document.addEventListener('keydown', handleKeyPress);
+
+        // Mobile Controls
+        document.getElementById('btn-up').addEventListener('click', () => handleMove('up'));
+        document.getElementById('btn-down').addEventListener('click', () => handleMove('down'));
+        document.getElementById('btn-left').addEventListener('click', () => handleMove('left'));
+        document.getElementById('btn-right').addEventListener('click', () => handleMove('right'));
+
+        window.addEventListener('resize', () => {
+            CELL_SIZE = window.innerWidth < 600 ? 30 : 40;
+            mapGrid.style.gridTemplateColumns = `repeat(${mapLayout[0].length}, ${CELL_SIZE}px)`;
+            updatePlayerPosition();
+        });
     }
     
     function startQuest(quest) {
@@ -305,17 +447,27 @@
     }
 
     function handleKeyPress(event) {
-        let { x, y } = playerState;
-        let intendedDirection = null;
-        
+        let direction = null;
         switch (event.key) {
-            case 'ArrowUp': y--; intendedDirection = 'up'; break;
-            case 'ArrowDown': y++; intendedDirection = 'down'; break;
-            case 'ArrowLeft': x--; intendedDirection = 'left'; break;
-            case 'ArrowRight': x++; intendedDirection = 'right'; break;
+            case 'ArrowUp': direction = 'up'; break;
+            case 'ArrowDown': direction = 'down'; break;
+            case 'ArrowLeft': direction = 'left'; break;
+            case 'ArrowRight': direction = 'right'; break;
             default: return;
         }
         event.preventDefault();
+        handleMove(direction);
+    }
+
+    function handleMove(intendedDirection) {
+        let { x, y } = playerState;
+        
+        switch (intendedDirection) {
+            case 'up': y--; break;
+            case 'down': y++; break;
+            case 'left': x--; break;
+            case 'right': x++; break;
+        }
 
         // Check for interaction with quest giver
         const targetCell = mapLayout[y]?.[x];
