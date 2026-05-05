@@ -412,6 +412,18 @@
             { name: 'rosa', hex: '#fce7f3' }
         ];
 
+        function getCellDimensions() {
+            const firstCell = document.querySelector('.cell');
+            if (!firstCell) return { size: 60, gap: 8 };
+            
+            const style = window.getComputedStyle(grid);
+            const gap = parseInt(style.gap) || 0;
+            return {
+                size: firstCell.offsetWidth,
+                gap: gap
+            };
+        }
+
         function initGrid() {
             grid.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
             grid.innerHTML = '';
@@ -422,8 +434,7 @@
                     cell.className = 'cell';
                     cell.id = `cell-${x}-${y}`;
                     
-                    // Assign random light color to some cells
-                    if (Math.random() > 0.6) {
+                    if (Math.random() > 0.7) {
                         const color = colors[Math.floor(Math.random() * colors.length)];
                         cell.style.backgroundColor = color.hex;
                         cell.dataset.color = color.name;
@@ -433,29 +444,37 @@
                 }
             }
             
-            // Place some objects
             const usedPos = new Set(['0,0']);
-            objects.slice(0, 8).forEach(obj => {
+            objects.forEach((obj, i) => {
+                if (i > 10) return; // Limit objects
                 let rx, ry;
+                let attempts = 0;
                 do {
                     rx = Math.floor(Math.random() * GRID_SIZE);
                     ry = Math.floor(Math.random() * GRID_SIZE);
-                } while (usedPos.has(`${rx},${ry}`));
+                    attempts++;
+                } while (usedPos.has(`${rx},${ry}`) && attempts < 50);
                 
                 usedPos.add(`${rx},${ry}`);
                 const cell = document.getElementById(`cell-${rx}-${ry}`);
-                cell.textContent = obj.emoji;
-                cell.dataset.object = obj.name;
-                cell.dataset.color = obj.color;
+                if (cell) {
+                    cell.textContent = obj.emoji;
+                    cell.dataset.object = obj.name;
+                    cell.dataset.color = obj.color;
+                }
             });
 
-            updatePlayer();
-            generateMission();
+            generateMission(); // Set target first
+            updatePlayer();    // Then update visual
         }
 
         function generateMission() {
-            // Pick a random target from the grid
             const cellsWithStuff = Array.from(document.querySelectorAll('.cell')).filter(c => c.dataset.object || c.dataset.color);
+            if (cellsWithStuff.length === 0) {
+                console.error("No targets found on grid");
+                return;
+            }
+            
             const targetCell = cellsWithStuff[Math.floor(Math.random() * cellsWithStuff.length)];
             
             const obj = targetCell.dataset.object;
@@ -469,21 +488,26 @@
             };
 
             if (level === 1) {
-                textElement.innerHTML = `Ve al cuadro <strong>${col}</strong>`;
+                textElement.innerHTML = col ? `Ve al cuadro <strong>${col}</strong>` : `Busca <strong>${obj}</strong>`;
             } else if (level === 2) {
                 textElement.innerHTML = obj ? `Busca <strong>${obj}</strong>` : `Ve al cuadro <strong>${col}</strong>`;
             } else {
                 textElement.innerHTML = (obj && col) ? `Ve a <strong>${obj} ${col}</strong>` : `Busca <strong>${obj || col}</strong>`;
             }
             
-            speak(textElement.innerText);
+            try {
+                speak(textElement.innerText);
+            } catch(e) {}
         }
 
         function updatePlayer() {
-            player.style.transform = `translate(${playerPos.x * CELL_SIZE}px, ${playerPos.y * CELL_SIZE}px)`;
+            const { size, gap } = getCellDimensions();
+            const step = size + gap;
             
-            // Check win condition
-            if (playerPos.x === currentTarget.x && playerPos.y === currentTarget.y) {
+            // Offset for container padding (10px)
+            player.style.transform = `translate(${playerPos.x * step}px, ${playerPos.y * step}px)`;
+            
+            if (currentTarget && playerPos.x === currentTarget.x && playerPos.y === currentTarget.y) {
                 showWin();
             }
         }
@@ -493,7 +517,9 @@
             scoreVal.textContent = score;
             overlay.style.display = 'flex';
             setTimeout(() => modal.classList.add('active'), 10);
-            speak("¡Muy bien!");
+            try {
+                speak("¡Muy bien!");
+            } catch(e) {}
         }
 
         function nextLevel() {
@@ -507,9 +533,11 @@
         }
 
         function speak(text) {
+            if (!window.speechSynthesis) return;
+            window.speechSynthesis.cancel();
             const ut = new SpeechSynthesisUtterance(text);
             ut.lang = 'es-ES';
-            speechSynthesis.speak(ut);
+            window.speechSynthesis.speak(ut);
         }
 
         window.addEventListener('keydown', e => {
@@ -521,14 +549,20 @@
                 case 'ArrowDown': if (playerPos.y < GRID_SIZE - 1) playerPos.y++; break;
                 case 'ArrowLeft': if (playerPos.x > 0) playerPos.x--; break;
                 case 'ArrowRight': if (playerPos.x < GRID_SIZE - 1) playerPos.x++; break;
+                default: return; // Don't prevent default for other keys
             }
+            e.preventDefault();
             
             if (oldPos.x !== playerPos.x || oldPos.y !== playerPos.y) {
                 updatePlayer();
             }
         });
 
-        initGrid();
+        // Use ResizeObserver for responsive alignment
+        const resizeObserver = new ResizeObserver(() => updatePlayer());
+        resizeObserver.observe(grid);
+
+        window.onload = initGrid;
 
     </script>
 </body>
