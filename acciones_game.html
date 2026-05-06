@@ -155,6 +155,49 @@
             color: var(--accent-color);
         }
 
+        .controls-container {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .tool-btn {
+            background-color: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 12px;
+            color: var(--text-color);
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            min-width: 100px;
+        }
+
+        .tool-btn:hover {
+            border-color: var(--primary-color);
+            background-color: #333;
+            transform: translateY(-2px);
+        }
+
+        .tool-btn.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(187, 134, 252, 0.1);
+            box-shadow: 0 0 15px rgba(187, 134, 252, 0.3);
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        .tool-icon {
+            font-size: 1.5rem;
+        }
+
         .feedback {
             position: absolute;
             top: 50%;
@@ -237,6 +280,30 @@
                 <div id="feedback" class="feedback">¡Muy bien!</div>
             </div>
             <div class="score-board">Puntos: <span id="score">0</span></div>
+            
+            <div class="controls-container" id="controls">
+                <button class="tool-btn" data-action="Toca">
+                    <span class="tool-icon">👆</span>
+                    Toca
+                </button>
+                <button class="tool-btn" data-action="Gira">
+                    <span class="tool-icon">🔄</span>
+                    Gira
+                </button>
+                <button class="tool-btn" data-action="Agranda">
+                    <span class="tool-icon">➕</span>
+                    Agranda
+                </button>
+                <button class="tool-btn" data-action="Achica">
+                    <span class="tool-icon">➖</span>
+                    Achica
+                </button>
+                <button class="tool-btn" data-action="Pinta">
+                    <span class="tool-icon">🎨</span>
+                    Pinta
+                </button>
+            </div>
+
             <button id="tts-toggle" class="active" title="Alternar Sonido">🔊</button>
         </div>
 
@@ -306,6 +373,18 @@
             ttsToggle.classList.toggle('active', ttsEnabled);
         });
 
+        let selectedAction = null;
+
+        const toolBtns = document.querySelectorAll('.tool-btn');
+        toolBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                toolBtns.forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedAction = btn.getAttribute('data-action');
+                speak(selectedAction);
+            });
+        });
+
         function nextRound() {
             currentAction = actions[Math.floor(Math.random() * actions.length)];
             currentObject = objects[Math.floor(Math.random() * objects.length)];
@@ -326,12 +405,16 @@
             const instructionText = `${currentAction.verb} <strong>${currentObject.name}</strong>`;
             instructionEl.innerHTML = instructionText;
             
-            // Speak only the plain text version
+            // Speak the goal
             speak(instructionText.replace(/<[^>]*>/g, ''));
+
+            // Clear tool selection
+            toolBtns.forEach(b => b.classList.remove('selected'));
+            selectedAction = null;
         }
 
-        function showFeedback(success) {
-            feedbackEl.textContent = success ? '¡Muy bien!' : '¡Inténtalo de nuevo!';
+        function showFeedback(success, customMsg) {
+            feedbackEl.textContent = customMsg || (success ? '¡Muy bien!' : '¡Acción incorrecta!');
             feedbackEl.style.color = success ? 'var(--success-color)' : 'var(--error-color)';
             feedbackEl.classList.remove('show');
             void feedbackEl.offsetWidth; // Trigger reflow
@@ -345,45 +428,59 @@
         }
 
         targetEl.addEventListener('click', () => {
-            if (!currentAction) return;
+            if (!selectedAction) {
+                showFeedback(false, "¡Selecciona una acción!");
+                return;
+            }
 
-            let success = false;
+            let wasCorrectAction = (selectedAction === currentAction.verb);
+            let goalReached = false;
 
-            switch(currentAction.verb) {
+            switch(selectedAction) {
                 case 'Toca':
-                    success = true;
                     targetEl.style.transform += ' scale(1.2)';
                     setTimeout(() => targetEl.style.transform = targetEl.style.transform.replace(' scale(1.2)', ''), 100);
+                    if (wasCorrectAction) goalReached = true;
                     break;
                 
                 case 'Gira':
                     state.rotation += 90;
                     targetEl.style.transform = `rotate(${state.rotation}deg) scale(${state.scale})`;
-                    success = true;
+                    if (wasCorrectAction) goalReached = true;
                     break;
 
                 case 'Agranda':
-                    state.scale += 0.5;
+                    state.scale += 0.4;
                     targetEl.style.transform = `rotate(${state.rotation}deg) scale(${state.scale})`;
-                    if (state.scale >= 2) success = true;
+                    if (wasCorrectAction && state.scale >= 1.8) goalReached = true;
                     break;
 
                 case 'Achica':
                     state.scale -= 0.2;
                     if (state.scale < 0.2) state.scale = 0.2;
                     targetEl.style.transform = `rotate(${state.rotation}deg) scale(${state.scale})`;
-                    if (state.scale <= 0.6) success = true;
+                    if (wasCorrectAction && state.scale <= 0.6) goalReached = true;
                     break;
 
                 case 'Pinta':
                     const randomColor = colors[Math.floor(Math.random() * colors.length)];
                     targetEl.style.backgroundColor = randomColor;
-                    success = true;
+                    if (wasCorrectAction) goalReached = true;
                     break;
             }
 
-            if (success) {
+            if (!wasCorrectAction) {
+                showFeedback(false, `¡No! Eso es ${selectedAction}`);
+                // Don't go to next round, let them try again
+            } else if (goalReached) {
                 showFeedback(true);
+            } else {
+                // Correct action but goal not reached yet (for Agranda/Achica)
+                feedbackEl.textContent = "¡Sigue!";
+                feedbackEl.style.color = "var(--accent-color)";
+                feedbackEl.classList.remove('show');
+                void feedbackEl.offsetWidth;
+                feedbackEl.classList.add('show');
             }
         });
 
