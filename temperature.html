@@ -120,7 +120,7 @@
     }
     .bulk-actions {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 6px;
       margin-bottom: 12px;
     }
@@ -132,7 +132,50 @@
     }
     .model-list {
       display: grid;
-      gap: 7px;
+      gap: 10px;
+    }
+    .pair-row {
+      border: 1px solid #e3e8ef;
+      border-radius: 8px;
+      padding: 8px;
+      background: #fbfcfe;
+    }
+    .pair-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 7px;
+    }
+    .pair-title {
+      font-size: 12px;
+      font-weight: 750;
+      color: var(--ink);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .pair-actions {
+      display: flex;
+      gap: 4px;
+    }
+    .pair-actions button {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 6px;
+      padding: 4px 6px;
+      font: inherit;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .pair-actions button:hover, .bulk-actions button:hover {
+      border-color: #aab4c2;
+      background: #f8fafc;
+    }
+    .pair-models {
+      display: grid;
+      gap: 6px;
     }
     label.model-toggle {
       display: grid;
@@ -300,6 +343,14 @@
   <main>
     <aside>
       <div class="control-group">
+        <p class="control-title">Chart Mode</p>
+        <div class="segmented" id="modeTabs">
+          <button type="button" data-mode="temperature" class="active">T sweep</button>
+          <button type="button" data-mode="parameter">Param sweep</button>
+        </div>
+      </div>
+
+      <div class="control-group">
         <p class="control-title">Decoder</p>
         <div class="segmented" id="decoderTabs">
           <button type="button" data-decoder="top_p" class="active">top-p</button>
@@ -308,9 +359,14 @@
         </div>
       </div>
 
-      <div class="control-group">
+      <div class="control-group" id="parameterControl">
         <p class="control-title">Parameter</p>
         <select id="parameterSelect"></select>
+      </div>
+
+      <div class="control-group" id="temperatureControl" hidden>
+        <p class="control-title">Temperature</p>
+        <select id="temperatureSelect"></select>
       </div>
 
       <div class="control-group">
@@ -328,6 +384,7 @@
         <button type="button" data-action="none">Hide all</button>
         <button type="button" data-action="base">Base only</button>
         <button type="button" data-action="instruct">Instruct only</button>
+        <button type="button" data-action="gemma">Gemma only</button>
       </div>
       <div class="model-list" id="modelList"></div>
       <div class="key">Solid lines are base/pre-trained models. Dashed lines are instruct, tuned, or distilled models. Colors are fixed per model.</div>
@@ -358,10 +415,13 @@
       rows: [],
       models: [],
       temperatures: [],
+      mode: "temperature",
       decoder: "top_p",
       parameter: null,
+      temperature: null,
       metric: "word_any_wcs",
-      enabled: new Set()
+      enabled: new Set(),
+      colorMode: "normal"
     };
 
     const colors = {
@@ -381,6 +441,15 @@
       "meta-llama/Llama-3.1-8B-Instruct": "#7e22ce",
       "mistralai/Mistral-7B-v0.3": "#f97316",
       "mistralai/Mistral-7B-Instruct-v0.3": "#c2410c"
+    };
+
+    const gemmaColors = {
+      "google/gemma-2-9b": "#2563eb",
+      "google/gemma-2-9b-it": "#1d4ed8",
+      "google/gemma-3-12b-pt": "#dc2626",
+      "google/gemma-3-12b-it": "#991b1b",
+      "google/gemma-4-E4B": "#f97316",
+      "google/gemma-4-E4B-it": "#c2410c"
     };
 
     const displayNames = {
@@ -403,22 +472,22 @@
     };
 
     const modelMeta = {
-      "Qwen/Qwen2.5-14B": { variant: "base" },
-      "Qwen/Qwen2.5-14B-Instruct": { variant: "instruct" },
-      "Qwen/Qwen3.5-9B-Base": { variant: "base" },
-      "Qwen/Qwen3.5-9B": { variant: "instruct" },
-      "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B": { variant: "instruct" },
-      "deepseek-ai/DeepSeek-V2-Lite": { variant: "base" },
-      "google/gemma-2-9b": { variant: "base" },
-      "google/gemma-2-9b-it": { variant: "instruct" },
-      "google/gemma-3-12b-pt": { variant: "base" },
-      "google/gemma-3-12b-it": { variant: "instruct" },
-      "google/gemma-4-E4B": { variant: "base" },
-      "google/gemma-4-E4B-it": { variant: "instruct" },
-      "meta-llama/Llama-3.1-8B": { variant: "base" },
-      "meta-llama/Llama-3.1-8B-Instruct": { variant: "instruct" },
-      "mistralai/Mistral-7B-v0.3": { variant: "base" },
-      "mistralai/Mistral-7B-Instruct-v0.3": { variant: "instruct" }
+      "Qwen/Qwen2.5-14B": { variant: "base", pair: "Qwen2.5-14B" },
+      "Qwen/Qwen2.5-14B-Instruct": { variant: "instruct", pair: "Qwen2.5-14B" },
+      "Qwen/Qwen3.5-9B-Base": { variant: "base", pair: "Qwen3.5-9B" },
+      "Qwen/Qwen3.5-9B": { variant: "instruct", pair: "Qwen3.5-9B" },
+      "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B": { variant: "instruct", pair: "DeepSeek" },
+      "deepseek-ai/DeepSeek-V2-Lite": { variant: "base", pair: "DeepSeek" },
+      "google/gemma-2-9b": { variant: "base", pair: "Gemma-2-9B" },
+      "google/gemma-2-9b-it": { variant: "instruct", pair: "Gemma-2-9B" },
+      "google/gemma-3-12b-pt": { variant: "base", pair: "Gemma-3-12B" },
+      "google/gemma-3-12b-it": { variant: "instruct", pair: "Gemma-3-12B" },
+      "google/gemma-4-E4B": { variant: "base", pair: "Gemma-4-E4B" },
+      "google/gemma-4-E4B-it": { variant: "instruct", pair: "Gemma-4-E4B" },
+      "meta-llama/Llama-3.1-8B": { variant: "base", pair: "Llama-3.1-8B" },
+      "meta-llama/Llama-3.1-8B-Instruct": { variant: "instruct", pair: "Llama-3.1-8B" },
+      "mistralai/Mistral-7B-v0.3": { variant: "base", pair: "Mistral-7B-v0.3" },
+      "mistralai/Mistral-7B-Instruct-v0.3": { variant: "instruct", pair: "Mistral-7B-v0.3" }
     };
 
     const metricLabels = {
@@ -485,16 +554,68 @@
       state.rows = rows;
       state.models = Array.from(new Set(rows.map(row => row.model))).sort((a, b) => (displayNames[a] || a).localeCompare(displayNames[b] || b));
       state.temperatures = Array.from(new Set(rows.map(row => row.temperature))).sort((a, b) => a - b);
+      state.temperature = state.temperatures.includes(1) ? 1 : state.temperatures[0];
       state.enabled = new Set(state.models);
       buildControls();
       updateParameters();
+      updateTemperatures();
+      updateModeControls();
       render();
     }
 
     function buildControls() {
       const list = document.getElementById("modelList");
       list.innerHTML = "";
+      const pairs = new Map();
       state.models.forEach(model => {
+        const pair = modelMeta[model]?.pair || displayNames[model] || model;
+        if (!pairs.has(pair)) pairs.set(pair, []);
+        pairs.get(pair).push(model);
+      });
+      Array.from(pairs.entries())
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .forEach(([pair, models]) => {
+          models.sort((a, b) => variantClass(a).localeCompare(variantClass(b)) || (displayNames[a] || a).localeCompare(displayNames[b] || b));
+          const row = document.createElement("div");
+          row.className = "pair-row";
+          const head = document.createElement("div");
+          head.className = "pair-head";
+          const title = document.createElement("div");
+          title.className = "pair-title";
+          title.textContent = pair;
+          const actions = document.createElement("div");
+          actions.className = "pair-actions";
+          [
+            ["pair", "Pair"],
+            ["base", "Base"],
+            ["instruct", "Inst"]
+          ].forEach(([action, label]) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.textContent = label;
+            button.addEventListener("click", () => {
+              state.colorMode = "normal";
+              if (action === "pair") {
+                state.enabled = new Set(models);
+              } else {
+                state.enabled = new Set(models.filter(model => (modelMeta[model]?.variant || "base") === action));
+              }
+              syncChecks();
+              syncSwatches();
+              render();
+            });
+            actions.append(button);
+          });
+          head.append(title, actions);
+          const modelBox = document.createElement("div");
+          modelBox.className = "pair-models";
+          models.forEach(model => modelBox.append(modelToggle(model)));
+          row.append(head, modelBox);
+          list.append(row);
+        });
+    }
+
+    function modelToggle(model) {
         const label = document.createElement("label");
         label.className = "model-toggle";
         const input = document.createElement("input");
@@ -502,19 +623,20 @@
         input.checked = state.enabled.has(model);
         input.dataset.model = model;
         input.addEventListener("change", () => {
+          state.colorMode = "normal";
           if (input.checked) state.enabled.add(model);
           else state.enabled.delete(model);
+          syncSwatches();
           render();
         });
         const name = document.createElement("span");
-        name.innerHTML = `<span class="swatch" style="background:${colors[model] || "#64748b"}"></span>${displayNames[model] || model}`;
+        name.innerHTML = `<span class="swatch" data-swatch="${model}" style="background:${colorFor(model)}"></span>${displayNames[model] || model}`;
         const variant = modelMeta[model]?.variant || "base";
         const pill = document.createElement("span");
         pill.className = `variant-pill ${variant === "base" ? "" : "instruct"}`;
         pill.textContent = variant;
         label.append(input, name, pill);
-        list.append(label);
-      });
+        return label;
     }
 
     function updateParameters() {
@@ -531,6 +653,34 @@
         select.append(option);
       });
     }
+
+    function updateTemperatures() {
+      const select = document.getElementById("temperatureSelect");
+      state.temperature = state.temperatures.includes(state.temperature) ? state.temperature : (state.temperatures.includes(1) ? 1 : state.temperatures[0]);
+      select.innerHTML = "";
+      state.temperatures.forEach(value => {
+        const option = document.createElement("option");
+        option.value = String(value);
+        option.textContent = `T=${formatTemperature(value)}`;
+        option.selected = value === state.temperature;
+        select.append(option);
+      });
+    }
+
+    function updateModeControls() {
+      const isTemperatureSweep = state.mode === "temperature";
+      document.getElementById("parameterControl").hidden = !isTemperatureSweep;
+      document.getElementById("temperatureControl").hidden = isTemperatureSweep;
+    }
+
+    document.getElementById("modeTabs").addEventListener("click", event => {
+      const button = event.target.closest("button[data-mode]");
+      if (!button) return;
+      state.mode = button.dataset.mode;
+      document.querySelectorAll("#modeTabs button").forEach(item => item.classList.toggle("active", item === button));
+      updateModeControls();
+      render();
+    });
 
     document.getElementById("decoderTabs").addEventListener("click", event => {
       const button = event.target.closest("button[data-decoder]");
@@ -554,15 +704,23 @@
       render();
     });
 
+    document.getElementById("temperatureSelect").addEventListener("change", event => {
+      state.temperature = Number(event.target.value);
+      render();
+    });
+
     document.querySelector(".bulk-actions").addEventListener("click", event => {
       const button = event.target.closest("button[data-action]");
       if (!button) return;
       const action = button.dataset.action;
+      state.colorMode = action === "gemma" ? "gemma" : "normal";
       if (action === "all") state.enabled = new Set(state.models);
       if (action === "none") state.enabled = new Set();
       if (action === "base") state.enabled = new Set(state.models.filter(model => (modelMeta[model]?.variant || "base") === "base"));
       if (action === "instruct") state.enabled = new Set(state.models.filter(model => (modelMeta[model]?.variant || "base") !== "base"));
+      if (action === "gemma") state.enabled = new Set(state.models.filter(model => model.startsWith("google/gemma-")));
       syncChecks();
+      syncSwatches();
       render();
     });
 
@@ -583,6 +741,12 @@
       });
     }
 
+    function syncSwatches() {
+      document.querySelectorAll("[data-swatch]").forEach(item => {
+        item.style.background = colorFor(item.dataset.swatch);
+      });
+    }
+
     function render() {
       if (!state.rows.length || state.parameter === null) return;
       const svg = document.getElementById("chart");
@@ -594,62 +758,67 @@
       const innerHeight = height - margin.top - margin.bottom;
       svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
 
-      const rows = state.rows.filter(row =>
-        row.decoder === state.decoder &&
-        row.parameter === state.parameter &&
-        state.enabled.has(row.model)
-      );
+      const rows = state.rows.filter(row => {
+        if (row.decoder !== state.decoder || !state.enabled.has(row.model)) return false;
+        if (state.mode === "temperature") return row.parameter === state.parameter;
+        return row.temperature === state.temperature;
+      });
       const byModel = new Map();
       rows.forEach(row => {
         if (!byModel.has(row.model)) byModel.set(row.model, []);
         byModel.get(row.model).push(row);
       });
-      byModel.forEach(values => values.sort((a, b) => a.temperature - b.temperature));
+      byModel.forEach(values => values.sort((a, b) => xValue(a) - xValue(b)));
 
-      const xMin = Math.min(...state.temperatures);
-      const xMax = Math.max(...state.temperatures);
+      const xValues = state.mode === "temperature" ? state.temperatures : parameterValues();
+      const xMin = Math.min(...xValues);
+      const xMax = Math.max(...xValues);
       const x = value => margin.left + ((value - xMin) / (xMax - xMin || 1)) * innerWidth;
       const y = value => margin.top + (1 - value) * innerHeight;
 
-      drawGrid(svg, width, height, margin, innerWidth, innerHeight, x, y);
+      drawGrid(svg, width, height, margin, innerWidth, innerHeight, x, y, xValues);
       drawSeries(svg, byModel, x, y);
 
-      document.getElementById("chartTitle").textContent = `${metricLabels[state.metric]} by temperature`;
-      document.getElementById("chartSubtitle").textContent = `${decoderLabels[state.decoder]} = ${formatParameter(state.parameter, state.decoder)}`;
+      document.getElementById("chartTitle").textContent = state.mode === "temperature"
+        ? `${metricLabels[state.metric]} by temperature`
+        : `${metricLabels[state.metric]} by ${decoderLabels[state.decoder]}`;
+      document.getElementById("chartSubtitle").textContent = state.mode === "temperature"
+        ? `${decoderLabels[state.decoder]} = ${formatParameter(state.parameter, state.decoder)}`
+        : `T=${formatTemperature(state.temperature)}`;
       document.getElementById("chartMeta").textContent = `${byModel.size} visible models`;
     }
 
-    function drawGrid(svg, width, height, margin, innerWidth, innerHeight, x, y) {
+    function drawGrid(svg, width, height, margin, innerWidth, innerHeight, x, y, xValues) {
       [0, 0.25, 0.5, 0.75, 1].forEach(tick => {
         line(svg, margin.left, y(tick), width - margin.right, y(tick), "grid");
         text(svg, margin.left - 10, y(tick) + 4, `${Math.round(tick * 100)}%`, "grid-label", "end");
       });
-      state.temperatures.forEach(temp => {
-        line(svg, x(temp), margin.top, x(temp), height - margin.bottom, "grid");
-        text(svg, x(temp), height - margin.bottom + 24, `T=${formatTemperature(temp)}`, "grid-label", "middle");
+      xValues.forEach(value => {
+        line(svg, x(value), margin.top, x(value), height - margin.bottom, "grid");
+        text(svg, x(value), height - margin.bottom + 24, xLabel(value), "grid-label", "middle");
       });
       line(svg, margin.left, height - margin.bottom, width - margin.right, height - margin.bottom, "axis-line");
       line(svg, margin.left, margin.top, margin.left, height - margin.bottom, "axis-line");
-      text(svg, margin.left + innerWidth / 2, height - 14, "temperature", "grid-label", "middle");
+      text(svg, margin.left + innerWidth / 2, height - 14, state.mode === "temperature" ? "temperature" : decoderLabels[state.decoder], "grid-label", "middle");
       const yLabel = text(svg, 18, margin.top + innerHeight / 2, metricLabels[state.metric], "grid-label", "middle");
       yLabel.setAttribute("transform", `rotate(-90 18 ${margin.top + innerHeight / 2})`);
     }
 
     function drawSeries(svg, byModel, x, y) {
       byModel.forEach((values, model) => {
-        const path = values.map((row, index) => `${index ? "L" : "M"}${x(row.temperature).toFixed(2)},${y(row[state.metric]).toFixed(2)}`).join(" ");
+        const path = values.map((row, index) => `${index ? "L" : "M"}${x(xValue(row)).toFixed(2)},${y(row[state.metric]).toFixed(2)}`).join(" ");
         const pathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
         pathEl.setAttribute("d", path);
         pathEl.setAttribute("class", `series ${variantClass(model)}`);
-        pathEl.setAttribute("stroke", colors[model] || "#64748b");
+        pathEl.setAttribute("stroke", colorFor(model));
         svg.append(pathEl);
         values.forEach(row => {
           const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-          circle.setAttribute("cx", x(row.temperature));
+          circle.setAttribute("cx", x(xValue(row)));
           circle.setAttribute("cy", y(row[state.metric]));
           circle.setAttribute("r", variantClass(model) === "base" ? 4 : 4.8);
           circle.setAttribute("class", "point");
-          circle.setAttribute("fill", colors[model] || "#64748b");
+          circle.setAttribute("fill", colorFor(model));
           circle.addEventListener("mousemove", event => showTooltip(event, row));
           circle.addEventListener("mouseleave", hideTooltip);
           svg.append(circle);
@@ -679,6 +848,22 @@
 
     function variantClass(model) {
       return (modelMeta[model]?.variant || "base") === "base" ? "base" : "instruct";
+    }
+
+    function colorFor(model) {
+      return (state.colorMode === "gemma" && gemmaColors[model]) ? gemmaColors[model] : (colors[model] || "#64748b");
+    }
+
+    function parameterValues() {
+      return Array.from(new Set(state.rows.filter(row => row.decoder === state.decoder).map(row => row.parameter))).sort((a, b) => a - b);
+    }
+
+    function xValue(row) {
+      return state.mode === "temperature" ? row.temperature : row.parameter;
+    }
+
+    function xLabel(value) {
+      return state.mode === "temperature" ? `T=${formatTemperature(value)}` : formatParameter(value, state.decoder);
     }
 
     function formatTemperature(value) {
