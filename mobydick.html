@@ -81,7 +81,7 @@
     .control-group { margin-bottom: 18px; }
     .segmented {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
       gap: 4px;
       padding: 4px;
       background: var(--soft);
@@ -350,7 +350,8 @@
         <div class="segmented" id="datasetTabs">
           <button type="button" data-dataset="mobydick.csv" class="active">Moby-Dick</button>
           <button type="button" data-dataset="western_lands.csv">Western Lands</button>
-          <button type="button" data-dataset="both">Both</button>
+          <button type="button" data-dataset="FortunayJavinta.csv">Fortunata</button>
+          <button type="button" data-dataset="all">All</button>
         </div>
       </div>
 
@@ -555,7 +556,9 @@
 
     async function loadData() {
       try {
-        const datasets = state.dataset === "both" ? ["mobydick.csv", "western_lands.csv"] : [state.dataset];
+        const datasets = state.dataset === "all"
+          ? ["mobydick.csv", "western_lands.csv", "FortunayJavinta.csv"]
+          : [state.dataset];
         state.rows = [];
         for (const ds of datasets) {
           const response = await fetch(ds, { cache: "no-store" });
@@ -802,7 +805,7 @@
       
       const bySeries = new Map();
       rows.forEach(row => {
-        const key = state.dataset === "both" ? `${row.model}@@@${row.dataset}` : row.model;
+        const key = state.dataset === "all" ? `${row.model}@@@${row.dataset}` : row.model;
         if (!bySeries.has(key)) bySeries.set(key, []);
         bySeries.get(key).push(row);
       });
@@ -824,8 +827,8 @@
         ? `${decoderLabels[state.decoder]} = ${formatParameter(state.parameter, state.decoder)}`
         : `T=${formatTemperature(state.temperature)}`;
       document.getElementById("chartMeta").textContent = `${bySeries.size} series visible`;
-      document.getElementById("headerSubhead").textContent = state.dataset === "both" 
-        ? "Comparing Moby-Dick (solid/dash) vs Western Lands (dotted)" 
+      document.getElementById("headerSubhead").textContent = state.dataset === "all" 
+        ? "Comparing Moby-Dick, Western Lands, and Fortunata y Jacinta" 
         : `Interactive view from ${state.dataset}`;
     }
 
@@ -849,7 +852,7 @@
       bySeries.forEach((values, key) => {
         const [model, dataset] = key.split("@@@");
         const isWL = dataset === "western_lands.csv";
-        const isFJ = dataset === "fortunayjacinta.csv";
+        const isFJ = dataset === "FortunayJavinta.csv";
         const path = values.map((row, index) => `${index ? "L" : "M"}${x(xValue(row)).toFixed(2)},${y(row[state.metric]).toFixed(2)}`).join(" ");
         const pathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
         pathEl.setAttribute("d", path);
@@ -951,9 +954,6 @@
 
     window.addEventListener("resize", render);
     loadData();
-  </script>
-</body>
-</html>
-pt>
+</script>
 </body>
 </html>
