@@ -348,9 +348,10 @@
       <div class="control-group">
         <p class="control-title">Dataset</p>
         <div class="segmented" id="datasetTabs">
-          <button type="button" data-dataset="mobydick.csv" class="active">Moby-Dick</button>
-          <button type="button" data-dataset="western_lands.csv">Western Lands</button>
-          <button type="button" data-dataset="FortunayJavinta.csv">Fortunata</button>
+          <button type="button" data-dataset="results/eminem_100x5_multi_t/wcs_summary.csv" class="active">Eminem</button>
+          <button type="button" data-dataset="results/bobdylan_100x5_multi_t/wcs_summary.csv">Bob Dylan</button>
+          <button type="button" data-dataset="results/mfdoom_100x5_multi_t/wcs_summary.csv">MF DOOM</button>
+          <button type="button" data-dataset="results/taylorswift_100x5_multi_t/wcs_summary.csv">Taylor Swift</button>
           <button type="button" data-dataset="all">All</button>
         </div>
       </div>
@@ -416,7 +417,7 @@
         <div class="tooltip" id="tooltip"></div>
       </div>
       <div class="loader" id="loader" hidden>
-        Could not load <code>mobydick.csv</code> automatically. If you opened this page directly from disk, choose the CSV file here.
+        Could not load <code>results/eminem_100x5_multi_t/wcs_summary.csv</code> automatically. If you opened this page directly from disk, choose the CSV file here.
         <br>
         <input type="file" id="fileInput" accept=".csv,text/csv">
       </div>
@@ -557,7 +558,7 @@
     async function loadData() {
       try {
         const datasets = state.dataset === "all"
-          ? ["mobydick.csv", "western_lands.csv", "FortunayJavinta.csv"]
+          ? ["results/eminem_100x5_multi_t/wcs_summary.csv", "results/bobdylan_100x5_multi_t/wcs_summary.csv", "results/mfdoom_100x5_multi_t/wcs_summary.csv", "results/taylorswift_100x5_multi_t/wcs_summary.csv"]
           : [state.dataset];
         state.rows = [];
         for (const ds of datasets) {
@@ -950,6 +951,14 @@
       item.textContent = value;
       svg.append(item);
       return item;
+    }
+
+    window.addEventListener("resize", render);
+    loadData();
+</script>
+</body>
+</html>
+turn item;
     }
 
     window.addEventListener("resize", render);
