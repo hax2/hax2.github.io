@@ -65,7 +65,7 @@
         }
 
         /* --- Game Area Specifics --- */
-        #status-bar {
+        .status-bar {
             display: flex;
             justify-content: space-between;
             font-size: 1.1rem;
@@ -205,8 +205,9 @@
     <div id="game-container">
         <!-- Start Screen -->
         <div id="start-screen" class="screen">
-            <h1>Juego de Frases en Español 🇪🇸</h1>
-            <p>Learn Spanish by forming sentences with emojis!</p>
+            <button id="lang-toggle-btn" class="btn" style="background-color: #f39c12; align-self: center; margin-bottom: 1rem;">🇸🇪 Switch to Swedish</button>
+            <h1 id="game-title">Juego de Frases en Español 🇪🇸</h1>
+            <p id="game-subtitle">Learn Spanish by forming sentences with emojis!</p>
             <button id="start-button" class="btn">Start Game 🚀</button>
         </div>
 
@@ -273,37 +274,89 @@
 
             const EMOJI_DATA = [
                 // Fruits & Vegetables
-                { spanish: 'la manzana', emoji: '🍏' }, { spanish: 'el plátano', emoji: '🍌' }, { spanish: 'las uvas', emoji: '🍇' },
-                { spanish: 'la fresa', emoji: '🍓' }, { spanish: 'la naranja', emoji: '🍊' }, { spanish: 'el limón', emoji: '🍋' },
-                { spanish: 'la zanahoria', emoji: '🥕' }, { spanish: 'el tomate', emoji: '🍅' }, { spanish: 'la patata', emoji: '🥔' },
-                { spanish: 'la cebolla', emoji: '🧅' }, { spanish: 'la sandía', emoji: '🍉' }, { spanish: 'la pera', emoji: '🍐' },
-                { spanish: 'el aguacate', emoji: '🥑' }, { spanish: 'la piña', emoji: '🍍' }, { spanish: 'la cereza', emoji: '🍒' },
-                { spanish: 'el pimiento', emoji: '🫑' }, { spanish: 'el maíz', emoji: '🌽' }, { spanish: 'el brócoli', emoji: '🥦' },
+                { spanish: 'la manzana', swedish: 'äpplet|ett|äpple', emoji: '🍏' },
+                { spanish: 'el plátano', swedish: 'bananen|en|banan', emoji: '🍌' },
+                { spanish: 'las uvas', swedish: 'vindruvorna|några|vindruvor', emoji: '🍇' },
+                { spanish: 'la fresa', swedish: 'jordgubben|en|jordgubbe', emoji: '🍓' },
+                { spanish: 'la naranja', swedish: 'apelsinen|en|apelsin', emoji: '🍊' },
+                { spanish: 'el limón', swedish: 'citronen|en|citron', emoji: '🍋' },
+                { spanish: 'la zanahoria', swedish: 'moroten|en|morot', emoji: '🥕' },
+                { spanish: 'el tomate', swedish: 'tomaten|en|tomat', emoji: '🍅' },
+                { spanish: 'la patata', swedish: 'potatisen|en|potatis', emoji: '🥔' },
+                { spanish: 'la cebolla', swedish: 'löken|en|lök', emoji: '🧅' },
+                { spanish: 'la sandía', swedish: 'vattenmelonen|en|vattenmelon', emoji: '🍉' },
+                { spanish: 'la pera', swedish: 'päronet|ett|päron', emoji: '🍐' },
+                { spanish: 'el aguacate', swedish: 'avokadon|en|avokado', emoji: '🥑' },
+                { spanish: 'la piña', swedish: 'ananasen|en|ananas', emoji: '🍍' },
+                { spanish: 'la cereza', swedish: 'körsbäret|ett|körsbär', emoji: '🍒' },
+                { spanish: 'el pimiento', swedish: 'paprikan|en|paprika', emoji: '🫑' },
+                { spanish: 'el maíz', swedish: 'majsen|lite|majs', emoji: '🌽' },
+                { spanish: 'el brócoli', swedish: 'broccolin|lite|broccoli', emoji: '🥦' },
                 // Animals
-                { spanish: 'el perro', emoji: '🐶' }, { spanish: 'el gato', emoji: '🐱' }, { spanish: 'el ratón', emoji: '🐭' },
-                { spanish: 'el zorro', emoji: '🦊' }, { spanish: 'el oso', emoji: '🐻' }, { spanish: 'el panda', emoji: '🐼' },
-                { spanish: 'el león', emoji: '🦁' }, { spanish: 'el tigre', emoji: '🐯' }, { spanish: 'la vaca', emoji: '🐮' },
-                { spanish: 'el cerdo', emoji: '🐷' }, { spanish: 'el mono', emoji: '🐵' }, { spanish: 'el pollo', emoji: '🐔' },
-                { spanish: 'el pingüino', emoji: '🐧' }, { spanish: 'la rana', emoji: '🐸' }, { spanish: 'el pulpo', emoji: '🐙' },
-                { spanish: 'el pez', emoji: '🐠' }, { spanish: 'la ballena', emoji: '🐳' }, { spanish: 'el caballo', emoji: '🐴' },
+                { spanish: 'el perro', swedish: 'hunden|en|hund', emoji: '🐶' },
+                { spanish: 'el gato', swedish: 'katten|en|katt', emoji: '🐱' },
+                { spanish: 'el ratón', swedish: 'musen|en|mus', emoji: '🐭' },
+                { spanish: 'el zorro', swedish: 'räven|en|räv', emoji: '🦊' },
+                { spanish: 'el oso', swedish: 'björnen|en|björn', emoji: '🐻' },
+                { spanish: 'el panda', swedish: 'pandan|en|panda', emoji: '🐼' },
+                { spanish: 'el león', swedish: 'lejonet|ett|lejon', emoji: '🦁' },
+                { spanish: 'el tigre', swedish: 'tigern|en|tiger', emoji: '🐯' },
+                { spanish: 'la vaca', swedish: 'kon|en|ko', emoji: '🐮' },
+                { spanish: 'el cerdo', swedish: 'grisen|en|gris', emoji: '🐷' },
+                { spanish: 'el mono', swedish: 'apan|en|apa', emoji: '🐵' },
+                { spanish: 'el pollo', swedish: 'kycklingen|en|kyckling', emoji: '🐔' },
+                { spanish: 'el pingüino', swedish: 'pingvinen|en|pingvin', emoji: '🐧' },
+                { spanish: 'la rana', swedish: 'grodan|en|groda', emoji: '🐸' },
+                { spanish: 'el pulpo', swedish: 'bläckfisken|en|bläckfisk', emoji: '🐙' },
+                { spanish: 'el pez', swedish: 'fisken|en|fisk', emoji: '🐠' },
+                { spanish: 'la ballena', swedish: 'valen|en|val', emoji: '🐳' },
+                { spanish: 'el caballo', swedish: 'hästen|en|häst', emoji: '🐴' },
                 // Food & Drink
-                { spanish: 'la pizza', emoji: '🍕' }, { spanish: 'la hamburguesa', emoji: '🍔' }, { spanish: 'las papas fritas', emoji: '🍟' },
-                { spanish: 'el pan', emoji: '🍞' }, { spanish: 'el queso', emoji: '🧀' }, { spanish: 'el huevo', emoji: '🥚' },
-                { spanish: 'el helado', emoji: '🍦' }, { spanish: 'la dona', emoji: '🍩' }, { spanish: 'la galleta', emoji: '🍪' },
-                { spanish: 'el pastel', emoji: '🍰' }, { spanish: 'el chocolate', emoji: '🍫' }, { spanish: 'el café', emoji: '☕' },
+                { spanish: 'la pizza', swedish: 'pizzan|en|pizza', emoji: '🍕' },
+                { spanish: 'la hamburguesa', swedish: 'hamburgaren|en|hamburgare', emoji: '🍔' },
+                { spanish: 'las papas fritas', swedish: 'pommes fritesen|några|pommes frites', emoji: '🍟' },
+                { spanish: 'el pan', swedish: 'brödet|ett|bröd', emoji: '🍞' },
+                { spanish: 'el queso', swedish: 'osten|en|ost', emoji: '🧀' },
+                { spanish: 'el huevo', swedish: 'ägget|ett|ägg', emoji: '🥚' },
+                { spanish: 'el helado', swedish: 'glassen|en|glass', emoji: '🍦' },
+                { spanish: 'la dona', swedish: 'munken|en|munk', emoji: '🍩' },
+                { spanish: 'la galleta', swedish: 'kakan|en|kaka', emoji: '🍪' },
+                { spanish: 'el pastel', swedish: 'tårtan|en|tårta', emoji: '🍰' },
+                { spanish: 'el chocolate', swedish: 'chokladen|lite|choklad', emoji: '🍫' },
+                { spanish: 'el café', swedish: 'kaffet|en kopp|kaffe', emoji: '☕' },
                 // Objects
-                { spanish: 'el coche', emoji: '🚗' }, { spanish: 'la bicicleta', emoji: '🚲' }, { spanish: 'el cohete', emoji: '🚀' },
-                { spanish: 'el teléfono', emoji: '📱' }, { spanish: 'el ordenador', emoji: '💻' }, { spanish: 'la televisión', emoji: '📺' },
-                { spanish: 'el libro', emoji: '📖' }, { spanish: 'el dinero', emoji: '💰' }, { spanish: 'la llave', emoji: '🔑' },
-                { spanish: 'la bomba', emoji: '💣' }, { spanish: 'la guitarra', emoji: '🎸' }, { spanish: 'la pelota', emoji: '⚽' },
+                { spanish: 'el coche', swedish: 'bilen|en|bil', emoji: '🚗' },
+                { spanish: 'la bicicleta', swedish: 'cykeln|en|cykel', emoji: '🚲' },
+                { spanish: 'el cohete', swedish: 'raketen|en|raket', emoji: '🚀' },
+                { spanish: 'el teléfono', swedish: 'telefonen|en|telefon', emoji: '📱' },
+                { spanish: 'el ordenador', swedish: 'datorn|en|dator', emoji: '💻' },
+                { spanish: 'la televisión', swedish: 'tv:n|en|tv', emoji: '📺' },
+                { spanish: 'el libro', swedish: 'boken|en|bok', emoji: '📖' },
+                { spanish: 'el dinero', swedish: 'pengarna|lite|pengar', emoji: '💰' },
+                { spanish: 'la llave', swedish: 'nyckeln|en|nyckel', emoji: '🔑' },
+                { spanish: 'la bomba', swedish: 'bomben|en|bomb', emoji: '💣' },
+                { spanish: 'la guitarra', swedish: 'gitarren|en|gitarr', emoji: '🎸' },
+                { spanish: 'la pelota', swedish: 'bollen|en|boll', emoji: '⚽' },
                 // Nature & Places
-                { spanish: 'el sol', emoji: '☀️' }, { spanish: 'la luna', emoji: '🌙' }, { spanish: 'la estrella', emoji: '⭐' },
-                { spanish: 'el volcán', emoji: '🌋' }, { spanish: 'la montaña', emoji: '⛰️' }, { spanish: 'la casa', emoji: '🏠' },
-                { spanish: 'el castillo', emoji: '🏰' }, { spanish: 'la playa', emoji: '🏖️' }, { spanish: 'el árbol', emoji: '🌳' },
-                { spanish: 'la flor', emoji: '🌸' }, { spanish: 'el fuego', emoji: '🔥' }, { spanish: 'el arcoíris', emoji: '🌈' },
+                { spanish: 'el sol', swedish: 'solen|en|sol', emoji: '☀️' },
+                { spanish: 'la luna', swedish: 'månen|en|måne', emoji: '🌙' },
+                { spanish: 'la estrella', swedish: 'stjärnan|en|stjärna', emoji: '⭐' },
+                { spanish: 'el volcán', swedish: 'vulkanen|en|vulkan', emoji: '🌋' },
+                { spanish: 'la montaña', swedish: 'berget|ett|berg', emoji: '⛰️' },
+                { spanish: 'la casa', swedish: 'huset|ett|hus', emoji: '🏠' },
+                { spanish: 'el castillo', swedish: 'slottet|ett|slott', emoji: '🏰' },
+                { spanish: 'la playa', swedish: 'stranden|en|strand', emoji: '🏖️' },
+                { spanish: 'el árbol', swedish: 'trädet|ett|träd', emoji: '🌳' },
+                { spanish: 'la flor', swedish: 'blomman|en|blomma', emoji: '🌸' },
+                { spanish: 'el fuego', swedish: 'elden|en|eld', emoji: '🔥' },
+                { spanish: 'el arcoíris', swedish: 'regnbågen|en|regnbåge', emoji: '🌈' },
                 // Activities & Symbols
-                { spanish: 'el corazón', emoji: '❤️' }, { spanish: 'el cerebro', emoji: '🧠' }, { spanish: 'el fantasma', emoji: '👻' },
-                { spanish: 'el robot', emoji: '🤖' }, { spanish: 'el extraterrestre', emoji: '👽' }, { spanish: 'la corona', emoji: '👑' }
+                { spanish: 'el corazón', swedish: 'hjärtat|ett|hjärta', emoji: '❤️' },
+                { spanish: 'el cerebro', swedish: 'hjärnan|en|hjärna', emoji: '🧠' },
+                { spanish: 'el fantasma', swedish: 'spöket|ett|spöke', emoji: '👻' },
+                { spanish: 'el robot', swedish: 'roboten|en|robot', emoji: '🤖' },
+                { spanish: 'el extraterrestre', swedish: 'utomjordingen|en|utomjording', emoji: '👽' },
+                { spanish: 'la corona', swedish: 'kronan|en|krona', emoji: '👑' }
             ];
 
             // --- GAME STATE ---
@@ -312,6 +365,7 @@
             let currentQuestionIndex = 0;
             let gameData = [];
             const TOTAL_QUESTIONS_PER_ROUND = 15;
+            let currentLang = 'es';
 
             // --- DOM ELEMENTS ---
             const allScreens = document.querySelectorAll('.screen');
@@ -324,6 +378,9 @@
             const level3Select = document.getElementById('level-3-select');
             const backToStart = document.getElementById('back-to-start');
             const changeLevelButtons = document.querySelectorAll('#change-level-1, #change-level-2, #change-level-3, #end-change-level');
+            const langToggleBtn = document.getElementById('lang-toggle-btn');
+            const gameTitle = document.getElementById('game-title');
+            const gameSubtitle = document.getElementById('game-subtitle');
             
             // Level 1
             const statusBar1 = document.getElementById('status-bar-1');
@@ -363,59 +420,69 @@
             function speak(text) {
                 if (!window.speechSynthesis) return;
                 const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'es-ES';
+                utterance.lang = currentLang === 'es' ? 'es-ES' : 'sv-SE';
                 utterance.rate = 0.9;
-                const esVoice = window.speechSynthesis.getVoices().find(v => v.lang.startsWith('es'));
-                if (esVoice) utterance.voice = esVoice;
+                const voicePrefix = currentLang === 'es' ? 'es' : 'sv';
+                const voice = window.speechSynthesis.getVoices().find(v => v.lang.startsWith(voicePrefix));
+                if (voice) utterance.voice = voice;
                 window.speechSynthesis.speak(utterance);
             }
 
-            /**
-             * Deconstructs a Spanish phrase like "la manzana" into its parts.
-             * @param {string} fullPhrase - e.g., "la manzana" or "los coches"
-             * @returns {{full: string, noun: string, definite_article: string, indefinite_article: string}}
-             */
-            function getNounParts(fullPhrase) {
-                const parts = fullPhrase.split(' ');
-                const definite_article = parts[0];
-                const noun = parts.slice(1).join(' ');
-                let indefinite_article = '';
-                
-                switch (definite_article) {
-                    case 'el': indefinite_article = 'un'; break;
-                    case 'la': indefinite_article = 'una'; break;
-                    case 'los': indefinite_article = 'unos'; break;
-                    case 'las': indefinite_article = 'unas'; break;
+            function getItemParts(item) {
+                if (currentLang === 'es') {
+                    const parts = item.spanish.split(' ');
+                    const definite_article = parts[0];
+                    const noun = parts.slice(1).join(' ');
+                    let indefinite_article = '';
+                    
+                    switch (definite_article) {
+                        case 'el': indefinite_article = 'un'; break;
+                        case 'la': indefinite_article = 'una'; break;
+                        case 'los': indefinite_article = 'unos'; break;
+                        case 'las': indefinite_article = 'unas'; break;
+                    }
+                    return { full: item.spanish, noun, definite_article, indefinite_article };
+                } else {
+                    const [def, indef_art, noun] = item.swedish.split('|');
+                    return { full: def, noun, definite_article: '', indefinite_article: indef_art };
                 }
-                return { full: fullPhrase, noun, definite_article, indefinite_article };
             }
 
-            /**
-             * Creates a random sentence from a template.
-             * @param {{full: string, noun: string, definite_article: string, indefinite_article: string}} itemParts
-             * @param {string[]} templates - Array of template strings
-             * @returns {string} - The constructed sentence
-             */
             function createSentence(itemParts, templates) {
                 let template = templates[Math.floor(Math.random() * templates.length)];
                 return template
                     .replace('{full}', itemParts.full)
                     .replace('{noun}', itemParts.noun)
-                    .replace('{indefinite_article}', itemParts.indefinite_article);
+                    .replace('{definite_article}', itemParts.definite_article)
+                    .replace('{indefinite_article}', itemParts.indefinite_article)
+                    .replace('  ', ' ') // clean up double spaces if article is empty
+                    .trim();
             }
 
             // --- SENTENCE TEMPLATES ---
-            const L1_L2_TEMPLATES = [
+            const L1_L2_TEMPLATES_ES = [
                 'Veo {indefinite_article} {noun}.', 'Me gusta {full}.', '¿Dónde está {full}?', 'Es {indefinite_article} {noun}.',
                 'Quiero {indefinite_article} {noun}.', '¡Mira, {indefinite_article} {noun}!', 'Aquí tienes {indefinite_article} {noun}.',
                 '¿Puedes ver {full}?'
             ];
 
-            const L3_TEMPLATES = [
+            const L3_TEMPLATES_ES = [
                 'Veo {indefinite_article} _____.', 'Me gusta mucho {definite_article} _____.', 'Es {indefinite_article} _____.',
                 'Quiero {indefinite_article} _____.', 'Busco {definite_article} _____.', 'El dibujo muestra {indefinite_article} _____.'
             ];
 
+            const L1_L2_TEMPLATES_SV = [
+                'Jag ser {indefinite_article} {noun}.', 'Jag gillar {full}.', 'Var är {full}?', 'Det är {indefinite_article} {noun}.',
+                'Jag vill ha {indefinite_article} {noun}.', 'Titta, {indefinite_article} {noun}!', 'Här har du {indefinite_article} {noun}.',
+                'Kan du se {full}?'
+            ];
+
+            const L3_TEMPLATES_SV = [
+                'Jag ser {indefinite_article} _____.',
+                'Det är {indefinite_article} _____.',
+                'Jag vill ha {indefinite_article} _____.',
+                'Bilden visar {indefinite_article} _____.'
+            ];
 
             // --- GAME LOGIC ---
 
@@ -436,13 +503,17 @@
 
             function updateStatus(level) {
                 const statusBar = document.getElementById(`status-bar-${level}`);
-                statusBar.innerHTML = `<span>Pregunta: ${currentQuestionIndex + 1} / ${gameData.length}</span><span>Puntos: ${score}</span>`;
+                const qText = currentLang === 'es' ? 'Pregunta' : 'Fråga';
+                const pText = currentLang === 'es' ? 'Puntos' : 'Poäng';
+                statusBar.innerHTML = `<span>${qText}: ${currentQuestionIndex + 1} / ${gameData.length}</span><span>${pText}: ${score}</span>`;
             }
 
             function loadQuestion() {
                 if (currentQuestionIndex >= gameData.length) {
                     showScreen('end');
-                    finalScoreDisplay.textContent = `Tu puntuación final es ${score} de ${gameData.length}.`;
+                    finalScoreDisplay.textContent = currentLang === 'es' 
+                        ? `Tu puntuación final es ${score} de ${gameData.length}.` 
+                        : `Din slutpoäng är ${score} av ${gameData.length}.`;
                     return;
                 }
                 
@@ -462,8 +533,10 @@
             // --- LEVEL SETUPS ---
 
             function setupLevel1(item) {
-                const itemParts = getNounParts(item.spanish);
-                const sentence = createSentence(itemParts, L1_L2_TEMPLATES);
+                const itemParts = getItemParts(item);
+                const templates = currentLang === 'es' ? L1_L2_TEMPLATES_ES : L1_L2_TEMPLATES_SV;
+                const sentence = createSentence(itemParts, templates);
+                const itemKey = currentLang === 'es' ? item.spanish : item.swedish;
                 
                 wordPrompt.textContent = sentence;
                 speak(sentence);
@@ -474,11 +547,12 @@
                 const options = shuffleArray([item, ...distractors]);
                 
                 options.forEach(opt => {
+                    const optKey = currentLang === 'es' ? opt.spanish : opt.swedish;
                     const emojiDiv = document.createElement('div');
                     emojiDiv.textContent = opt.emoji;
                     emojiDiv.className = 'emoji-option';
-                    emojiDiv.dataset.spanish = opt.spanish; // The base phrase is the answer key
-                    emojiDiv.onclick = (e) => checkAnswer(e.target.dataset.spanish === item.spanish, 1);
+                    emojiDiv.dataset.key = optKey;
+                    emojiDiv.onclick = (e) => checkAnswer(e.target.dataset.key === itemKey, 1);
                     emojiOptions.appendChild(emojiDiv);
                 });
             }
@@ -486,26 +560,30 @@
             function setupLevel2(item) {
                 emojiPrompt2.textContent = item.emoji;
                 nameOptions.innerHTML = '';
+                const itemKey = currentLang === 'es' ? item.spanish : item.swedish;
                 
-                const distractors = EMOJI_DATA.filter(d => d.spanish !== item.spanish).sort(() => 0.5 - Math.random()).slice(0, 3);
+                const distractors = EMOJI_DATA.filter(d => (currentLang === 'es' ? d.spanish : d.swedish) !== itemKey).sort(() => 0.5 - Math.random()).slice(0, 3);
                 const optionsData = shuffleArray([item, ...distractors]);
+                const templates = currentLang === 'es' ? L1_L2_TEMPLATES_ES : L1_L2_TEMPLATES_SV;
                 
                 optionsData.forEach(opt => {
-                    const itemParts = getNounParts(opt.spanish);
-                    const sentence = createSentence(itemParts, L1_L2_TEMPLATES);
+                    const optParts = getItemParts(opt);
+                    const sentence = createSentence(optParts, templates);
+                    const optKey = currentLang === 'es' ? opt.spanish : opt.swedish;
                     
                     const button = document.createElement('button');
                     button.textContent = sentence;
                     button.classList.add('name-option-btn');
-                    button.dataset.spanish = opt.spanish; // Store the original key
-                    button.onclick = (e) => checkAnswer(e.target.dataset.spanish === item.spanish, 2);
+                    button.dataset.key = optKey;
+                    button.onclick = (e) => checkAnswer(e.target.dataset.key === itemKey, 2);
                     nameOptions.appendChild(button);
                 });
             }
 
             function setupLevel3(item) {
-                const itemParts = getNounParts(item.spanish);
-                const sentenceTemplate = createSentence(itemParts, L3_TEMPLATES);
+                const itemParts = getItemParts(item);
+                const templates = currentLang === 'es' ? L3_TEMPLATES_ES : L3_TEMPLATES_SV;
+                const sentenceTemplate = createSentence(itemParts, templates);
 
                 emojiPrompt3.textContent = item.emoji;
                 sentencePrompt3.textContent = sentenceTemplate;
@@ -518,9 +596,8 @@
                     const userAnswer = textAnswerInput.value.trim().toLowerCase();
                     if (!userAnswer) return;
                     
-                    // The user only needs to type the noun part
-                    const isCorrect = userAnswer === itemParts.noun;
-                    checkAnswer(isCorrect, 3, item.spanish);
+                    const isCorrect = userAnswer === itemParts.noun.toLowerCase();
+                    checkAnswer(isCorrect, 3, itemParts.noun);
                 };
 
                 submitAnswerButton.onclick = checkSpelling;
@@ -536,14 +613,20 @@
 
             function checkAnswer(isCorrect, level, fullCorrectAnswer) {
                 const feedbackEl = document.getElementById(`feedback-${level}`);
-                const answerToShow = fullCorrectAnswer || gameData[currentQuestionIndex].spanish;
+                let defaultAnswer;
+                if (currentLang === 'es') {
+                    defaultAnswer = gameData[currentQuestionIndex].spanish;
+                } else {
+                    defaultAnswer = gameData[currentQuestionIndex].swedish.split('|')[0];
+                }
+                const answerToShow = fullCorrectAnswer || defaultAnswer;
                 
                 if (isCorrect) {
                     score++;
-                    feedbackEl.textContent = `¡Correcto! 👍`;
+                    feedbackEl.textContent = currentLang === 'es' ? `¡Correcto! 👍` : `Rätt! 👍`;
                     feedbackEl.className = 'feedback correct';
                 } else {
-                    feedbackEl.textContent = `Incorrecto. La respuesta es: ${answerToShow}`;
+                    feedbackEl.textContent = currentLang === 'es' ? `Incorrecto. La respuesta es: ${answerToShow}` : `Fel. Svaret är: ${answerToShow}`;
                     feedbackEl.className = 'feedback incorrect';
                 }
                 
@@ -567,8 +650,45 @@
                 }
             }
 
-
             // --- EVENT LISTENERS ---
+            langToggleBtn.addEventListener('click', () => {
+                if (currentLang === 'es') {
+                    currentLang = 'sv';
+                    langToggleBtn.textContent = '🇪🇸 Switch to Spanish';
+                    document.title = 'Swedish Emoji Game 🇸🇪';
+                    gameTitle.textContent = 'Svenska Frasspelet 🇸🇪';
+                    gameSubtitle.textContent = 'Learn Swedish by forming sentences with emojis!';
+                    document.querySelector('#level-select-screen h2').textContent = 'Välj nivå';
+                    document.getElementById('level-1-select').textContent = 'Nivå 1';
+                    document.getElementById('level-2-select').textContent = 'Nivå 2';
+                    document.getElementById('level-3-select').textContent = 'Nivå 3';
+                    document.getElementById('back-to-start').textContent = 'Tillbaka till start';
+                    document.getElementById('start-button').textContent = 'Börja Spela 🚀';
+                    document.querySelectorAll('#change-level-1, #change-level-2, #change-level-3, #end-change-level').forEach(btn => btn.textContent = 'Byt nivå');
+                    document.getElementById('text-answer').placeholder = 'Skriv ordet som saknas...';
+                    document.querySelector('#end-screen h1').textContent = 'Spelet är slut! 🎉';
+                    document.getElementById('play-again-button').textContent = 'Spela igen';
+                    document.getElementById('submit-answer').textContent = 'Rätta';
+                } else {
+                    currentLang = 'es';
+                    langToggleBtn.textContent = '🇸🇪 Switch to Swedish';
+                    document.title = 'Spanish Emoji Game 🇪🇸';
+                    gameTitle.textContent = 'Juego de Frases en Español 🇪🇸';
+                    gameSubtitle.textContent = 'Learn Spanish by forming sentences with emojis!';
+                    document.querySelector('#level-select-screen h2').textContent = 'Selecciona el nivel';
+                    document.getElementById('level-1-select').textContent = 'Nivel 1';
+                    document.getElementById('level-2-select').textContent = 'Nivel 2';
+                    document.getElementById('level-3-select').textContent = 'Nivel 3';
+                    document.getElementById('back-to-start').textContent = 'Volver al inicio';
+                    document.getElementById('start-button').textContent = 'Start Game 🚀';
+                    document.querySelectorAll('#change-level-1, #change-level-2, #change-level-3, #end-change-level').forEach(btn => btn.textContent = 'Cambiar nivel');
+                    document.getElementById('text-answer').placeholder = 'Escribe la palabra que falta...';
+                    document.querySelector('#end-screen h1').textContent = '¡Juego Terminado! 🎉';
+                    document.getElementById('play-again-button').textContent = 'Play Again';
+                    document.getElementById('submit-answer').textContent = 'Check';
+                }
+            });
+
             startButton.addEventListener('click', () => showScreen('level-select'));
             backToStart.addEventListener('click', () => showScreen('start'));
             
