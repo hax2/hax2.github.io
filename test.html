@@ -34,12 +34,39 @@
             overflow-x: hidden;
         }
 
+        .header-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
         h1 {
             margin-top: 0;
+            margin-bottom: 10px;
             font-weight: 700;
             color: var(--primary-color);
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
             text-align: center;
+        }
+
+        #lang-toggle {
+            background: #444;
+            border: 1px solid #666;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-bottom: 15px;
+        }
+
+        #lang-toggle:hover {
+            background: #555;
+            border-color: var(--primary-color);
         }
 
         #game-wrapper {
@@ -204,8 +231,11 @@
     </style>
 </head>
 <body>
-    <h1>Sigue las Direcciones</h1>
-    <p style="text-align: center; margin-bottom: 20px; opacity: 0.8;">Sigue las instrucciones para llegar a tu destino.</p>
+    <div class="header-container">
+        <h1 id="main-title">Sigue las Direcciones</h1>
+        <button id="lang-toggle">Español 🇪🇸</button>
+        <p id="main-intro" style="text-align: center; margin-bottom: 20px; opacity: 0.8;">Sigue las instrucciones para llegar a tu destino.</p>
+    </div>
 
     <div id="game-wrapper">
         <div id="game-container">
@@ -226,45 +256,123 @@
         </div>
         
         <div id="vocab-container">
-            <h2>Vocabulario</h2>
-            <ul>
-                <li><strong>Sigue/Avanza/Ve:</strong> Go/Advance</li>
-                <li><strong>Gira a la dcha/izq:</strong> Turn right/left</li>
-                <li><strong>Hacia arriba/abajo:</strong> Upward/Downward</li>
-                <li><strong>Cuadro(s):</strong> Block(s)</li>
+            <h2 id="vocab-title">Vocabulario</h2>
+            <ul id="vocab-list">
+                <!-- Will be populated by JS -->
             </ul>
         </div>
     </div>
 
     
     <script>
+    // --- Translations ---
+    const TRANSLATIONS = {
+        es: {
+            title: "Sigue las Direcciones",
+            intro: "Sigue las instrucciones para llegar a tu destino.",
+            vocabTitle: "Vocabulario",
+            vocab: [
+                { term: "Sigue/Avanza/Ve", def: "Go/Advance" },
+                { term: "Gira a la dcha/izq", def: "Turn right/left" },
+                { term: "Hacia arriba/abajo", def: "Upward/Downward" },
+                { term: "Cuadro(s)", def: "Block(s)" }
+            ],
+            ttsOn: "🔊 TTS: Activado",
+            ttsOff: "🔇 TTS: Desactivado",
+            ttsActivated: "Texto a voz activado.",
+            startPrompt: "Camina hacia la persona (💁) para recibir instrucciones.",
+            pathNotFound: "¡Oh no! No puedo encontrar un camino hasta allí.",
+            success: "¡bien!",
+            reachedDestination: (dest) => `¡Lo lograste! Llegaste a ${dest}.`,
+            returnToGiver: "Vuelve con la persona (💁) para tu siguiente tarea.",
+            wrongDirection: "¡Dirección equivocada!",
+            allCompleted: "¡Has completado todas las misiones! ¡Felicidades!",
+            directions: {
+                right: (dist) => `Ve <strong>${dist} a la derecha.</strong>`,
+                left: (dist) => `Avanza <strong>${dist} a la izquierda.</strong>`,
+                down: (dist) => `Sigue <strong>${dist} hacia abajo.</strong>`,
+                up: (dist) => `Sube <strong>${dist} hacia arriba.</strong>`
+            },
+            units: (n) => n > 1 ? `${n} cuadros` : `1 cuadro`,
+            destinations: {
+                '🏦': 'el banco',
+                '🏥': 'el hospital',
+                '🏫': 'la escuela',
+                '🏠': 'la casa'
+            },
+            questPrompts: [
+                "¡Hola! Para llegar al <strong>banco</strong>, sigue mis instrucciones.",
+                "¡Gracias! Ahora, vamos al <strong>hospital</strong>.",
+                "¡Perfecto! El siguiente destino es <strong>la escuela</strong>.",
+                "¡Última misión! Vamos a <strong>casa</strong>."
+            ],
+            ttsLang: 'es-ES',
+            langLabel: 'Español 🇪🇸'
+        },
+        sv: {
+            title: "Följ Vägbeskrivningen",
+            intro: "Följ instruktionerna för att nå ditt mål.",
+            vocabTitle: "Ordförråd",
+            vocab: [
+                { term: "Gå/Fortsätt", def: "Go/Advance" },
+                { term: "Sväng höger/vänster", def: "Turn right/left" },
+                { term: "Uppåt/Nedåt", def: "Upward/Downward" },
+                { term: "Ruta/Rutor", def: "Block(s)" }
+            ],
+            ttsOn: "🔊 TTS: Aktiverad",
+            ttsOff: "🔇 TTS: Inaktiverad",
+            ttsActivated: "Text till tal aktiverad.",
+            startPrompt: "Gå till personen (💁) för att få instruktioner.",
+            pathNotFound: "Hoppsan! Jag kan inte hitta en väg dit.",
+            success: "Bra!",
+            reachedDestination: (dest) => `Du lyckades! Du har nått ${dest}.`,
+            returnToGiver: "Gå tillbaka till personen (💁) för nästa uppgift.",
+            wrongDirection: "Fel håll!",
+            allCompleted: "Du har slutfört alla uppdrag! Grattis!",
+            directions: {
+                right: (dist) => `Gå <strong>${dist} åt höger.</strong>`,
+                left: (dist) => `Gå <strong>${dist} åt vänster.</strong>`,
+                down: (dist) => `Gå <strong>${dist} nedåt.</strong>`,
+                up: (dist) => `Gå <strong>${dist} uppåt.</strong>`
+            },
+            units: (n) => n > 1 ? `${n} rutor` : `1 ruta`,
+            destinations: {
+                '🏦': 'banken',
+                '🏥': 'sjukhuset',
+                '🏫': 'skolan',
+                '🏠': 'hemmet'
+            },
+            questPrompts: [
+                "Hej! För att komma till <strong>banken</strong>, följ mina instruktioner.",
+                "Tack! Nu går vi till <strong>sjukhuset</strong>.",
+                "Perfekt! Nästa mål är <strong>skolan</strong>.",
+                "Sista uppdraget! Vi ska <strong>hem</strong>."
+            ],
+            ttsLang: 'sv-SE',
+            langLabel: 'Svenska 🇸🇪'
+        }
+    };
+
     // --- DOM Elements ---
     const mapGrid = document.getElementById('map-grid');
     const playerElement = document.getElementById('player');
     const messageBox = document.getElementById('message-box');
     const ttsToggle = document.getElementById('tts-toggle');
+    const langToggle = document.getElementById('lang-toggle');
+    const mainTitle = document.getElementById('main-title');
+    const mainIntro = document.getElementById('main-intro');
+    const vocabTitle = document.getElementById('vocab-title');
+    const vocabList = document.getElementById('vocab-list');
 
-    // --- TTS State ---
+    // --- Game State ---
+    let currentLang = 'es';
+    let playerState = { x: 5, y: 9 };
+    let activeQuest = null;
+    let currentStepIndex = 0;
+    let progressInStep = 0;
+    let questsCompleted = 0;
     let ttsEnabled = true;
-    function speakText(text, lang = 'es-ES') {
-        if (!ttsEnabled) return;
-        window.speechSynthesis.cancel(); // Stop any previous speech
-        const utter = new window.SpeechSynthesisUtterance(text);
-        utter.lang = lang;
-        window.speechSynthesis.speak(utter);
-    }
-    ttsToggle.addEventListener('click', () => {
-        ttsEnabled = !ttsEnabled;
-        ttsToggle.textContent = ttsEnabled ? '🔊 TTS: Activado' : '🔇 TTS: Desactivado';
-        if (ttsEnabled) {
-            speakText('Texto a voz activado.');
-        } else {
-            window.speechSynthesis.cancel();
-        }
-    });
 
-    // --- Game Configuration ---
-    let CELL_SIZE = window.innerWidth < 600 ? 30 : 40;
     const mapLayout = [
         ['🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳'],
         ['🌳',' ',' ',' ','🌳','🏫','🌳',' ',' ',' ',' ',' ','🌳'],
@@ -278,24 +386,78 @@
         ['🌳',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','🌳'],
         ['🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳','🌳'],
     ];
-    // NOTE: The handwritten 'steps' are now gone! They will be auto-generated.
+
     const quests = [
-        { destination: '🏦', prompt: "¡Hola! Para llegar al <strong>banco</strong>, sigue mis instrucciones." },
-        { destination: '🏥', prompt: "¡Gracias! Ahora, vamos al <strong>hospital</strong>." },
-        { destination: '🏫', prompt: "¡Perfecto! El siguiente destino es <strong>la escuela</strong>." },
-        { destination: '🏠', prompt: "¡Última misión! Vamos a <strong>casa</strong>." }
+        { destination: '🏦' },
+        { destination: '🏥' },
+        { destination: '🏫' },
+        { destination: '🏠' }
     ];
 
-    // --- Game State ---
-    let playerState = { x: 5, y: 9 }; // Start away from the Quest Giver '💁'
-    let activeQuest = null;
-    let currentStepIndex = 0;
-    let progressInStep = 0;
-    let questsCompleted = 0;
+    // --- TTS Logic ---
+    function speakText(text) {
+        if (!ttsEnabled) return;
+        window.speechSynthesis.cancel();
+        const utter = new window.SpeechSynthesisUtterance(text);
+        utter.lang = TRANSLATIONS[currentLang].ttsLang;
+        window.speechSynthesis.speak(utter);
+    }
 
-    // --- Pathfinding and Instruction Generation (The New "Smart" Part) ---
+    ttsToggle.addEventListener('click', () => {
+        ttsEnabled = !ttsEnabled;
+        updateTTSButton();
+        if (ttsEnabled) {
+            speakText(TRANSLATIONS[currentLang].ttsActivated);
+        } else {
+            window.speechSynthesis.cancel();
+        }
+    });
 
-    // Finds the shortest path using Breadth-First Search (BFS)
+    function updateTTSButton() {
+        ttsToggle.textContent = ttsEnabled ? TRANSLATIONS[currentLang].ttsOn : TRANSLATIONS[currentLang].ttsOff;
+    }
+
+    // --- Language Switching ---
+    langToggle.addEventListener('click', () => {
+        currentLang = currentLang === 'es' ? 'sv' : 'es';
+        updateLanguage();
+        // If there's an active quest, we need to regenerate instructions in the new language
+        if (activeQuest) {
+            const destCoords = findCoordsOf(activeQuest.destination);
+            const path = findPath(playerState, destCoords);
+            if (path) {
+                const instructions = pathToInstructions(path);
+                activeQuest.steps = instructions;
+                displayMessage(`<span class="info">${TRANSLATIONS[currentLang].questPrompts[questsCompleted]}</span><br><br>${activeQuest.steps[currentStepIndex].text}`);
+            }
+        } else if (questsCompleted >= quests.length) {
+            displayMessage(`<span class='success'>${TRANSLATIONS[currentLang].allCompleted}</span>`);
+        } else {
+            displayMessage(TRANSLATIONS[currentLang].startPrompt);
+        }
+    });
+
+    function updateLanguage() {
+        const t = TRANSLATIONS[currentLang];
+        langToggle.textContent = t.langLabel;
+        mainTitle.textContent = t.title;
+        mainIntro.textContent = t.intro;
+        vocabTitle.textContent = t.vocabTitle;
+        updateTTSButton();
+        
+        // Update Vocab List
+        vocabList.innerHTML = '';
+        t.vocab.forEach(item => {
+            const li = document.createElement('li');
+            li.innerHTML = `<strong>${item.term}:</strong> ${item.def}`;
+            vocabList.appendChild(li);
+        });
+
+        document.title = t.title;
+    }
+
+    // --- Pathfinding and Instruction Generation ---
+
     function findPath(start, end) {
         const queue = [[start]];
         const visited = new Set([`${start.y},${start.x}`]);
@@ -305,10 +467,10 @@
             const pos = path[path.length - 1];
 
             if (pos.y === end.y && pos.x === end.x) {
-                return path; // Found the path!
+                return path;
             }
 
-            const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]]; // R, L, D, U
+            const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
             for (const [dy, dx] of directions) {
                 const newY = pos.y + dy;
                 const newX = pos.x + dx;
@@ -322,10 +484,9 @@
                 }
             }
         }
-        return null; // No path found
+        return null;
     }
 
-    // Converts a coordinate path into step-by-step game instructions
     function pathToInstructions(path) {
         if (!path || path.length < 2) return [];
         const instructions = [];
@@ -352,24 +513,17 @@
                 distance = 1;
             }
         }
-        instructions.push(createInstruction(currentDirection, distance)); // Add the last instruction
+        instructions.push(createInstruction(currentDirection, distance));
         return instructions;
     }
 
-    // Creates the text for a single instruction
     function createInstruction(direction, distance) {
-        const distText = distance > 1 ? `${distance} cuadros` : `1 cuadro`;
-        let text = '';
-        switch(direction) {
-            case 'right': text = `Ve <strong>${distText} a la derecha.</strong>`; break;
-            case 'left':  text = `Avanza <strong>${distText} a la izquierda.</strong>`; break;
-            case 'down':  text = `Sigue <strong>${distText} hacia abajo.</strong>`; break;
-            case 'up':    text = `Sube <strong>${distText} hacia arriba.</strong>`; break;
-        }
+        const t = TRANSLATIONS[currentLang];
+        const distText = t.units(distance);
+        const text = t.directions[direction](distText);
         return { direction, distance, text };
     }
 
-    // Finds the coordinates of a specific character on the map
     function findCoordsOf(char) {
         for (let y = 0; y < mapLayout.length; y++) {
             for (let x = 0; x < mapLayout[y].length; x++) {
@@ -378,11 +532,14 @@
                 }
             }
         }
-        return null; // Character not found
+        return null;
     }
 
     // --- Core Game Loop ---
+    let CELL_SIZE = window.innerWidth < 600 ? 30 : 40;
+
     function setupGame() {
+        updateLanguage();
         mapGrid.style.gridTemplateColumns = `repeat(${mapLayout[0].length}, ${CELL_SIZE}px)`;
         mapLayout.forEach(row => {
             row.forEach(cell => {
@@ -394,7 +551,7 @@
             });
         });
         updatePlayerPosition();
-        displayMessage("Camina hacia la persona (💁) para recibir instrucciones.");
+        displayMessage(TRANSLATIONS[currentLang].startPrompt);
         document.addEventListener('keydown', handleKeyPress);
 
         // Mobile Controls
@@ -412,23 +569,19 @@
     
     function startQuest(quest) {
         const destinationCoords = findCoordsOf(quest.destination);
-        if (!destinationCoords) {
-            console.error("Destination not found on map:", quest.destination);
-            return;
-        }
+        if (!destinationCoords) return;
         
         const path = findPath(playerState, destinationCoords);
         if (!path) {
-            displayMessage("<span class='error'>¡Oh no! No puedo encontrar un camino hasta allí.</span>");
+            displayMessage(`<span class='error'>${TRANSLATIONS[currentLang].pathNotFound}</span>`);
             return;
         }
 
         const instructions = pathToInstructions(path);
-        
         activeQuest = { ...quest, steps: instructions };
         currentStepIndex = 0;
         progressInStep = 0;
-        displayMessage(`<span class="info">${quest.prompt}</span><br><br>${activeQuest.steps[0].text}`);
+        displayMessage(`<span class="info">${TRANSLATIONS[currentLang].questPrompts[questsCompleted]}</span><br><br>${activeQuest.steps[0].text}`);
     }
 
     function updatePlayerPosition() {
@@ -438,11 +591,7 @@
     
     function displayMessage(htmlContent) {
         messageBox.innerHTML = htmlContent;
-        // Strip HTML tags for TTS, but keep main instruction text
-        let ttsText = htmlContent
-            .replace(/<[^>]+>/g, ' ') // Remove HTML tags
-            .replace(/\s+/g, ' ')    // Collapse whitespace
-            .trim();
+        let ttsText = htmlContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
         if (ttsText) speakText(ttsText);
     }
 
@@ -461,6 +610,7 @@
 
     function handleMove(intendedDirection) {
         let { x, y } = playerState;
+        const t = TRANSLATIONS[currentLang];
         
         switch (intendedDirection) {
             case 'up': y--; break;
@@ -469,22 +619,20 @@
             case 'right': x++; break;
         }
 
-        // Check for interaction with quest giver
         const targetCell = mapLayout[y]?.[x];
         if (targetCell === '💁' && (!activeQuest || questsCompleted > 0)) {
             const nextQuest = quests[questsCompleted];
             if (nextQuest) {
-                // To start a quest, the player must be at the quest giver's location
                 playerState = findCoordsOf('💁');
                 updatePlayerPosition();
                 startQuest(nextQuest);
             } else {
-                displayMessage("<span class='success'>¡Has completado todas las misiones! ¡Felicidades!</span>");
+                displayMessage(`<span class='success'>${t.allCompleted}</span>`);
             }
             return;
         }
 
-        if (!activeQuest) { // Free movement if no active quest
+        if (!activeQuest) {
             if (targetCell && targetCell !== '🌳') {
                 playerState = { x, y };
                 updatePlayerPosition();
@@ -492,7 +640,6 @@
             return;
         }
         
-        // Logic for following quest directions
         const currentStep = activeQuest.steps[currentStepIndex];
         
         if (intendedDirection === currentStep.direction) {
@@ -504,16 +651,17 @@
                     currentStepIndex++;
                     progressInStep = 0;
                     if (currentStepIndex < activeQuest.steps.length) {
-                        displayMessage(`<span class="success">¡bien!</span><br><br>${activeQuest.steps[currentStepIndex].text}`);
+                        displayMessage(`<span class="success">${t.success}</span><br><br>${activeQuest.steps[currentStepIndex].text}`);
                     } else {
-                        displayMessage(`<span class="success">¡Lo lograste! Llegaste a ${activeQuest.destination}.</span><br><br>Vuelve con la persona (💁) para tu siguiente tarea.`);
+                        const destName = t.destinations[activeQuest.destination];
+                        displayMessage(`<span class="success">${t.reachedDestination(destName)}</span><br><br>${t.returnToGiver}`);
                         activeQuest = null;
                         questsCompleted++;
                     }
                 }
             }
         } else {
-            displayMessage(`<span class="error">¡Dirección equivocada!</span><br><br>${currentStep.text}`);
+            displayMessage(`<span class="error">${t.wrongDirection}</span><br><br>${currentStep.text}`);
         }
     }
 
