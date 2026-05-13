@@ -121,6 +121,18 @@
             border-color: #4CAF50;
         }
         
+        /* --- Correct/Incorrect Highlights --- */
+        .correct-highlight {
+            border-color: #4CAF50 !important;
+            background-color: #e8f5e9 !important;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+
+        .incorrect-highlight {
+            border-color: #d9534f !important;
+            background-color: #ffebee !important;
+        }
+        
         /* --- Prompts & Options by Level --- */
         #level-1-prompt-area {
             display: flex;
@@ -552,7 +564,11 @@
                     emojiDiv.textContent = opt.emoji;
                     emojiDiv.className = 'emoji-option';
                     emojiDiv.dataset.key = optKey;
-                    emojiDiv.onclick = (e) => checkAnswer(e.target.dataset.key === itemKey, 1);
+                    emojiDiv.onclick = (e) => {
+                        const clickedElement = e.target;
+                        const isCorrect = clickedElement.dataset.key === itemKey;
+                        checkAnswer(isCorrect, 1, null, clickedElement, itemKey);
+                    };
                     emojiOptions.appendChild(emojiDiv);
                 });
             }
@@ -575,7 +591,11 @@
                     button.textContent = sentence;
                     button.classList.add('name-option-btn');
                     button.dataset.key = optKey;
-                    button.onclick = (e) => checkAnswer(e.target.dataset.key === itemKey, 2);
+                    button.onclick = (e) => {
+                        const clickedElement = e.target;
+                        const isCorrect = clickedElement.dataset.key === itemKey;
+                        checkAnswer(isCorrect, 2, null, clickedElement, itemKey);
+                    };
                     nameOptions.appendChild(button);
                 });
             }
@@ -590,6 +610,7 @@
                 textAnswerInput.value = '';
                 textAnswerInput.disabled = false;
                 submitAnswerButton.disabled = false;
+                textAnswerInput.classList.remove('correct-highlight', 'incorrect-highlight');
                 textAnswerInput.focus();
 
                 const checkSpelling = () => {
@@ -597,7 +618,7 @@
                     if (!userAnswer) return;
                     
                     const isCorrect = userAnswer === itemParts.noun.toLowerCase();
-                    checkAnswer(isCorrect, 3, itemParts.noun);
+                    checkAnswer(isCorrect, 3, itemParts.noun, textAnswerInput);
                 };
 
                 submitAnswerButton.onclick = checkSpelling;
@@ -611,13 +632,14 @@
 
             // --- ANSWER CHECKING & PROGRESSION ---
 
-            function checkAnswer(isCorrect, level, fullCorrectAnswer) {
+            function checkAnswer(isCorrect, level, fullCorrectAnswer, clickedElement, correctKey) {
                 const feedbackEl = document.getElementById(`feedback-${level}`);
+                const currentItem = gameData[currentQuestionIndex];
                 let defaultAnswer;
                 if (currentLang === 'es') {
-                    defaultAnswer = gameData[currentQuestionIndex].spanish;
+                    defaultAnswer = currentItem.spanish;
                 } else {
-                    defaultAnswer = gameData[currentQuestionIndex].swedish.split('|')[0];
+                    defaultAnswer = currentItem.swedish.split('|')[0];
                 }
                 const answerToShow = fullCorrectAnswer || defaultAnswer;
                 
@@ -625,9 +647,28 @@
                     score++;
                     feedbackEl.textContent = currentLang === 'es' ? `¡Correcto! 👍` : `Rätt! 👍`;
                     feedbackEl.className = 'feedback correct';
+                    if (clickedElement) clickedElement.classList.add('correct-highlight');
                 } else {
                     feedbackEl.textContent = currentLang === 'es' ? `Incorrecto. La respuesta es: ${answerToShow}` : `Fel. Svaret är: ${answerToShow}`;
                     feedbackEl.className = 'feedback incorrect';
+                    if (clickedElement) clickedElement.classList.add('incorrect-highlight');
+                    
+                    // Highlight the actual correct element
+                    if (level === 1) {
+                        const correctEl = Array.from(document.querySelectorAll('#emoji-options .emoji-option')).find(el => el.dataset.key === correctKey);
+                        if (correctEl) correctEl.classList.add('correct-highlight');
+                    } else if (level === 2) {
+                        const correctEl = Array.from(document.querySelectorAll('#name-options .name-option-btn')).find(el => el.dataset.key === correctKey);
+                        if (correctEl) correctEl.classList.add('correct-highlight');
+                    }
+
+                    // Spaced Repetition: Re-insert the missed word 2 questions later (3rd from current index)
+                    const reinsertIndex = currentQuestionIndex + 3;
+                    if (reinsertIndex < gameData.length) {
+                        gameData.splice(reinsertIndex, 0, currentItem);
+                    } else {
+                        gameData.push(currentItem);
+                    }
                 }
                 
                 updateStatus(level);
@@ -636,7 +677,7 @@
                 setTimeout(() => {
                     currentQuestionIndex++;
                     loadQuestion();
-                }, isCorrect ? 500 : 2000);
+                }, isCorrect ? 500 : 2500);
             }
             
             function disableInputsForFeedback(level) {
