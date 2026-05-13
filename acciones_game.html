@@ -220,6 +220,27 @@
             100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
         }
 
+        @keyframes shake {
+            0% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-5px) rotate(-5deg); }
+            50% { transform: translateX(5px) rotate(5deg); }
+            75% { transform: translateX(-5px) rotate(-5deg); }
+            100% { transform: translateX(0) rotate(0deg); }
+        }
+
+        @keyframes jump {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-50px); }
+        }
+
+        .shake {
+            animation: shake 0.3s ease-in-out infinite;
+        }
+
+        .jump {
+            animation: jump 0.5s ease-out;
+        }
+
         .score-board {
             margin-top: 20px;
             font-size: 1.2rem;
@@ -286,6 +307,10 @@
                     <span class="tool-icon">👆</span>
                     Toca
                 </button>
+                <button class="tool-btn" data-action="Pincha">
+                    <span class="tool-icon">📍</span>
+                    Pincha
+                </button>
                 <button class="tool-btn" data-action="Gira">
                     <span class="tool-icon">🔄</span>
                     Gira
@@ -302,6 +327,22 @@
                     <span class="tool-icon">🎨</span>
                     Pinta
                 </button>
+                <button class="tool-btn" data-action="Agita">
+                    <span class="tool-icon">🫨</span>
+                    Agita
+                </button>
+                <button class="tool-btn" data-action="Voltea">
+                    <span class="tool-icon">↔️</span>
+                    Voltea
+                </button>
+                <button class="tool-btn" data-action="Mueve">
+                    <span class="tool-icon">🚀</span>
+                    Mueve
+                </button>
+                <button class="tool-btn" data-action="Salta">
+                    <span class="tool-icon">🆙</span>
+                    Salta
+                </button>
             </div>
 
             <button id="tts-toggle" class="active" title="Alternar Sonido">🔊</button>
@@ -311,10 +352,15 @@
             <h2>Vocabulario</h2>
             <ul class="vocab-list">
                 <li class="vocab-item"><span class="vocab-word">Toca</span> <span>Touch/Click</span></li>
+                <li class="vocab-item"><span class="vocab-word">Pincha</span> <span>Click/Poke</span></li>
                 <li class="vocab-item"><span class="vocab-word">Gira</span> <span>Rotate</span></li>
                 <li class="vocab-item"><span class="vocab-word">Agranda</span> <span>Enlarge</span></li>
                 <li class="vocab-item"><span class="vocab-word">Achica</span> <span>Shrink</span></li>
-                <li class="vocab-item"><span class="vocab-word">Pinta</span> <span>Paint/Color</span></li>
+                <li class="vocab-item"><span class="vocab-word">Pinta</span> <span>Paint</span></li>
+                <li class="vocab-item"><span class="vocab-word">Agita</span> <span>Shake</span></li>
+                <li class="vocab-item"><span class="vocab-word">Voltea</span> <span>Flip</span></li>
+                <li class="vocab-item"><span class="vocab-word">Mueve</span> <span>Move</span></li>
+                <li class="vocab-item"><span class="vocab-word">Salta</span> <span>Jump</span></li>
             </ul>
         </div>
     </div>
@@ -340,7 +386,15 @@
             { emoji: '🎁', name: 'el regalo' },
             { emoji: '🐱', name: 'el gato' },
             { emoji: '🚗', name: 'el coche' },
-            { emoji: '🏠', name: 'la casa' }
+            { emoji: '🏠', name: 'la casa' },
+            { emoji: '🥘', name: 'la paella' },
+            { emoji: '💃', name: 'la bailaora' },
+            { emoji: '🐂', name: 'el toro' },
+            { emoji: '🌞', name: 'el sol' },
+            { emoji: '🥖', name: 'el pan' },
+            { emoji: '🧀', name: 'el queso' },
+            { emoji: '🍷', name: 'el vino' },
+            { emoji: '🚲', name: 'la bici' }
         ];
 
         const actions = [
@@ -348,7 +402,12 @@
             { verb: 'Gira', english: 'Rotate' },
             { verb: 'Agranda', english: 'Enlarge' },
             { verb: 'Achica', english: 'Shrink' },
-            { verb: 'Pinta', english: 'Paint' }
+            { verb: 'Pinta', english: 'Paint' },
+            { verb: 'Pincha', english: 'Click/Poke' },
+            { verb: 'Agita', english: 'Shake' },
+            { verb: 'Voltea', english: 'Flip' },
+            { verb: 'Mueve', english: 'Move' },
+            { verb: 'Salta', english: 'Jump' }
         ];
 
         const colors = ['#ff5555', '#55ff55', '#5555ff', '#ffff55', '#ff55ff', '#55ffff'];
@@ -356,8 +415,15 @@
         let state = {
             rotation: 0,
             scale: 1,
-            color: 'transparent'
+            color: 'transparent',
+            translateX: 0,
+            translateY: 0,
+            scaleX: 1
         };
+
+        function updateTransform() {
+            targetEl.style.transform = `translate(${state.translateX}px, ${state.translateY}px) rotate(${state.rotation}deg) scale(${state.scale * state.scaleX}, ${state.scale})`;
+        }
 
         function speak(text) {
             if (!ttsEnabled) return;
@@ -393,11 +459,15 @@
             state = {
                 rotation: 0,
                 scale: 1,
-                color: 'transparent'
+                color: 'transparent',
+                translateX: 0,
+                translateY: 0,
+                scaleX: 1
             };
             
             targetEl.textContent = currentObject.emoji;
-            targetEl.style.transform = 'rotate(0deg) scale(1)';
+            targetEl.className = 'target-object';
+            updateTransform();
             targetEl.style.backgroundColor = 'transparent';
             targetEl.style.borderRadius = '50%';
             targetEl.style.padding = '10px';
@@ -438,33 +508,58 @@
 
             switch(selectedAction) {
                 case 'Toca':
-                    targetEl.style.transform += ' scale(1.2)';
-                    setTimeout(() => targetEl.style.transform = targetEl.style.transform.replace(' scale(1.2)', ''), 100);
+                case 'Pincha':
+                    targetEl.style.transform += ' scale(1.1)';
+                    setTimeout(updateTransform, 100);
                     if (wasCorrectAction) goalReached = true;
                     break;
                 
                 case 'Gira':
                     state.rotation += 90;
-                    targetEl.style.transform = `rotate(${state.rotation}deg) scale(${state.scale})`;
+                    updateTransform();
                     if (wasCorrectAction) goalReached = true;
                     break;
 
                 case 'Agranda':
                     state.scale += 0.4;
-                    targetEl.style.transform = `rotate(${state.rotation}deg) scale(${state.scale})`;
+                    updateTransform();
                     if (wasCorrectAction && state.scale >= 1.8) goalReached = true;
                     break;
 
                 case 'Achica':
                     state.scale -= 0.2;
                     if (state.scale < 0.2) state.scale = 0.2;
-                    targetEl.style.transform = `rotate(${state.rotation}deg) scale(${state.scale})`;
+                    updateTransform();
                     if (wasCorrectAction && state.scale <= 0.6) goalReached = true;
                     break;
 
                 case 'Pinta':
                     const randomColor = colors[Math.floor(Math.random() * colors.length)];
                     targetEl.style.backgroundColor = randomColor;
+                    if (wasCorrectAction) goalReached = true;
+                    break;
+
+                case 'Agita':
+                    targetEl.classList.add('shake');
+                    if (wasCorrectAction) goalReached = true;
+                    break;
+
+                case 'Voltea':
+                    state.scaleX *= -1;
+                    updateTransform();
+                    if (wasCorrectAction) goalReached = true;
+                    break;
+
+                case 'Mueve':
+                    state.translateX += (Math.random() - 0.5) * 150;
+                    state.translateY += (Math.random() - 0.5) * 150;
+                    updateTransform();
+                    if (wasCorrectAction) goalReached = true;
+                    break;
+
+                case 'Salta':
+                    targetEl.classList.add('jump');
+                    setTimeout(() => targetEl.classList.remove('jump'), 500);
                     if (wasCorrectAction) goalReached = true;
                     break;
             }
