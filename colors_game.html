@@ -122,6 +122,7 @@
             padding: 10px;
             border-radius: 16px;
             box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+            width: fit-content;
         }
 
         #grid {
@@ -245,9 +246,67 @@
         }
 
         /* Responsive */
+        .mobile-controls-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 1.5rem;
+            gap: 8px;
+        }
+
+        .mobile-horizontal-arrows {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .mobile-arrow {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background-color: white;
+            border: 2px solid #e2e8f0;
+            color: var(--text);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .mobile-arrow:active {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            transform: scale(0.9);
+        }
+
+        .arrow-spacer {
+            width: 54px;
+        }
+
         @media (max-width: 800px) {
             #game-layout { flex-direction: column; align-items: center; }
             .sidebar { width: 100%; max-width: 400px; }
+            .mobile-controls-container { display: flex; }
+        }
+
+        @media (max-width: 500px) {
+            .cell {
+                width: 45px;
+                height: 45px;
+                font-size: 1.5rem;
+                border-radius: 8px;
+            }
+            #player {
+                width: 45px;
+                height: 45px;
+                font-size: 1.8rem;
+            }
         }
 
         /* Success Overlay */
@@ -308,6 +367,16 @@
             <div id="grid-container">
                 <div id="grid"></div>
                 <div id="player">🦊</div>
+            </div>
+
+            <div id="mobile-controls" class="mobile-controls-container">
+                <button class="mobile-arrow" id="arrow-up">▲</button>
+                <div class="mobile-horizontal-arrows">
+                    <button class="mobile-arrow" id="arrow-left">◀</button>
+                    <div class="arrow-spacer"></div>
+                    <button class="mobile-arrow" id="arrow-right">▶</button>
+                </div>
+                <button class="mobile-arrow" id="arrow-down">▼</button>
             </div>
 
             <div class="controls-hint">
@@ -557,6 +626,31 @@
                 updatePlayer();
             }
         });
+
+        // --- Mobile controls ---
+        const arrowUp = document.getElementById('arrow-up');
+        const arrowDown = document.getElementById('arrow-down');
+        const arrowLeft = document.getElementById('arrow-left');
+        const arrowRight = document.getElementById('arrow-right');
+
+        const triggerMove = (key) => {
+            if (overlay.style.display === 'flex') return;
+            const oldPos = { ...playerPos };
+            switch(key) {
+                case 'ArrowUp': if (playerPos.y > 0) playerPos.y--; break;
+                case 'ArrowDown': if (playerPos.y < GRID_SIZE - 1) playerPos.y++; break;
+                case 'ArrowLeft': if (playerPos.x > 0) playerPos.x--; break;
+                case 'ArrowRight': if (playerPos.x < GRID_SIZE - 1) playerPos.x++; break;
+            }
+            if (oldPos.x !== playerPos.x || oldPos.y !== playerPos.y) {
+                updatePlayer();
+            }
+        };
+
+        arrowUp.addEventListener('click', () => triggerMove('ArrowUp'));
+        arrowDown.addEventListener('click', () => triggerMove('ArrowDown'));
+        arrowLeft.addEventListener('click', () => triggerMove('ArrowLeft'));
+        arrowRight.addEventListener('click', () => triggerMove('ArrowRight'));
 
         // Use ResizeObserver for responsive alignment
         const resizeObserver = new ResizeObserver(() => updatePlayer());

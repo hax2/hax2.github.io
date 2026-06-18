@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <title>Constructor de Números - Cuenta Conmigo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #f59e0b;
+            --primary-glow: rgba(245, 158, 11, 0.25);
+            --success: #10b981;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --card-border: #334155;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --accent: #38bdf8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem;
+            overflow-x: hidden;
+        }
+
+        .header { text-align: center; margin-bottom: 1.5rem; animation: fadeIn 0.6s ease-out; }
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), #fb923c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.3rem;
+        }
+        .header p { color: var(--muted); font-size: 1rem; }
+        
+        .how-to-play {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px dashed var(--primary);
+            border-radius: 12px;
+            padding: 0.8rem 1.2rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--muted);
+            text-align: center;
+            max-width: 600px;
+        }
+
+        #game-layout {
+            display: flex;
+            gap: 1.5rem;
+            max-width: 1100px;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .main-card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 1.8rem;
+            flex: 1;
+            min-width: 340px;
+            max-width: 750px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        /* Tabs */
+        .level-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            width: 100%;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .level-tab {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #94a3b8;
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .level-tab:hover { background: #334155; color: white; }
+        .level-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        }
+
+        /* Instruction */
+        #instruction-box {
+            width: 100%;
+            background: #0f172a;
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1.2rem;
+            text-align: center;
+            box-shadow: 0 0 20px var(--primary-glow);
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .instruction-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            margin-bottom: 0.4rem;
+        }
+        .instruction-text {
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        .instruction-text strong { color: var(--accent); }
+
+        /* Stage */
+        .stage-container {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        .zone-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 10px;
+            flex: 1;
+            min-height: 160px;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .zone-title {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+        .stage-zone {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            align-content: flex-start;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* Coins */
+        .coin {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            border-radius: 50%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.4);
+            user-select: none;
+            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        .interactive:hover { transform: scale(1.15) translateY(-2px); cursor: pointer; }
+        
+        .coin-1 {
+            width: 36px; height: 36px; font-size: 1rem;
+            background: linear-gradient(135deg, #d97706, #b45309);
+            border: 2px solid #fcd34d; color: white;
+        }
+        .coin-10 {
+            width: 44px; height: 44px; font-size: 1.1rem;
+            background: linear-gradient(135deg, #475569, #334155);
+            border: 2px solid #94a3b8; color: white;
+        }
+        .coin-100 {
+            width: 52px; height: 52px; font-size: 1.2rem;
+            background: linear-gradient(135deg, #eab308, #ca8a04);
+            border: 2px solid #fef08a; color: #451a03; text-shadow: none;
+        }
+        .coin-1000 {
+            width: 62px; height: 62px; font-size: 1.3rem;
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            border: 2px solid #c4b5fd; color: white;
+        }
+
+        /* Controls */
+        .live-total {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 20px;
+            background: #0f172a;
+            padding: 10px 30px;
+            border-radius: 30px;
+            border: 1px solid #334155;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        .live-total span { color: var(--primary); display: inline-block; transition: transform 0.2s; }
+
+        .coin-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            background: #0f172a;
+            padding: 15px 25px;
+            border-radius: 20px;
+            border: 1px solid #334155;
+            flex-wrap: wrap;
+        }
+        .btn-coin {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, filter 0.2s;
+        }
+        .btn-coin:hover { transform: translateY(-5px); filter: brightness(1.1); }
+        .btn-coin:active { transform: translateY(0) scale(0.95); }
+
+        /* Sidebar */
+        .sidebar { width: 260px; display: flex; flex-direction: column; gap: 1.2rem; }
+        .side-card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.2rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+        .side-card h3 { color: var(--primary); font-size: 1.1rem; margin-bottom: 0.8rem; }
+        .stat-row { display: flex; justify-content: space-between; padding: 0.4rem 0; }
+        .stat-label { color: var(--muted); }
+        .stat-value { font-weight: 700; color: var(--accent); }
+        .vocab-list { list-style: none; }
+        .vocab-item {
+            display: flex; justify-content: space-between; padding: 0.5rem 0;
+            border-bottom: 1px solid #1e293b; font-size: 0.95rem;
+        }
+        .vocab-item:last-child { border-bottom: none; }
+        .vocab-word { font-weight: 600; color: var(--text); }
+        .vocab-trans { color: var(--muted); font-size: 0.85rem; }
+
+        /* TTS */
+        #tts-toggle {
+            position: fixed; bottom: 1.5rem; right: 1.5rem;
+            background: var(--card); border: 1px solid var(--card-border);
+            border-radius: 50%; width: 50px; height: 50px;
+            font-size: 1.4rem; cursor: pointer; color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; z-index: 50;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        #tts-toggle:hover { transform: scale(1.1); }
+        #tts-toggle.off { color: var(--muted); }
+
+        /* Feedback Overlay */
+        #feedback {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            font-size: 3.5rem; font-weight: 800; pointer-events: none; opacity: 0;
+            z-index: 20; text-shadow: 0 8px 20px rgba(0,0,0,0.6);
+        }
+        #feedback.show { animation: feedbackAnim 1.5s ease-out forwards; }
+        
+        @keyframes feedbackAnim {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            15% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            85% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+        }
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 750px) {
+            #game-layout { flex-direction: column; align-items: center; }
+            .sidebar { width: 100%; max-width: 500px; }
+            .main-card { min-width: 0; width: 100%; padding: 1rem; }
+            .stage-container { flex-wrap: wrap; }
+            .zone-wrapper { min-width: 45%; }
+            .coin-buttons { gap: 10px; padding: 10px; }
+            .instruction-text { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Constructor de Números</h1>
+        <p>Aprende cómo se forman los números en español</p>
+    </div>
+
+    <div class="how-to-play">
+        <strong>Cómo jugar:</strong> Escucha y lee el número. Toca las monedas abajo para agregarlas al tablero y construir el valor exacto. Toca una moneda en el tablero para quitarla.
+    </div>
+
+    <div id="game-layout">
+        <div class="main-card">
+            <div class="level-tabs">
+                <button class="level-tab active" data-level="1">1 - 10</button>
+                <button class="level-tab" data-level="2">10 - 100</button>
+                <button class="level-tab" data-level="3">100 - 1000</button>
+                <button class="level-tab" data-level="4">Fechas (1000+)</button>
+            </div>
+
+            <div id="instruction-box">
+                <div class="instruction-label">Tu misión: Construye el número</div>
+                <div id="instruction" class="instruction-text">Cargando...</div>
+            </div>
+
+            <div id="feedback"></div>
+
+            <div class="stage-container">
+                <div class="zone-wrapper" id="zone-container-1000">
+                    <div class="zone-title">Miles (1000)</div>
+                    <div class="stage-zone" id="zone-1000"></div>
+                </div>
+                <div class="zone-wrapper" id="zone-container-100">
+                    <div class="zone-title">Centenas (100)</div>
+                    <div class="stage-zone" id="zone-100"></div>
+                </div>
+                <div class="zone-wrapper" id="zone-container-10">
+                    <div class="zone-title">Decenas (10)</div>
+                    <div class="stage-zone" id="zone-10"></div>
+                </div>
+                <div class="zone-wrapper" id="zone-container-1">
+                    <div class="zone-title">Unidades (1)</div>
+                    <div class="stage-zone" id="zone-1"></div>
+                </div>
+            </div>
+
+            <div class="live-total">
+                Total: <span id="current-total">0</span>
+            </div>
+
+            <div class="coin-buttons">
+                <button class="btn-coin" id="btn-1000" onclick="addCoin(1000)"><div class="coin coin-1000">1000</div></button>
+                <button class="btn-coin" id="btn-100" onclick="addCoin(100)"><div class="coin coin-100">100</div></button>
+                <button class="btn-coin" id="btn-10" onclick="addCoin(10)"><div class="coin coin-10">10</div></button>
+                <button class="btn-coin" id="btn-1" onclick="addCoin(1)"><div class="coin coin-1">1</div></button>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="side-card">
+                <h3>📊 Progreso</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Ronda</span>
+                    <span id="round-val" class="stat-value">1</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Puntos</span>
+                    <span id="score-val" class="stat-value">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Racha</span>
+                    <span id="streak-val" class="stat-value">0 🔥</span>
+                </div>
+            </div>
+
+            <div class="side-card">
+                <h3>📖 Vocabulario</h3>
+                <ul class="vocab-list" id="vocab-list">
+                    <!-- Dynamic -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <button id="tts-toggle" title="Alternar sonido">🔊</button>
+
+    <script>
+        const unities = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve'];
+        const twenties = ['veinte', 'veintiuno', 'veintidós', 'veintitrés', 'veinticuatro', 'veinticinco', 'veintiséis', 'veintisiete', 'veintiocho', 'veintinueve'];
+        const tens = ['', '', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
+        const hundreds = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos'];
+
+        function numberToSpanish(n) {
+            if (n === 0) return 'cero';
+            if (n < 20) return unities[n];
+            if (n < 30) return twenties[n - 20];
+            if (n < 100) {
+                let t = tens[Math.floor(n / 10)];
+                let u = n % 10;
+                return t + (u > 0 ? ' y ' + unities[u] : '');
+            }
+            if (n === 100) return 'cien';
+            if (n < 1000) {
+                let h = hundreds[Math.floor(n / 100)];
+                let rest = n % 100;
+                return h + (rest > 0 ? ' ' + numberToSpanish(rest) : '');
+            }
+            if (n < 4000) {
+                let th = Math.floor(n / 1000);
+                let rest = n % 1000;
+                let thStr = th === 1 ? 'mil' : unities[th] + ' mil';
+                return thStr + (rest > 0 ? ' ' + numberToSpanish(rest) : '');
+            }
+            return n.toString();
+        }
+
+        let currentLevel = 1;
+        let targetNumber = 0;
+        let currentSum = 0;
+        let coinsCount = { 1000: 0, 100: 0, 10: 0, 1: 0 };
+        let round = 1;
+        let score = 0;
+        let streak = 0;
+        let locked = false;
+        let ttsEnabled = true;
+
+        function speak(text) {
+            if (!ttsEnabled) return;
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'es-ES';
+            window.speechSynthesis.speak(u);
+        }
+
+        document.getElementById('tts-toggle').addEventListener('click', function() {
+            ttsEnabled = !ttsEnabled;
+            this.textContent = ttsEnabled ? '🔊' : '🔇';
+            this.classList.toggle('off', !ttsEnabled);
+            if (ttsEnabled && targetNumber > 0) speak(numberToSpanish(targetNumber));
+        });
+
+        document.querySelectorAll('.level-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                if (locked && currentSum === targetNumber) return; 
+                document.querySelectorAll('.level-tab').forEach(t => t.classList.remove('active'));
+                e.target.classList.add('active');
+                currentLevel = parseInt(e.target.getAttribute('data-level'));
+                round = 1;
+                document.getElementById('round-val').textContent = round;
+                updateVocabulary();
+                generateTask();
+            });
+        });
+
+        function updateVocabulary() {
+            const list = document.getElementById('vocab-list');
+            list.innerHTML = '';
+            let items = [];
+            
+            if (currentLevel === 1) {
+                items = [
+                    {es: 'Uno', en: '1'}, {es: 'Dos', en: '2'},
+                    {es: 'Tres', en: '3'}, {es: 'Cinco', en: '5'}, {es: 'Diez', en: '10'}
+                ];
+            } else if (currentLevel === 2) {
+                items = [
+                    {es: 'Veinte', en: '20'}, {es: 'Treinta', en: '30'},
+                    {es: 'Cuarenta', en: '40'}, {es: 'Cincuenta', en: '50'}, {es: 'Cien', en: '100'}
+                ];
+            } else if (currentLevel === 3) {
+                items = [
+                    {es: 'Ciento...', en: '100+'}, {es: 'Doscientos', en: '200'},
+                    {es: 'Quinientos', en: '500'}, {es: 'Novecientos', en: '900'}, {es: 'Mil', en: '1000'}
+                ];
+            } else {
+                items = [
+                    {es: 'Mil', en: '1000'}, {es: 'Dos mil', en: '2000'},
+                    {es: 'Mil novecientos', en: '1900'}, {es: 'Mil quinientos', en: '1500'}
+                ];
+            }
+
+            items.forEach(item => {
+                list.innerHTML += `<li class="vocab-item"><span class="vocab-word">${item.es}</span><span class="vocab-trans">${item.en}</span></li>`;
+            });
+        }
+
+        function generateTask() {
+            locked = false;
+            
+            if (currentLevel === 1) {
+                targetNumber = Math.floor(Math.random() * 10) + 1; // 1-10
+            } else if (currentLevel === 2) {
+                targetNumber = Math.floor(Math.random() * 90) + 11; // 11-100
+            } else if (currentLevel === 3) {
+                targetNumber = Math.floor(Math.random() * 900) + 101; // 101-1000
+            } else if (currentLevel === 4) {
+                // Mostly dates 1500-2025
+                if (Math.random() > 0.3) {
+                    targetNumber = Math.floor(Math.random() * (2025 - 1500 + 1)) + 1500;
+                } else {
+                    targetNumber = Math.floor(Math.random() * 2000) + 1001; // 1001-3000
+                }
+            }
+            
+            clearZones();
+            
+            const word = numberToSpanish(targetNumber);
+            document.getElementById('instruction').innerHTML = `<strong>${word}</strong>`;
+            
+            document.getElementById('btn-1000').style.display = currentLevel >= 4 ? 'flex' : 'none';
+            document.getElementById('btn-100').style.display = currentLevel >= 3 ? 'flex' : 'none';
+            document.getElementById('btn-10').style.display = currentLevel >= 2 ? 'flex' : 'none';
+            
+            document.getElementById('zone-container-1000').style.display = currentLevel >= 4 ? 'flex' : 'none';
+            document.getElementById('zone-container-100').style.display = currentLevel >= 3 ? 'flex' : 'none';
+            document.getElementById('zone-container-10').style.display = currentLevel >= 2 ? 'flex' : 'none';
+
+            setTimeout(() => speak(word), 300);
+        }
+
+        function clearZones() {
+            [1000, 100, 10, 1].forEach(val => {
+                document.getElementById(`zone-${val}`).innerHTML = '';
+                coinsCount[val] = 0;
+            });
+            updateSum();
+        }
+
+        function addCoin(val) {
+            if (locked) return;
+            if (currentSum + val > 4000) return;
+            
+            coinsCount[val]++;
+            const zone = document.getElementById(`zone-${val}`);
+            const coinEl = document.createElement('div');
+            coinEl.className = `coin coin-${val} interactive`;
+            coinEl.textContent = val;
+            coinEl.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+            
+            coinEl.onclick = function() {
+                if (locked) return;
+                coinEl.style.animation = 'none';
+                coinEl.style.transform = 'scale(0)';
+                coinEl.style.opacity = '0';
+                setTimeout(() => {
+                    if(zone.contains(coinEl)) zone.removeChild(coinEl);
+                }, 150);
+                coinsCount[val]--;
+                updateSum();
+            };
+            
+            zone.appendChild(coinEl);
+            updateSum();
+        }
+
+        function updateSum() {
+            currentSum = (coinsCount[1000] * 1000) + (coinsCount[100] * 100) + (coinsCount[10] * 10) + (coinsCount[1] * 1);
+            
+            const totalSpan = document.getElementById('current-total');
+            totalSpan.textContent = currentSum;
+            totalSpan.style.transform = 'scale(1.3)';
+            setTimeout(() => totalSpan.style.transform = 'scale(1)', 150);
+            
+            if (currentSum === targetNumber && currentSum !== 0) {
+                showWin();
+            }
+        }
+
+        function showWin() {
+            locked = true;
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = '¡Correcto!';
+            feedback.style.color = '#10b981';
+            feedback.classList.remove('show');
+            void feedback.offsetWidth;
+            feedback.classList.add('show');
+            
+            speak('¡Muy bien!');
+            
+            score += (currentLevel * 10) + (streak * 2);
+            streak++;
+            document.getElementById('score-val').textContent = score;
+            document.getElementById('streak-val').textContent = `${streak} 🔥`;
+            
+            setTimeout(() => {
+                round++;
+                document.getElementById('round-val').textContent = round;
+                generateTask();
+            }, 2000);
+        }
+
+        // Init
+        updateVocabulary();
+        generateTask();
+    </script>
+</body>
+</html>

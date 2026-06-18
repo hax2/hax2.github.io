@@ -541,6 +541,7 @@
 
                 case 'Agita':
                     targetEl.classList.add('shake');
+                    setTimeout(() => targetEl.classList.remove('shake'), 500);
                     if (wasCorrectAction) goalReached = true;
                     break;
 

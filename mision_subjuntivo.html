@@ -111,6 +111,7 @@
             overflow: hidden;
             border: 2px solid var(--grid-line);
             margin: 0 auto;
+            width: fit-content;
         }
 
         #map-grid {
@@ -246,6 +247,55 @@
         .target-pulse {
             animation: pulse 2s infinite ease-in-out;
         }
+
+        /* Mobile Controls */
+        .mobile-controls-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+            gap: 8px;
+        }
+
+        .mobile-horizontal-arrows {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .mobile-arrow {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background-color: var(--panel-bg);
+            border: 2px solid var(--grid-line);
+            color: var(--text-main);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .mobile-arrow:active {
+            background-color: var(--accent-primary);
+            border-color: var(--accent-primary);
+            transform: scale(0.9);
+        }
+
+        .arrow-spacer {
+            width: 54px;
+        }
+
+        @media (max-width: 900px) {
+            .mobile-controls-container {
+                display: flex;
+            }
+        }
     </style>
 </head>
 <body>
@@ -264,6 +314,16 @@
             <div id="map-container">
                 <div id="map-grid"></div>
                 <div id="player">🕵️</div>
+            </div>
+
+            <div id="mobile-controls" class="mobile-controls-container">
+                <button class="mobile-arrow" id="arrow-up">▲</button>
+                <div class="mobile-horizontal-arrows">
+                    <button class="mobile-arrow" id="arrow-left">◀</button>
+                    <div class="arrow-spacer"></div>
+                    <button class="mobile-arrow" id="arrow-right">▶</button>
+                </div>
+                <button class="mobile-arrow" id="arrow-down">▼</button>
             </div>
 
             <div class="controls">
@@ -318,7 +378,7 @@
 
     <script>
     // --- Configuración y Datos ---
-    const CELL_SIZE = 50;
+    let CELL_SIZE = window.innerWidth < 650 ? 30 : 50;
     const mapLayout = [
         ['🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️','🏙️'],
         ['🏙️',' ',' ',' ','🏙️','🏦','🏙️',' ',' ',' ',' ',' ','🏙️'],
@@ -487,6 +547,18 @@
     }
 
     // --- Flujo del Juego ---
+    function updateCellSizes() {
+        const cells = document.querySelectorAll('.grid-cell');
+        cells.forEach(c => {
+            c.style.width = `${CELL_SIZE}px`;
+            c.style.height = `${CELL_SIZE}px`;
+            c.style.fontSize = CELL_SIZE === 30 ? '1rem' : '1.5rem';
+        });
+        playerElement.style.width = `${CELL_SIZE}px`;
+        playerElement.style.height = `${CELL_SIZE}px`;
+        playerElement.style.fontSize = CELL_SIZE === 30 ? '1.2rem' : '2rem';
+    }
+
     function initMap() {
         mapGrid.style.gridTemplateColumns = `repeat(${mapLayout[0].length}, ${CELL_SIZE}px)`;
         mapLayout.forEach((row, y) => {
@@ -500,6 +572,7 @@
             });
         });
         updatePlayer();
+        updateCellSizes();
     }
 
     function updatePlayer() {
@@ -612,6 +685,32 @@
         missionsCountLabel.textContent = "0 / 4";
         document.getElementById('game-status').textContent = "OPERATIVO";
     });
+
+    // --- Window Resize Listener ---
+    window.addEventListener('resize', () => {
+        const newSize = window.innerWidth < 650 ? 30 : 50;
+        if (newSize !== CELL_SIZE) {
+            CELL_SIZE = newSize;
+            mapGrid.style.gridTemplateColumns = `repeat(${mapLayout[0].length}, ${CELL_SIZE}px)`;
+            updatePlayer();
+            updateCellSizes();
+        }
+    });
+
+    // --- Mobile Virtual Controls ---
+    const arrowUp = document.getElementById('arrow-up');
+    const arrowDown = document.getElementById('arrow-down');
+    const arrowLeft = document.getElementById('arrow-left');
+    const arrowRight = document.getElementById('arrow-right');
+
+    const triggerMove = (key) => {
+        handleInput({ key, preventDefault: () => {} });
+    };
+
+    arrowUp.addEventListener('click', () => triggerMove('ArrowUp'));
+    arrowDown.addEventListener('click', () => triggerMove('ArrowDown'));
+    arrowLeft.addEventListener('click', () => triggerMove('ArrowLeft'));
+    arrowRight.addEventListener('click', () => triggerMove('ArrowRight'));
 
     // --- Inicio ---
     initMap();
