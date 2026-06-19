@@ -356,6 +356,31 @@ document.addEventListener('DOMContentLoaded', () => {
         return { noun: parts.slice(1).join(' '), article: parts[0] };
     }
 
+    function levenshteinDistance(a, b) {
+        if (a.length === 0) return b.length;
+        if (b.length === 0) return a.length;
+        const matrix = [];
+        for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+        for (let j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+        for (let i = 1; i <= b.length; i++) {
+            for (let j = 1; j <= a.length; j++) {
+                if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                    matrix[i][j] = matrix[i - 1][j - 1];
+                } else {
+                    matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
+                }
+            }
+        }
+        return matrix[b.length][a.length];
+    }
+
+    // Ensure voices are loaded asynchronously
+    if (window.speechSynthesis && window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = () => {
+            window.speechSynthesis.getVoices();
+        };
+    }
+
     // --- TTS FUNCTION ---
     function speakWord(text) {
         if (!window.speechSynthesis) return;
@@ -364,6 +389,9 @@ document.addEventListener('DOMContentLoaded', () => {
         utter.lang = 'es-ES';
         utter.rate = 0.9;
         utter.pitch = 1.1;
+        const voices = window.speechSynthesis.getVoices();
+        const esVoice = voices.find(v => v.lang.startsWith('es'));
+        if (esVoice) utter.voice = esVoice;
         window.speechSynthesis.speak(utter);
     }
 
@@ -604,8 +632,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function startTimer() {
-        clearInterval(gameState.timerInterval);
+        clearTimeout(gameState.timerInterval);
         gameState.timer = QUESTION_TIME;
+        gameState.startTime = Date.now();
         timerBar.style.transition = 'none'; // Reset transition for instant update
         timerBar.style.width = '100%';
         
@@ -621,15 +650,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function handleAnswer(selectedValue, correctAnswer = null) {
-        clearInterval(gameState.timerInterval);
+        clearTimeout(gameState.timerInterval);
         disableOptions();
         
         const isFillInBlank = correctAnswer !== null;
         const correctValue = isFillInBlank ? correctAnswer : gameState.currentQuestion.spanish;
-        const isCorrect = selectedValue === correctValue;
+        
+        let isCorrect = selectedValue === correctValue;
+        if (isFillInBlank && !isCorrect && selectedValue) {
+            isCorrect = levenshteinDistance(selectedValue, correctValue) <= 1;
+        }
 
         if (isCorrect) {
-            const timeBonus = Math.ceil((gameState.timer / QUESTION_TIME) * 10);
+            const elapsed = Date.now() - gameState.startTime;
+            const remaining = Math.max(0, QUESTION_TIME - elapsed);
+            const timeBonus = Math.ceil((remaining / QUESTION_TIME) * 10);
             gameState.score += (10 + timeBonus);
             gameState.streak++;
             showFeedback(true);
