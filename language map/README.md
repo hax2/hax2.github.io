@@ -1,4 +1,4 @@
-# Language Map Quest - Spanish Learning Game
+# Phrases - Spanish Learning Game
 
 A modern, interactive Spanish learning application built with vanilla JavaScript, HTML, and CSS. Learn Spanish vocabulary through flashcards, quizzes, and call & response exercises organized by thematic regions.
 

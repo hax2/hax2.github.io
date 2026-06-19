@@ -1,5 +1,5 @@
 {
-  "name": "language-map-quest",
+  "name": "phrases",
   "version": "1.0.0",
   "description": "A modern, interactive Spanish learning application with flashcards, quizzes, and call & response exercises",
   "main": "index.html",
@@ -21,7 +21,7 @@
     "html5",
     "css3"
   ],
-  "author": "Language Map Quest Team",
+  "author": "Phrases Team",
   "license": "MIT",
   "repository": {
     "type": "git",

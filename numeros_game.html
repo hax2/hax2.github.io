@@ -141,113 +141,55 @@
         }
         .instruction-text strong { color: var(--accent); }
 
-        /* Stage */
-        .stage-container {
-            display: flex;
-            gap: 12px;
-            width: 100%;
-            margin-bottom: 20px;
-            justify-content: center;
-        }
-        .zone-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 10px;
-            flex: 1;
-            min-height: 160px;
-            box-shadow: inset 0 4px 10px rgba(0,0,0,0.3);
-        }
-        .zone-title {
-            font-size: 0.75rem;
-            color: var(--muted);
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 700;
-        }
-        .stage-zone {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            justify-content: center;
-            align-content: flex-start;
-            width: 100%;
-            flex: 1;
-        }
-
-        /* Coins */
-        .coin {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            border-radius: 50%;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.4);
-            user-select: none;
-            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-        }
-        .interactive:hover { transform: scale(1.15) translateY(-2px); cursor: pointer; }
-        
-        .coin-1 {
-            width: 36px; height: 36px; font-size: 1rem;
-            background: linear-gradient(135deg, #d97706, #b45309);
-            border: 2px solid #fcd34d; color: white;
-        }
-        .coin-10 {
-            width: 44px; height: 44px; font-size: 1.1rem;
-            background: linear-gradient(135deg, #475569, #334155);
-            border: 2px solid #94a3b8; color: white;
-        }
-        .coin-100 {
-            width: 52px; height: 52px; font-size: 1.2rem;
-            background: linear-gradient(135deg, #eab308, #ca8a04);
-            border: 2px solid #fef08a; color: #451a03; text-shadow: none;
-        }
-        .coin-1000 {
-            width: 62px; height: 62px; font-size: 1.3rem;
-            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-            border: 2px solid #c4b5fd; color: white;
-        }
-
-        /* Controls */
-        .live-total {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 20px;
-            background: #0f172a;
-            padding: 10px 30px;
-            border-radius: 30px;
-            border: 1px solid #334155;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
-        }
-        .live-total span { color: var(--primary); display: inline-block; transition: transform 0.2s; }
-
-        .coin-buttons {
-            display: flex;
+        /* Options Grid */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 15px;
-            justify-content: center;
-            align-items: center;
-            background: #0f172a;
-            padding: 15px 25px;
-            border-radius: 20px;
-            border: 1px solid #334155;
-            flex-wrap: wrap;
+            width: 100%;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            max-width: 500px;
         }
-        .btn-coin {
-            background: transparent;
-            border: none;
+        .option-btn {
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 16px;
+            color: #e2e8f0;
+            font-size: 1.6rem;
+            font-weight: 700;
+            padding: 20px;
             cursor: pointer;
-            transition: transform 0.2s, filter 0.2s;
+            transition: all 0.2s ease;
+            font-family: 'Outfit', sans-serif;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
-        .btn-coin:hover { transform: translateY(-5px); filter: brightness(1.1); }
-        .btn-coin:active { transform: translateY(0) scale(0.95); }
+        .option-btn:hover:not(:disabled) {
+            background: #334155;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(245, 158, 11, 0.15);
+        }
+        .option-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        .option-btn.correct {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+        .option-btn.incorrect {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: white;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+        .option-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
 
         /* Sidebar */
         .sidebar { width: 260px; display: flex; flex-direction: column; gap: 1.2rem; }
@@ -322,12 +264,12 @@
 <body>
 
     <div class="header">
-        <h1>Constructor de Números</h1>
+        <h1>Cuenta Conmigo</h1>
         <p>Aprende cómo se forman los números en español</p>
     </div>
 
     <div class="how-to-play">
-        <strong>Cómo jugar:</strong> Escucha y lee el número. Toca las monedas abajo para agregarlas al tablero y construir el valor exacto. Toca una moneda en el tablero para quitarla.
+        <strong>Cómo jugar:</strong> Lee el número en español y selecciona la opción numérica correcta de la lista.
     </div>
 
     <div id="game-layout">
@@ -346,35 +288,7 @@
 
             <div id="feedback"></div>
 
-            <div class="stage-container">
-                <div class="zone-wrapper" id="zone-container-1000">
-                    <div class="zone-title">Miles (1000)</div>
-                    <div class="stage-zone" id="zone-1000"></div>
-                </div>
-                <div class="zone-wrapper" id="zone-container-100">
-                    <div class="zone-title">Centenas (100)</div>
-                    <div class="stage-zone" id="zone-100"></div>
-                </div>
-                <div class="zone-wrapper" id="zone-container-10">
-                    <div class="zone-title">Decenas (10)</div>
-                    <div class="stage-zone" id="zone-10"></div>
-                </div>
-                <div class="zone-wrapper" id="zone-container-1">
-                    <div class="zone-title">Unidades (1)</div>
-                    <div class="stage-zone" id="zone-1"></div>
-                </div>
-            </div>
-
-            <div class="live-total">
-                Total: <span id="current-total">0</span>
-            </div>
-
-            <div class="coin-buttons">
-                <button class="btn-coin" id="btn-1000" onclick="addCoin(1000)"><div class="coin coin-1000">1000</div></button>
-                <button class="btn-coin" id="btn-100" onclick="addCoin(100)"><div class="coin coin-100">100</div></button>
-                <button class="btn-coin" id="btn-10" onclick="addCoin(10)"><div class="coin coin-10">10</div></button>
-                <button class="btn-coin" id="btn-1" onclick="addCoin(1)"><div class="coin coin-1">1</div></button>
-            </div>
+            <div id="options-container" class="options-grid"></div>
         </div>
 
         <div class="sidebar">
@@ -437,8 +351,6 @@
 
         let currentLevel = 1;
         let targetNumber = 0;
-        let currentSum = 0;
-        let coinsCount = { 1000: 0, 100: 0, 10: 0, 1: 0 };
         let round = 1;
         let score = 0;
         let streak = 0;
@@ -462,7 +374,7 @@
 
         document.querySelectorAll('.level-tab').forEach(tab => {
             tab.addEventListener('click', (e) => {
-                if (locked && currentSum === targetNumber) return; 
+                if (locked) return; 
                 document.querySelectorAll('.level-tab').forEach(t => t.classList.remove('active'));
                 e.target.classList.add('active');
                 currentLevel = parseInt(e.target.getAttribute('data-level'));
@@ -505,6 +417,43 @@
             });
         }
 
+        function generateOptions(target) {
+            const options = new Set([target]);
+            let maxVal = 10;
+            let minVal = 1;
+            if (currentLevel === 2) { minVal = 11; maxVal = 100; }
+            else if (currentLevel === 3) { minVal = 101; maxVal = 1000; }
+            else if (currentLevel === 4) { minVal = 1001; maxVal = 3000; }
+
+            const addIfValid = (val) => {
+                if (val >= minVal && val <= maxVal && val !== target) {
+                    options.add(val);
+                }
+            };
+
+            // Try swapping digits for 2 digit numbers
+            if (target >= 11 && target < 100 && target % 11 !== 0) {
+                const swapped = parseInt(target.toString().split('').reverse().join(''));
+                addIfValid(swapped);
+            }
+
+            // Offsets
+            const offsets = [-1, 1, -10, 10, -100, 100, -1000, 1000];
+            offsets.sort(() => Math.random() - 0.5);
+            for (let offset of offsets) {
+                addIfValid(target + offset);
+                if (options.size >= 4) break;
+            }
+
+            // Fill with random
+            while (options.size < 4) {
+                const rand = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
+                options.add(rand);
+            }
+
+            return Array.from(options).sort(() => Math.random() - 0.5);
+        }
+
         function generateTask() {
             locked = false;
             
@@ -515,7 +464,6 @@
             } else if (currentLevel === 3) {
                 targetNumber = Math.floor(Math.random() * 900) + 101; // 101-1000
             } else if (currentLevel === 4) {
-                // Mostly dates 1500-2025
                 if (Math.random() > 0.3) {
                     targetNumber = Math.floor(Math.random() * (2025 - 1500 + 1)) + 1500;
                 } else {
@@ -523,83 +471,65 @@
                 }
             }
             
-            clearZones();
-            
             const word = numberToSpanish(targetNumber);
             document.getElementById('instruction').innerHTML = `<strong>${word}</strong>`;
             
-            document.getElementById('btn-1000').style.display = currentLevel >= 4 ? 'flex' : 'none';
-            document.getElementById('btn-100').style.display = currentLevel >= 3 ? 'flex' : 'none';
-            document.getElementById('btn-10').style.display = currentLevel >= 2 ? 'flex' : 'none';
+            const options = generateOptions(targetNumber);
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
             
-            document.getElementById('zone-container-1000').style.display = currentLevel >= 4 ? 'flex' : 'none';
-            document.getElementById('zone-container-100').style.display = currentLevel >= 3 ? 'flex' : 'none';
-            document.getElementById('zone-container-10').style.display = currentLevel >= 2 ? 'flex' : 'none';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = () => selectOption(opt, btn);
+                container.appendChild(btn);
+            });
 
             setTimeout(() => speak(word), 300);
         }
 
-        function clearZones() {
-            [1000, 100, 10, 1].forEach(val => {
-                document.getElementById(`zone-${val}`).innerHTML = '';
-                coinsCount[val] = 0;
-            });
-            updateSum();
-        }
-
-        function addCoin(val) {
+        function selectOption(value, buttonEl) {
             if (locked) return;
-            if (currentSum + val > 4000) return;
-            
-            coinsCount[val]++;
-            const zone = document.getElementById(`zone-${val}`);
-            const coinEl = document.createElement('div');
-            coinEl.className = `coin coin-${val} interactive`;
-            coinEl.textContent = val;
-            coinEl.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
-            
-            coinEl.onclick = function() {
-                if (locked) return;
-                coinEl.style.animation = 'none';
-                coinEl.style.transform = 'scale(0)';
-                coinEl.style.opacity = '0';
-                setTimeout(() => {
-                    if(zone.contains(coinEl)) zone.removeChild(coinEl);
-                }, 150);
-                coinsCount[val]--;
-                updateSum();
-            };
-            
-            zone.appendChild(coinEl);
-            updateSum();
-        }
-
-        function updateSum() {
-            currentSum = (coinsCount[1000] * 1000) + (coinsCount[100] * 100) + (coinsCount[10] * 10) + (coinsCount[1] * 1);
-            
-            const totalSpan = document.getElementById('current-total');
-            totalSpan.textContent = currentSum;
-            totalSpan.style.transform = 'scale(1.3)';
-            setTimeout(() => totalSpan.style.transform = 'scale(1)', 150);
-            
-            if (currentSum === targetNumber && currentSum !== 0) {
-                showWin();
-            }
-        }
-
-        function showWin() {
             locked = true;
+            
+            const container = document.getElementById('options-container');
+            const buttons = container.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.disabled = true);
+            
             const feedback = document.getElementById('feedback');
-            feedback.textContent = '¡Correcto!';
-            feedback.style.color = '#10b981';
             feedback.classList.remove('show');
             void feedback.offsetWidth;
-            feedback.classList.add('show');
             
-            speak('¡Muy bien!');
+            if (value === targetNumber) {
+                buttonEl.classList.add('correct');
+                feedback.textContent = '¡Correcto!';
+                feedback.style.color = '#10b981';
+                feedback.classList.add('show');
+                
+                const successPhrases = ['¡Muy bien!', '¡Excelente!', '¡Genial!', '¡Así es!', '¡Correcto!'];
+                const phrase = successPhrases[Math.floor(Math.random() * successPhrases.length)];
+                speak(phrase);
+                
+                score += (currentLevel * 10) + (streak * 2);
+                streak++;
+            } else {
+                buttonEl.classList.add('incorrect');
+                buttons.forEach(btn => {
+                    if (parseInt(btn.textContent) === targetNumber) {
+                        btn.classList.add('correct');
+                    }
+                });
+                
+                feedback.textContent = `¡Incorrecto! Era ${targetNumber}`;
+                feedback.style.color = '#ef4444';
+                feedback.classList.add('show');
+                
+                speak(`Incorrecto. Era el ${targetNumber}`);
+                
+                streak = 0;
+            }
             
-            score += (currentLevel * 10) + (streak * 2);
-            streak++;
             document.getElementById('score-val').textContent = score;
             document.getElementById('streak-val').textContent = `${streak} 🔥`;
             

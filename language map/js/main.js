@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.error('Global error:', e.error);
   });
   
-  console.log('🚀 Language Map Quest initialized successfully!');
+  console.log('🚀 Phrases initialized successfully!');
   console.log('💡 Debug commands available: debugGame.addXP(100), debugGame.resetProgress(), debugGame.exportData(), debugGame.switchTab("map")');
   console.log('⌨️ Keyboard shortcuts: Alt+1 (Map), Alt+2 (Game), Alt+3 (Progress), Ctrl/Cmd+D (Dark Mode), Ctrl/Cmd+, (Settings)');
 });

@@ -283,6 +283,7 @@
             startPrompt: "Camina hacia la persona (💁) para recibir instrucciones.",
             pathNotFound: "¡Oh no! No puedo encontrar un camino hasta allí.",
             success: "¡bien!",
+            successPhrases: ["¡Excelente!", "¡Muy bien!", "¡Así se hace!", "¡Correcto!", "¡Buen trabajo!", "¡Perfecto!"],
             reachedDestination: (dest) => `¡Lo lograste! Llegaste a ${dest}.`,
             returnToGiver: "Vuelve con la persona (💁) para tu siguiente tarea.",
             wrongDirection: "¡Dirección equivocada!",
@@ -325,6 +326,7 @@
             startPrompt: "Gå till personen (💁) för att få instruktioner.",
             pathNotFound: "Hoppsan! Jag kan inte hitta en väg dit.",
             success: "Bra!",
+            successPhrases: ["Bra!", "Utmärkt!", "Snyggt!", "Korrekt!", "Bra jobbat!", "Perfekt!"],
             reachedDestination: (dest) => `Du lyckades! Du har nått ${dest}.`,
             returnToGiver: "Gå tillbaka till personen (💁) för nästa uppgift.",
             wrongDirection: "Fel håll!",
@@ -651,7 +653,15 @@
                     currentStepIndex++;
                     progressInStep = 0;
                     if (currentStepIndex < activeQuest.steps.length) {
-                        displayMessage(`<span class="success">${t.success}</span><br><br>${activeQuest.steps[currentStepIndex].text}`);
+                        // 50% chance to show/speak a success phrase, making it less repetitive
+                        const showSuccess = Math.random() < 0.5;
+                        if (showSuccess) {
+                            const phrases = t.successPhrases || [t.success];
+                            const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+                            displayMessage(`<span class="success">${randomPhrase}</span><br><br>${activeQuest.steps[currentStepIndex].text}`);
+                        } else {
+                            displayMessage(activeQuest.steps[currentStepIndex].text);
+                        }
                     } else {
                         const destName = t.destinations[activeQuest.destination];
                         displayMessage(`<span class="success">${t.reachedDestination(destName)}</span><br><br>${t.returnToGiver}`);

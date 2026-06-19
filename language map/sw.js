@@ -1,6 +1,6 @@
-// Service Worker for Language Map Quest
+// Service Worker for Phrases
 
-const CACHE_NAME = 'language-map-quest-v1';
+const CACHE_NAME = 'phrases-v1';
 const urlsToCache = [
   '/',
   '/index.html',

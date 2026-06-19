@@ -647,7 +647,23 @@
                 progressInStep = 0;
 
                 if (currentStepIndex < activeMission.steps.length) {
-                    displayMessage(`<span class="msg-success">¡Objetivo parcial cumplido!</span><br><br>${activeMission.steps[currentStepIndex].text}`);
+                    // 50% chance to show/speak a success phrase, making it less repetitive
+                    const showSuccess = Math.random() < 0.5;
+                    if (showSuccess) {
+                        const successPhrases = [
+                            "¡Objetivo parcial cumplido!",
+                            "¡Buen trabajo, Agente!",
+                            "¡Excelente!",
+                            "¡Muy bien!",
+                            "¡Camino despejado!",
+                            "¡Sigue así!",
+                            "¡Impecable!"
+                        ];
+                        const randomPhrase = successPhrases[Math.floor(Math.random() * successPhrases.length)];
+                        displayMessage(`<span class="msg-success">${randomPhrase}</span><br><br>${activeMission.steps[currentStepIndex].text}`);
+                    } else {
+                        displayMessage(activeMission.steps[currentStepIndex].text);
+                    }
                 } else {
                     // Misión terminada
                     displayMessage(`<span class="msg-success">${activeMission.success}</span><br><br>Vuelve al punto de control (🛰️) para la siguiente fase.`);
