@@ -1,70 +1,61 @@
-<!-- Option 1: Classic Friendly Cartoon Boy -->
+<!-- Apple 1: Crisp Standalone Green Apple with Stem & Leaf -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
   <defs>
-    <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2ea854"/>
-      <stop offset="100%" stop-color="#185f2e"/>
+    <!-- Rich Granny Smith Apple Gradient -->
+    <radialGradient id="appleGrad1" cx="38%" cy="32%" r="68%">
+      <stop offset="0%" stop-color="#bbf748"/>
+      <stop offset="25%" stop-color="#7cd61c"/>
+      <stop offset="70%" stop-color="#46a008"/>
+      <stop offset="100%" stop-color="#2d6d05"/>
+    </radialGradient>
+    
+    <!-- Leaf Gradient -->
+    <linearGradient id="leafGrad1" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b8b0a"/>
+      <stop offset="100%" stop-color="#84e022"/>
     </linearGradient>
-    <linearGradient id="skin1" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#ffe3c6"/>
-      <stop offset="100%" stop-color="#f7cb9b"/>
+
+    <!-- Stem Gradient -->
+    <linearGradient id="stemGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8a532b"/>
+      <stop offset="100%" stop-color="#543015"/>
     </linearGradient>
-    <linearGradient id="hairGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#4a2e1b"/>
-      <stop offset="100%" stop-color="#2b170c"/>
-    </linearGradient>
+
+    <!-- Shadow -->
+    <filter id="drop" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.22"/>
+    </filter>
   </defs>
 
-  <!-- Squircle Base -->
-  <rect width="128" height="128" rx="28" fill="url(#bg1)"/>
-  <path d="M 0 28 C 0 12.5 12.5 0 28 0 L 100 0 C 115.5 0 128 12.5 128 28 C 128 32 120 45 64 45 C 8 45 0 32 0 28 Z" fill="#ffffff" fill-opacity="0.12"/>
+  <g filter="url(#drop)">
+    <!-- Wooden Stem -->
+    <path d="M 64 42 C 63 26 70 12 79 7 C 77 15 72 26 69 42 Z" fill="url(#stemGrad1)"/>
 
-  <!-- Neck & Clothes -->
-  <rect x="55" y="86" width="18" height="16" rx="4" fill="#ebb185"/>
-  <path d="M 28 128 C 28 104 44 98 64 98 C 84 98 100 104 100 128 Z" fill="#ffffff"/>
-  <path d="M 52 98 C 52 108 76 108 76 98 Z" fill="#38bdf8"/>
+    <!-- Fresh Leaf -->
+    <path d="M 67 30 C 72 16 90 14 98 18 C 98 28 86 38 67 30 Z" fill="url(#leafGrad1)"/>
+    <!-- Leaf vein -->
+    <path d="M 69 29 C 78 24 88 22 96 19" fill="none" stroke="#2b6b06" stroke-width="1.5" stroke-linecap="round"/>
 
-  <!-- Ears -->
-  <circle cx="33" cy="69" r="9" fill="#f7cb9b"/>
-  <circle cx="33" cy="69" r="5.5" fill="#ebb185"/>
-  <circle cx="95" cy="69" r="9" fill="#f7cb9b"/>
-  <circle cx="95" cy="69" r="5.5" fill="#ebb185"/>
+    <!-- Apple Body (Classic dual-lobed apple silhouette) -->
+    <path d="M 64 44 
+             C 54 36 28 34 18 52 
+             C 6 72 16 102 34 116 
+             C 44 124 56 123 64 119 
+             C 72 123 84 124 94 116 
+             C 112 102 122 72 110 52 
+             C 100 34 74 36 64 44 Z" 
+          fill="url(#appleGrad1)"/>
 
-  <!-- Head Base (Full skin circle/oval) -->
-  <circle cx="64" cy="66" r="31" fill="url(#skin1)"/>
+    <!-- Glossy Highlight Curve (Top Left) -->
+    <path d="M 30 52 C 24 64 26 84 34 94 C 32 82 32 64 42 54 C 48 48 56 46 62 46 C 54 44 40 44 30 52 Z" 
+          fill="#ffffff" fill-opacity="0.38"/>
 
-  <!-- Solid Hair Helmet/Crown with Bangs -->
-  <path d="M 32 66 
-           C 28 28 42 16 64 16 
-           C 86 16 100 28 96 66 
-           C 95 72 90 70 88 62 
-           C 86 48 80 42 74 46 
-           C 68 40 62 43 56 47 
-           C 50 40 42 43 38 56 
-           C 36 68 33 72 32 66 Z" 
-        fill="url(#hairGrad1)"/>
-  
-  <!-- Cute hair tuft at the top -->
-  <path d="M 64 16 Q 71 8 77 12 Q 71 14 67 18 Z" fill="#4a2e1b"/>
-  <!-- Hair highlight -->
-  <path d="M 46 25 C 56 21 72 21 82 25" fill="none" stroke="#784e31" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Secondary Soft Sheen Spot -->
+    <ellipse cx="40" cy="56" rx="8" ry="14" transform="rotate(-30 40 56)" fill="#ffffff" fill-opacity="0.25"/>
 
-  <!-- Eyebrows -->
-  <path d="M 44 57 Q 50 54 56 56" fill="none" stroke="#4a2e1b" stroke-width="2.5" stroke-linecap="round"/>
-  <path d="M 72 56 Q 78 54 84 57" fill="none" stroke="#4a2e1b" stroke-width="2.5" stroke-linecap="round"/>
-
-  <!-- Eyes - warm and friendly with big pupils and highlights -->
-  <circle cx="50" cy="67" r="6" fill="#1b2129"/>
-  <circle cx="78" cy="67" r="6" fill="#1b2129"/>
-  <circle cx="48" cy="65" r="2.2" fill="#ffffff"/>
-  <circle cx="76" cy="65" r="2.2" fill="#ffffff"/>
-  <circle cx="52" cy="69" r="1.1" fill="#ffffff"/>
-  <circle cx="80" cy="69" r="1.1" fill="#ffffff"/>
-
-  <!-- Rosy cheeks blush -->
-  <circle cx="43" cy="76" r="5" fill="#f87171" fill-opacity="0.35"/>
-  <circle cx="85" cy="76" r="5" fill="#f87171" fill-opacity="0.35"/>
-
-  <!-- Cute smile -->
-  <path d="M 56 77 Q 64 86 72 77" fill="none" stroke="#991b1b" stroke-width="3" stroke-linecap="round"/>
+    <!-- Bottom indention shadow -->
+    <ellipse cx="64" cy="119" rx="6" ry="2.5" fill="#1b4203" fill-opacity="0.4"/>
+    <!-- Top stem dimple shadow -->
+    <ellipse cx="65" cy="43" rx="7" ry="3" fill="#2d6d05" fill-opacity="0.5"/>
+  </g>
 </svg>
