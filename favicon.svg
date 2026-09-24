@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2ea854"/>
+      <stop offset="100%" stop-color="#196332"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded squircle -->
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+
+  <!-- Subtle glossy highlight -->
+  <path d="M 0 28 C 0 12.5 12.5 0 28 0 L 100 0 C 115.5 0 128 12.5 128 28 C 128 32 120 45 64 45 C 8 45 0 32 0 28 Z" fill="#ffffff" fill-opacity="0.12"/>
+
+  <!-- Speech bubble with gaming controller layout -->
+  <g>
+    <!-- Speech bubble body -->
+    <path d="M 26 30 
+             L 102 30 
+             A 16 16 0 0 1 118 46 
+             L 118 78 
+             A 16 16 0 0 1 102 94 
+             L 54 94 
+             L 34 108 
+             L 36 94 
+             L 26 94 
+             A 16 16 0 0 1 10 78 
+             L 10 46 
+             A 16 16 0 0 1 26 30 Z" 
+          fill="#ffffff"/>
+
+    <!-- Controller D-Pad (Left) -->
+    <rect x="28" y="58" width="28" height="8" rx="3" fill="#23743a"/>
+    <rect x="38" y="48" width="8" height="28" rx="3" fill="#23743a"/>
+    <circle cx="42" cy="62" r="3" fill="#1b5a2d"/>
+
+    <!-- Controller Action Buttons (Right) -->
+    <circle cx="86" cy="51" r="5" fill="#0284c7"/>
+    <circle cx="97" cy="62" r="5" fill="#e11d48"/>
+    <circle cx="86" cy="73" r="5" fill="#16a34a"/>
+    <circle cx="75" cy="62" r="5" fill="#f59e0b"/>
+  </g>
+</svg>
